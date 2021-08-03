@@ -1,0 +1,153 @@
+<resources>
+    <string name="app_name">VOLC Vod</string>
+
+    <string name="solutions">Video solutions in one station</string>
+    <string name="not_implementation">Not implemented yet!</string>
+
+    <string name="small_video">Small Video</string>
+    <string name="long_video">Long Video</string>
+    <string name="short_video">Short Video</string>
+    <string name="pipi">Pipi</string>
+    <string name="record_video">Record Video</string>
+    <string name="edit_video">Edit Video</string>
+    <string name="test_module">Test Tools</string>
+
+
+    <string name="ok">OK</string>
+    <string name="replay">Replay</string>
+    <string name="video_load_fail">Load Failed</string>
+    <string name="click_to_retry">Click To Replay</string>
+
+    <string name="home">Home</string>
+    <string name="mine">Mine</string>
+
+    <string name="select_all">Select All</string>
+    <string name="un_select_all">Unselect All</string>
+    <string name="delete">Delete</string>
+    <string name="speed">Speed</string>
+    <string name="download">Download</string>
+    <string name="debug">Debug</string>
+    <string name="radio_mode">Radio Mode</string>
+    <string name="danmaku_mask">Danmaku Mask</string>
+    <string name="player_volume">Player Volume</string>
+
+    <string name="start_download">Start Download</string>
+    <string name="download_succeed">Download Succeed</string>
+    <string name="download_finished">Download Finished</string>
+    <string name="already_downloaded">Already Downloaded</string>
+    <string name="downloading">Downloading</string>
+    <string name="user_name">Byte Cloud</string>
+    <string name="download_paused">Download Paused</string>
+    <string name="user_sign">Always Day 1</string>
+
+    <string name="watched_history">Watched</string>
+    <string name="cached_videos">Cached</string>
+    <string name="settings">Settings</string>
+    <string name="settings_all">Goto Settings ></string>
+    <string name="edit">Edit</string>
+    <string name="cancel">Cancel</string>
+    <string name="all">All ></string>
+    <string name="watched">Watched</string>
+    <string name="not_watched">Not Watched</string>
+    <string name="api_request_failed">Request API Failed</string>
+
+    <string name="video_details">Video Details</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="choose_in_list">Chose value of [%s]</string>
+
+    <string name="suggest_list">Suggest Videos</string>
+    <string name="all_movies">More movies</string>
+    <string name="mask_danmaku">Mask Danmaku</string>
+
+    <string name="goto_details">Goto Details</string>
+
+    <!-- settings -->
+    <string name="short_video_settings">Short Video Settings</string>
+    <string name="long_video_settings">Long Video Settings</string>
+
+    <string name="setting_open_api">OpenApi Settings</string>
+    <string name="setting_app">App Settings</string>
+    <string name="setting_app_startup">App Startup Init Settings</string>
+    <string name="setting_decode">Decode Settings</string>
+    <string name="setting_player">Play Settings</string>
+    <string name="setting_format">Format Settings</string>
+    <string name="engine_setting">TTVideoEngine Settings</string>
+    <string name="mdl_setting">MDL Settings</string>
+
+    <string name="enable_user_settings">Enable User Settings</string>
+    <string name="enable_user_settings_key" translatable="false">user_settings_enabled</string>
+
+    <string name="enable_open_api_2">Enable OpenApi 2.0</string>
+    <string name="enable_open_api_2_key" translatable="false">open_api_2_enabled</string>
+
+    <string name="disable_add_license">Disable Add License On App Startup</string>
+    <string name="disable_add_license_key" translatable="false">add_license_enabled_key</string>
+
+    <string name="set_enable_manual_video_hardware_decode">Manual Video Hardware Decode</string>
+    <string name="set_enable_manual_video_hardware_decode_key" translatable="false">set_enable_manual_video_hardware_decode_key</string>
+    <string name="set_video_hardware_decode">Video Hardware Decode</string>
+    <string name="set_video_hardware_decode_key" translatable="false">set_video_hardware_decode_key</string>
+
+    <string name="set_audio_hardware_decode">Audio Hardware Decode</string>
+    <string name="set_audio_hardware_decode_key" translatable="false">set_audio_hardware_decode_key</string>
+
+    <string name="set_video_loop">Enable Loop</string>
+    <string name="set_video_loop_key" translatable="false">set_video_loop_key</string>
+
+    <string name="set_video_enable_dash">Enable Dash</string>
+    <string name="set_video_enable_dash_key" translatable="false">set_video_enable_dash_key</string>
+
+    <string name="set_video_enable_bash">Enable Bash</string>
+    <string name="set_video_enable_bash_key" translatable="false">set_video_enable_bash_key</string>
+
+    <string name="set_video_enable_hls">Enable HLS</string>
+    <string name="set_video_enable_hls_key" translatable="false">set_video_enable_hls_key</string>
+
+    <string name="set_video_enable_drm">Enable DRM</string>
+    <string name="set_video_enable_drm_key" translatable="false">set_video_enable_drm_key</string>
+
+    <string name="set_video_enable_H265">Enable H265</string>
+    <string name="set_video_enable_H265_key" translatable="false">set_video_enable_H265_key</string>
+
+    <string name="set_enable_preload">Enable Preload</string>
+    <string name="set_enable_preload_key" translatable="false">set_enable_preload_key</string>
+
+    <string name="set_video_enable_H265_playauthtoken">Enable PlayAuthToken Sign H265(OpenApi2.0 Only)</string>
+    <string name="set_video_enable_H265_playauthtoken_key" translatable="false">set_video_enable_H265_playauthtoken_key</string>
+
+    <string name="set_enable_pcdn">Enable PCDN</string>
+    <string name="set_enable_pcdn_key" translatable="false">set_enable_pcdn_key</string>
+
+    <string name="set_video_disable_start_accurate_seek">Disable Start Time Accurate Seek</string>
+    <string name="set_video_disable_start_accurate_seek_key" translatable="false">set_video_disable_start_accurate_seek_key</string>
+
+    <string name="set_enable_barrage_mask">Enable Barrage Mask</string>
+    <string name="set_enable_barrage_mask_key" translatable="false">set_enable_barrage_mask_key</string>
+
+    <string name="set_engine_enable_uploadlog">Enable TTVideoEngine UploadLog</string>
+    <string name="set_engine_enable_uploadlog_key" translatable="false">set_engine_enable_uploadlog_key</string>
+
+    <string name="set_mdl_enable_uploadlog">Enable MDL UploadLog</string>
+    <string name="set_mdl_enable_uploadlog_key" translatable="false">set_mdl_enable_uploadlog_key</string>
+
+    <string name="device_id">device ID</string>
+    <string name="did">did</string>
+    <string name="device_id_get">Get</string>
+
+    <string name="set_mdl_enable_custom_httpdns">Enable MDL custom HttpDNS</string>
+    <string name="set_mdl_enable_custom_httpdns_key" translatable="false">set_mdl_enable_custom_httpdns_key</string>
+
+    <string name="clean_mdl_cache">Clean MDL Cache</string>
+
+    <string name="set_mdl_cache_size">MDL Cache Size</string>
+    <string name="set_mdl_cache_size_key" translatable="false">set_mdl_cache_size_key</string>
+
+    <string name="error_input">input error</string>
+    <string name="enable_byte_vod_sdk_async_init">Enable ByteVod async init</string>
+    <string name="enable_byte_vod_sdk_async_init_key" translatable="false">enable_byte_vod_sdk_async_init_key</string>
+    <string name="speed_mb_per_s">MB/S</string>
+    <string name="speed_kb_per_s">KB/S</string>
+
+    <string name="press_again_to_exit">Press again to exit</string>
+    <string name="invalid_cache_path">Invalid Cache Path</string>
+</resources>
