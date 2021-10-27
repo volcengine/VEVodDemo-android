@@ -22,12 +22,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.bytedance.volc.voddemo.base.BaseAdapter;
 import com.bytedance.volc.voddemo.data.remote.ServerResultCallback;
 import com.bytedance.volc.voddemo.preload.PreloadManager;
@@ -46,7 +49,9 @@ import com.bytedance.volc.voddemo.videoview.layers.CoverLayer;
 import com.bytedance.volc.voddemo.smallvideo.pager.PagerLayoutManager;
 import com.bytedance.volc.voddemo.smallvideo.pager.RecyclerViewPagerListener;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.bytedance.volc.voddemo.data.VideoItem.VIDEO_TYPE_SMALL;
@@ -58,6 +63,8 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
 
     private BaseAdapter<VideoItem> mAdapter;
     private VOLCVideoView mCurrentVideoView;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private int mLastPosition = -1;
     private boolean mSelectFirst;
@@ -78,7 +85,7 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
 
             @Override
             public void onBindViewHolder(final ViewHolder holder, final VideoItem data,
-                    final int position) {
+                                         final int position) {
                 VOLCVideoView videoView = holder.getView(R.id.video_view);
                 videoView.setVideoController(new VOLCVideoController(videoView.getContext(), data,
                         videoView));
@@ -103,8 +110,8 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
-            @Nullable final ViewGroup container,
-            @Nullable final Bundle savedInstanceState) {
+                             @Nullable final ViewGroup container,
+                             @Nullable final Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_small_video, container, false);
     }
 
@@ -118,25 +125,64 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
+        mSwipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
+        load();
+    }
+
+    private void load() {
         mVideoViewModel.getVideoList(VIDEO_TYPE_SMALL, ITEMS_LIMIT, videoItems -> {
             if (videoItems != null && videoItems.size() > 0) {
-                mAdapter.addAll(videoItems);
+                mAdapter.replaceAll(videoItems);
                 PreloadManager.getInstance().videoListUpdate(videoItems);
+                mRecyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        play();
+                    }
+                });
             }
         });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    private void refresh() {
+        mVideoViewModel.getVideoList(VIDEO_TYPE_SMALL, ITEMS_LIMIT, videoItems -> {
+            mSwipeRefreshLayout.setRefreshing(false);
+            if (videoItems != null && videoItems.size() > 0) {
+                Collections.reverse(videoItems);
+                mAdapter.replaceAll(videoItems);
+                PreloadManager.getInstance().videoListUpdate(videoItems);
+                mRecyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        play();
+                    }
+                });
+            }
+        });
+    }
+
+    private void play() {
+        if (!isResumed()) return;
         if (mCurrentVideoView != null) {
-            mCurrentVideoView.onResume();
+            mCurrentVideoView.play();
         }
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onResume() {
+        super.onResume();
+        play();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         if (mCurrentVideoView != null) {
             mCurrentVideoView.onPause();
         }
