@@ -179,8 +179,9 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
 
     private void initEngine() {
         if (mVideoEngine == null) {
-            // VOD key step play 1: init TTVideoEngine
-            mVideoEngine = new TTVideoEngine(mContext, TTVideoEngine.PLAYER_TYPE_OWN);
+            // VOD key step play 1: init TTVideoEngine with ApplicationContext
+            mVideoEngine = new TTVideoEngine(mContext.getApplicationContext(),
+                    TTVideoEngine.PLAYER_TYPE_OWN);
             // VOD key step play 2: set Callback
             mVideoEngine.setVideoEngineSimpleCallback(mVideoEngineCallback);
             mVideoEngine.setVideoInfoListener(this);
@@ -264,6 +265,13 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         mVideoEngine = null;
         if (mVideoPlayListener != null) {
             mVideoPlayListener.onVideoReleased();
+        }
+    }
+
+    @Override
+    public void mute() {
+        if (mVideoEngine != null) {
+            mVideoEngine.setIsMute(true);
         }
     }
 

@@ -13,39 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2021/6/11
+ * Create Date : 2021/11/3
  */
-package com.bytedance.volc.voddemo.videoview;
+package com.bytedance.volc.voddemo.smallvideo.pager;
 
-import android.view.Surface;
+import android.view.View;
 
-public interface VideoController {
-
-    int getDuration();
-
-    void setSurface(Surface surface);
-
-    void pause();
-
-    void play();
-
-    void release();
-
-    void mute();
-
-    void seekTo(int msec);
-
-    boolean isPlaying();
-
-    boolean isPaused();
-
-    boolean isLooping();
-
-    String getCover();
-
-    int getVideoWidth();
-
-    int getVideoHeight();
-
-    int getCurrentPlaybackTime();
+interface PagerSelectListener {
+    void onPageSelected(int position, View view);
 }
