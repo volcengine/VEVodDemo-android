@@ -24,11 +24,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 
-public class PagerLayoutManager extends LinearLayoutManager {
+public class PagerLayoutManager extends LinearLayoutManager implements PagerSelectListener {
 
     private VOLCPagerSnapHelper mPagerSnapHelper;
     private RecyclerViewPagerListener mRecyclerViewPagerListener;
     private RecyclerView mRecyclerView;
+    private int mCurrentPosition;
 
     private final RecyclerView.OnChildAttachStateChangeListener mChildAttachStateChangeListener =
             new RecyclerView.OnChildAttachStateChangeListener() {
@@ -51,6 +52,7 @@ public class PagerLayoutManager extends LinearLayoutManager {
             final boolean reverseLayout) {
         super(context, orientation, reverseLayout);
         mPagerSnapHelper = new VOLCPagerSnapHelper();
+        mPagerSnapHelper.setCallback(this);
     }
 
     @Override
@@ -78,6 +80,30 @@ public class PagerLayoutManager extends LinearLayoutManager {
 
     public void setOnViewPagerListener(RecyclerViewPagerListener listener) {
         this.mRecyclerViewPagerListener = listener;
-        mPagerSnapHelper.setCallback(mRecyclerViewPagerListener);
+    }
+
+    @Override
+    public void onScrollStateChanged(int state) {
+        if (state == RecyclerView.SCROLL_STATE_IDLE) {
+            View view = mPagerSnapHelper.findSnapView(this);
+            int position = 0;
+            if (view != null) {
+                position = getPosition(view);
+            }
+
+            onPageSelected(position, view);
+        }
+    }
+
+    @Override
+    public void onPageSelected(final int position, final View view) {
+        if (mCurrentPosition == position) {
+            return;
+        }
+
+        mCurrentPosition = position;
+        if (mRecyclerViewPagerListener != null) {
+            mRecyclerViewPagerListener.onPageSelected(position, view);
+        }
     }
 }

@@ -183,6 +183,9 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
         }
 
         VOLCVideoView videoView = ItemView.findViewById(R.id.video_view);
+        if (mCurrentVideoView != null) {
+            mCurrentVideoView.mute();
+        }
         mCurrentVideoView = videoView;
         videoView.play();
     }
