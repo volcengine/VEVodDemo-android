@@ -24,7 +24,7 @@ import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 public class VOLCPagerSnapHelper extends PagerSnapHelper {
     public static final String TAG = "VOLCPagerSnapHelper";
 
-    private RecyclerViewPagerListener mRecyclerViewPagerListener;
+    private PagerSelectListener mPagerSelectListener;
 
     @Override
     public int findTargetSnapPosition(final RecyclerView.LayoutManager layoutManager,
@@ -33,13 +33,13 @@ public class VOLCPagerSnapHelper extends PagerSnapHelper {
         int targetSnapPosition = super.findTargetSnapPosition(layoutManager, velocityX,
                 velocityY);
         TTVideoEngineLog.d(TAG, "findTargetSnapPosition " + targetSnapPosition);
-        if (mRecyclerViewPagerListener != null) {
-            mRecyclerViewPagerListener.onPageSelected(targetSnapPosition, null);
+        if (mPagerSelectListener != null) {
+            mPagerSelectListener.onPageSelected(targetSnapPosition, null);
         }
         return targetSnapPosition;
     }
 
-    public void setCallback(final RecyclerViewPagerListener recyclerViewPagerListener) {
-        mRecyclerViewPagerListener = recyclerViewPagerListener;
+    public void setCallback(final PagerSelectListener pagerSelectListener) {
+        mPagerSelectListener = pagerSelectListener;
     }
 }

@@ -150,6 +150,12 @@ public class VOLCVideoView extends FrameLayout
         }
     }
 
+    public void mute() {
+        if (mVideoController != null) {
+            mVideoController.mute();
+        }
+    }
+
     public void release() {
         if (mProgressManager != null) {
             mProgressManager.release();
