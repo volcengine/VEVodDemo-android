@@ -73,6 +73,7 @@ public interface IVideoLayerEvent {
 
     int VIDEO_LAYER_EVENT_PREPARE_DETAIL = 400;
     int VIDEO_LAYER_EVENT_ENTER_DETAIL = 401;
+    int VIDEO_LAYER_EVENT_NEED_COVER = 402;
 
     /**
      * message
