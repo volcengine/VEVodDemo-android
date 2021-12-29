@@ -137,10 +137,6 @@ public class VOLCVideoView extends FrameLayout
             return;
         }
 
-        if (mTextureView != null && mTextureView.isAvailable()) {
-            mVideoController.setSurface(new Surface(mTextureView.getSurfaceTexture()));
-        }
-
         mVideoController.play();
     }
 
@@ -299,6 +295,11 @@ public class VOLCVideoView extends FrameLayout
     @Override
     public void onVideoSeekStart(final int msec) {
         stopProgressTrack();
+    }
+
+    @Override
+    public void onNeedCover() {
+        notifyEvent(new CommonLayerEvent(IVideoLayerEvent.VIDEO_LAYER_EVENT_NEED_COVER));
     }
 
     private void notifyEvent(IVideoLayerEvent event) {

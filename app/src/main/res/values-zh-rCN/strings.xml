@@ -52,6 +52,11 @@
     <string name="engine_setting">TTVideoEngine 设置</string>
     <string name="mdl_setting">MDL 设置</string>
 
+    <string name="setting_engine_strategy">Engine 策略（重启生效）</string>
+    <string name="enable_common_strategy">开启通用策略</string>
+    <string name="enable_preload_strategy">开启预加载策略</string>
+    <string name="enable_pre_render_strategy">开启预渲染策略</string>
+
     <string name="set_enable_manual_video_hardware_decode">手动控制视频硬解</string>
     <string name="set_video_hardware_decode">视频硬解码</string>
     <string name="set_video_loop">循环播放</string>

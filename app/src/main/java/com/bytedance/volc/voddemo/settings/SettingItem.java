@@ -53,6 +53,19 @@ public abstract class SettingItem {
     }
 }
 
+class TitleSettingItem extends SettingItem {
+    private final String title;
+
+    public TitleSettingItem(final String title) {
+        super(TEXT_VIEW_TYPE);
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+}
+
 class BoolSettingItem extends SettingItem {
     private final String text;
     private boolean defaultValue;
