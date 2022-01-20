@@ -57,4 +57,6 @@ public interface VideoPlayListener {
     void onVideoSeekComplete(boolean success);
 
     void onVideoSeekStart(int msec);
+
+    void onNeedCover();
 }

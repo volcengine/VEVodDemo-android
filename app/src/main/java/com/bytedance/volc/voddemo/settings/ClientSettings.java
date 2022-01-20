@@ -39,6 +39,21 @@ public class ClientSettings {
     public List<SettingItem> getAll() {
         List<SettingItem> settings = new ArrayList<>();
 
+        settings.add(new TitleSettingItem(mContext.getString(R.string.setting_engine_strategy)));
+        settings.add(new BoolSettingItem(mContext.getString(R.string.enable_common_strategy),
+                getBool(R.string.enable_common_strategy_key, true), f -> {
+            setBool(R.string.enable_common_strategy_key, f);
+        }));
+        settings.add(new BoolSettingItem(mContext.getString(R.string.enable_preload_strategy),
+                getBool(R.string.enable_preload_strategy_key, true), f -> {
+            setBool(R.string.enable_preload_strategy_key, f);
+        }));
+        settings.add(new BoolSettingItem(mContext.getString(R.string.enable_pre_render_strategy),
+                getBool(R.string.enable_pre_render_strategy_key, true), f -> {
+            setBool(R.string.enable_pre_render_strategy_key, f);
+        }));
+
+        settings.add(new TitleSettingItem(mContext.getString(R.string.engine_setting)));
         settings.add(new BoolSettingItem(
                 mContext.getString(R.string.set_enable_manual_video_hardware_decode),
                 getBool(R.string.set_enable_manual_video_hardware_decode_key, false), aBoolean -> {
@@ -104,6 +119,18 @@ public class ClientSettings {
 
     public boolean enableVideoHW() {
         return getBool(R.string.set_video_hardware_decode_key, false);
+    }
+
+    public boolean enableStrategyCommon() {
+        return getBool(R.string.enable_common_strategy_key, true);
+    }
+
+    public boolean enableStrategyPreload() {
+        return getBool(R.string.enable_preload_strategy_key, true);
+    }
+
+    public boolean enableStrategyPreRender() {
+        return getBool(R.string.enable_pre_render_strategy_key, true);
     }
 }
 

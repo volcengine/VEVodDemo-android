@@ -33,6 +33,8 @@ import com.ss.ttvideoengine.VideoEngineSimpleCallback;
 import com.ss.ttvideoengine.VideoInfoListener;
 import com.ss.ttvideoengine.model.VideoInfo;
 import com.ss.ttvideoengine.model.VideoModel;
+import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.Error;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 import java.util.List;
@@ -47,6 +49,8 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
     private final ClientSettings mSettings = VodApp.getClientSettings();
     private final Context mContext;
     private final VideoItem mVideoItem;
+    private final StrategySource mStrategySource;
+
     private final VideoPlayListener mVideoPlayListener;
     private TTVideoEngine mVideoEngine;
     private Surface mSurface;
@@ -174,54 +178,43 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
             VideoPlayListener listener) {
         this.mContext = context;
         this.mVideoItem = mVideoItem;
+        String encodeType = VodApp.getClientSettings().videoEnableH265()
+                ? TTVideoEngine.CODEC_TYPE_h265 : TTVideoEngine.CODEC_TYPE_H264;
+        this.mStrategySource = new VidPlayAuthTokenSource.Builder()
+                .setVid(mVideoItem.getVid())
+                .setPlayAuthToken(mVideoItem.getAuthToken())
+                .setEncodeType(encodeType)
+                .build();
         this.mVideoPlayListener = listener;
     }
 
     private void initEngine() {
-        if (mVideoEngine == null) {
+        if (mVideoEngine != null) {
+            return;
+        }
+
+        // VOD key step Strategy PreRender 5: use preRender engine
+        mVideoEngine = TTVideoEngine.getPreRenderEngine(mStrategySource);
+        if (mVideoEngine != null) {
+            mVideoEngineCallback.onPrepared(mVideoEngine);
+        } else {
             // VOD key step play 1: init TTVideoEngine with ApplicationContext
             mVideoEngine = new TTVideoEngine(mContext.getApplicationContext(),
                     TTVideoEngine.PLAYER_TYPE_OWN);
-            // VOD key step play 2: set Callback
-            mVideoEngine.setVideoEngineSimpleCallback(mVideoEngineCallback);
-            mVideoEngine.setVideoInfoListener(this);
-            // VOD key step play 3: use mdl
-            mVideoEngine.setIntOption(PLAYER_OPTION_ENABLE_DATALOADER, 1);
-
-            // VOD key step play 8: other feature
-            // use videomodel cache
-            mVideoEngine.setIntOption(PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
-            // use h265
-            mVideoEngine.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_h265,
-                    mSettings.videoEnableH265() ? 1 : 0
-            );
-            // use video hardware
-            if (mSettings.enableManualVideoHW()) {
-                mVideoEngine.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABEL_HARDWARE_DECODE,
-                        mSettings.enableVideoHW() ? 1 : 0);
-            }
-            // Loop Playback
-            mVideoEngine.setLooping(true);
-            if (BuildConfig.DEBUG) {
-                // open debug log
-                mVideoEngine.setIntOption(PLAYER_OPTION_OUTPUT_LOG, 1);
-            }
-            // enable key message upload：default is enable
-            mVideoEngine.setReportLogEnable(mSettings.engineEnableUploadLog());
-            DataLoaderHelper.getDataLoader().setReportLogEnable(mSettings.mdlEnableUploadLog());
-            // set resolution
-            mVideoEngine.configResolution(PreloadStrategy.START_PLAY_RESOLUTION);
-
+            configEngine(mVideoEngine);
             // VOD key step play 4: set source
-            mVideoEngine.setVideoID(mVideoItem.getVid());
-            mVideoEngine.setPlayAuthToken(mVideoItem.getAuthToken());
-
-            if (mVideoPlayListener != null) {
-                mVideoPlayListener.onCallPlay();
-            }
-
-            PreloadManager.getInstance().currentVideoChanged(mVideoItem);
+            // VOD key step Strategy Preload 3: set source
+            mVideoEngine.setStrategySource(mStrategySource);
         }
+        // VOD key step play 2: set Callback
+        mVideoEngine.setVideoEngineSimpleCallback(mVideoEngineCallback);
+        mVideoEngine.setVideoInfoListener(this);
+
+        if (mVideoPlayListener != null) {
+            mVideoPlayListener.onCallPlay();
+        }
+
+        PreloadManager.getInstance().currentVideoChanged(mVideoItem);
     }
 
     @Override
@@ -259,6 +252,7 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
             mVideoPlayListener.onVideoPreRelease();
         }
 
+        mPlayAfterSurfaceValid = false;
         mPrepared = false;
         // VOD key step play 7: release
         mVideoEngine.releaseAsync();
@@ -327,14 +321,27 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         mSurface = surface;
         if (mSurface == null || !mSurface.isValid()) {
             mSurface = null;
+            if (mVideoEngine != null) {
+                mVideoEngine.setSurface(null);
+            }
+            return;
         }
 
         if (mVideoEngine != null) {
             mVideoEngine.setSurface(mSurface);
-
-            if (mSurface != null && mPlayAfterSurfaceValid) {
+            if (mPlayAfterSurfaceValid) {
                 mVideoEngine.play();
                 mPlayAfterSurfaceValid = false;
+            }
+        } else {
+            // VOD key step Strategy PreRender instead of cover 2: call forceDraw when surface valid
+            TTVideoEngine preRenderEngine = TTVideoEngine.getPreRenderEngine(mStrategySource);
+            if (preRenderEngine != null) {
+                preRenderEngine.setSurface(surface);
+                preRenderEngine.forceDraw();
+            } else {
+                // VOD key step Strategy PreRender instead of cover 3: use cover when no PreRender
+                mVideoPlayListener.onNeedCover();
             }
         }
     }
@@ -381,5 +388,31 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         if (mVideoPlayListener != null) {
             mVideoPlayListener.onVideoSeekComplete(success);
         }
+    }
+
+    public static void configEngine(TTVideoEngine engine) {
+        ClientSettings settings = VodApp.getClientSettings();
+        // VOD key step play 3: use mdl
+        engine.setIntOption(PLAYER_OPTION_ENABLE_DATALOADER, 1);
+
+        // VOD key step play 8: other feature
+        // use videomodel cache
+        engine.setIntOption(PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
+        // use video hardware
+        if (settings.enableManualVideoHW()) {
+            engine.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABEL_HARDWARE_DECODE,
+                    settings.enableVideoHW() ? 1 : 0);
+        }
+        // Loop Playback
+        engine.setLooping(true);
+        if (BuildConfig.DEBUG) {
+            // open debug log
+            engine.setIntOption(PLAYER_OPTION_OUTPUT_LOG, 1);
+        }
+        // enable key message upload：default is enable
+        engine.setReportLogEnable(settings.engineEnableUploadLog());
+        DataLoaderHelper.getDataLoader().setReportLogEnable(settings.mdlEnableUploadLog());
+        // set resolution
+        engine.configResolution(PreloadStrategy.START_PLAY_RESOLUTION);
     }
 }

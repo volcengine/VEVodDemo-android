@@ -54,6 +54,11 @@ public class SettingAdapter extends BaseAdapter<SettingItem> {
     public void onBindViewHolder(final ViewHolder holder, final SettingItem data,
             final int position) {
 
+        if (data instanceof TitleSettingItem) {
+            ((TextView) holder.getView(R.id.txt_test_title)).setText(
+                    ((TitleSettingItem) data).getTitle());
+        }
+
         if (data instanceof BoolSettingItem) {
             BoolSettingItem settingItem = (BoolSettingItem) data;
             ((TextView) holder.getView(R.id.txt_test_text)).setText(settingItem.getText());
