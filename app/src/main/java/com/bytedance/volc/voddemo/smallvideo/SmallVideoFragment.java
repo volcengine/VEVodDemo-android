@@ -21,17 +21,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bytedance.volc.voddemo.VodApp;
 import com.bytedance.volc.voddemo.base.BaseAdapter;
-import com.bytedance.volc.voddemo.data.remote.ServerResultCallback;
 import com.bytedance.volc.voddemo.preload.PreloadManager;
 import com.bytedance.volc.voddemo.preload.SimplePreloadStrategy;
+import com.bytedance.volc.voddemo.settings.ClientSettings;
 import com.bytedance.volc.voddemo.videoview.layers.LoadFailLayer;
 import com.bytedance.volc.voddemo.videoview.layers.LoadingLayer;
 import com.bytedance.volc.voddemo.videoview.DisplayMode;
@@ -45,11 +45,19 @@ import com.bytedance.volc.voddemo.data.VideoViewModel;
 import com.bytedance.volc.voddemo.videoview.layers.CoverLayer;
 import com.bytedance.volc.voddemo.smallvideo.pager.PagerLayoutManager;
 import com.bytedance.volc.voddemo.smallvideo.pager.RecyclerViewPagerListener;
+import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.bytedance.volc.voddemo.data.VideoItem.VIDEO_TYPE_SMALL;
+import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_COMMON;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
 public class SmallVideoFragment extends Fragment implements RecyclerViewPagerListener {
     private static final String TAG = "SmallFragment";
@@ -68,8 +76,34 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
     @Override
     public void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ClientSettings settings = VodApp.getClientSettings();
+
+        if (settings.enableStrategyCommon()) {
+            // VOD key step Strategy Common: enable
+            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_COMMON, STRATEGY_SCENE_SMALL_VIDEO);
+        }
+
+        if (settings.enableStrategyPreload()) {
+            // VOD key step Strategy Preload 1: enable
+            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
+        } else {
+            PreloadManager.getInstance().setPreloadStrategy(new SimplePreloadStrategy());
+        }
+
+        if (settings.enableStrategyPreRender()) {
+            // VOD key step Strategy PreRender 1: enable
+            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER,
+                    STRATEGY_SCENE_SMALL_VIDEO);
+            // VOD key step Strategy PreRender 3: set listener
+            TTVideoEngine.setEngineStrategyListener(ttVideoEngine -> {
+                // VOD key step Strategy PreRender instead of cover 1: use TEXTURE_RENDER
+                ttVideoEngine.setIntOption(PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
+                // VOD key step Strategy PreRender 4: config preRender engine
+                VOLCVideoController.configEngine(ttVideoEngine);
+            });
+        }
+
         mVideoViewModel = new ViewModelProvider(this).get(VideoViewModel.class);
-        PreloadManager.getInstance().setPreloadStrategy(new SimplePreloadStrategy());
         mAdapter = new BaseAdapter<VideoItem>(new ArrayList<>()) {
             @Override
             public int getLayoutId(final int viewType) {
@@ -122,8 +156,26 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
             if (videoItems != null && videoItems.size() > 0) {
                 mAdapter.addAll(videoItems);
                 PreloadManager.getInstance().videoListUpdate(videoItems);
+                setStrategySources(videoItems);
             }
         });
+    }
+
+    private void setStrategySources(final List<VideoItem> videoItems) {
+        String encodeType = VodApp.getClientSettings().videoEnableH265()
+                ? TTVideoEngine.CODEC_TYPE_h265 : TTVideoEngine.CODEC_TYPE_H264;
+        List<StrategySource> sources = new ArrayList<>();
+        for (VideoItem videoItem : videoItems) {
+            StrategySource vidSource = new VidPlayAuthTokenSource.Builder()
+                    .setVid(videoItem.getVid())
+                    .setPlayAuthToken(videoItem.getAuthToken())
+                    .setEncodeType(encodeType)
+                    .build();
+            sources.add(vidSource);
+        }
+        // VOD key step Strategy PreRender 2: set sources
+        // VOD key step Strategy Preload 2: set sources
+        TTVideoEngine.setStrategySources(sources);
     }
 
     @Override

@@ -15,7 +15,12 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
+        maven {
+            // VOD key step integrated 6: volc public maven repo
+            url "https://artifact.bytedance.com/repository/Volcengine/"
+        }
     }
 }
 

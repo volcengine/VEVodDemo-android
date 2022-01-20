@@ -83,6 +83,14 @@
     <string name="disable_add_license">Disable Add License On App Startup</string>
     <string name="disable_add_license_key" translatable="false">add_license_enabled_key</string>
 
+    <string name="setting_engine_strategy">Engine Strategy(Need Restart App)</string>
+    <string name="enable_common_strategy">Enable Common Strategy</string>
+    <string name="enable_preload_strategy">Enable Preload Strategy</string>
+    <string name="enable_pre_render_strategy">Enable PreRender Strategy</string>
+    <string name="enable_common_strategy_key">enable_common_strategy_key</string>
+    <string name="enable_preload_strategy_key">enable_preload_strategy_key</string>
+    <string name="enable_pre_render_strategy_key">enable_pre_render_strategy_key</string>
+
     <string name="set_enable_manual_video_hardware_decode">Manual Video Hardware Decode</string>
     <string name="set_enable_manual_video_hardware_decode_key" translatable="false">set_enable_manual_video_hardware_decode_key</string>
     <string name="set_video_hardware_decode">Video Hardware Decode</string>

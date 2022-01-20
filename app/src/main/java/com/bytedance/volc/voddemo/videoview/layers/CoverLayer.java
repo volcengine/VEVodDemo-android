@@ -36,10 +36,12 @@ public class CoverLayer extends BaseVideoLayer {
     private static final String TAG = "CoverLayer";
 
     private ImageView mCoverView;
+    private boolean mShowCoverWhenRefresh;
 
     private final ArrayList<Integer> mSupportEvents = new ArrayList<Integer>() {
         {
             add(IVideoLayerEvent.VIDEO_LAYER_EVENT_RENDER_START);
+            add(IVideoLayerEvent.VIDEO_LAYER_EVENT_NEED_COVER);
         }
     };
 
@@ -57,7 +59,11 @@ public class CoverLayer extends BaseVideoLayer {
 
     @Override
     public void refresh() {
-        show();
+        if (mShowCoverWhenRefresh) {
+            show();
+        } else {
+            UIUtils.setViewVisibility(mCoverView, View.GONE);
+        }
     }
 
     @NonNull
@@ -71,6 +77,9 @@ public class CoverLayer extends BaseVideoLayer {
         switch (event.getType()) {
             case IVideoLayerEvent.VIDEO_LAYER_EVENT_RENDER_START:
                 hide();
+                break;
+            case IVideoLayerEvent.VIDEO_LAYER_EVENT_NEED_COVER:
+                show();
                 break;
             default:
                 break;
