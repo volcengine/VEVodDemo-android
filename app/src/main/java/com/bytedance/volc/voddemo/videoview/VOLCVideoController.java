@@ -42,6 +42,7 @@ import java.util.List;
 import static com.bytedance.volc.voddemo.utils.ThreadUtils.runOnWorkThread;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG;
+import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE;
 
 public class VOLCVideoController implements VideoController, VideoInfoListener {
@@ -349,6 +350,7 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         }
 
         if (mVideoEngine != null) {
+            mVideoPlayListener.onNeedCover();
             mVideoEngine.setSurface(mSurface);
             if (mPlayAfterSurfaceValid) {
                 mVideoEngine.play();
@@ -427,6 +429,10 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         if (settings.enableManualVideoHW()) {
             engine.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABEL_HARDWARE_DECODE,
                     settings.enableVideoHW() ? 1 : 0);
+        }
+        if (settings.enableStrategyPreRender()) {
+            // VOD key step Strategy PreRender instead of cover 1: use TEXTURE_RENDER
+            engine.setIntOption(PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
         }
         // Loop Playback
         engine.setLooping(true);

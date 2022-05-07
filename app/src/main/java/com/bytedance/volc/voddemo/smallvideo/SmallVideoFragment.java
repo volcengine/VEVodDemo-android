@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.bytedance.volc.voddemo.data.VideoItem.VIDEO_TYPE_SMALL;
-import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_COMMON;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
@@ -96,8 +95,6 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
                     STRATEGY_SCENE_SMALL_VIDEO);
             // VOD key step Strategy PreRender 3: set listener
             TTVideoEngine.setEngineStrategyListener(ttVideoEngine -> {
-                // VOD key step Strategy PreRender instead of cover 1: use TEXTURE_RENDER
-                ttVideoEngine.setIntOption(PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
                 // VOD key step Strategy PreRender 4: config preRender engine
                 VOLCVideoController.configEngine(ttVideoEngine);
             });
@@ -117,7 +114,9 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
                 videoView.setVideoController(new VOLCVideoController(videoView.getContext(), data,
                         videoView));
 
-                videoView.setDisplayMode(DisplayMode.DISPLAY_MODE_ASPECT_FIT);
+                if (!settings.enableStrategyPreRender()) {
+                    videoView.setDisplayMode(DisplayMode.DISPLAY_MODE_ASPECT_FIT);
+                }
 
                 videoView.addLayer(new CoverLayer());
                 videoView.addLayer(new DebugLayer());
