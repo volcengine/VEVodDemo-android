@@ -40,10 +40,6 @@ public class ClientSettings {
         List<SettingItem> settings = new ArrayList<>();
 
         settings.add(new TitleSettingItem(mContext.getString(R.string.setting_engine_strategy)));
-        settings.add(new BoolSettingItem(mContext.getString(R.string.enable_common_strategy),
-                getBool(R.string.enable_common_strategy_key, true), f -> {
-            setBool(R.string.enable_common_strategy_key, f);
-        }));
         settings.add(new BoolSettingItem(mContext.getString(R.string.enable_preload_strategy),
                 getBool(R.string.enable_preload_strategy_key, true), f -> {
             setBool(R.string.enable_preload_strategy_key, f);
@@ -76,16 +72,6 @@ public class ClientSettings {
                 getBool(R.string.set_enable_preload_key, true),
                 aBoolean -> setBool(R.string.set_enable_preload_key, aBoolean)));
 
-        settings.add(new BoolSettingItem(mContext.getString(R.string.set_engine_enable_uploadlog),
-                getBool(R.string.set_engine_enable_uploadlog_key, true), aBoolean -> {
-            setBool(R.string.set_engine_enable_uploadlog_key, aBoolean);
-        }));
-
-        settings.add(new BoolSettingItem(mContext.getString(R.string.set_mdl_enable_uploadlog),
-                getBool(R.string.set_mdl_enable_uploadlog_key, true), aBoolean -> {
-            setBool(R.string.set_mdl_enable_uploadlog_key, aBoolean);
-        }));
-
         return settings;
     }
 
@@ -101,14 +87,6 @@ public class ClientSettings {
         return getBool(R.string.set_video_enable_H265_key, true);
     }
 
-    public boolean engineEnableUploadLog() {
-        return getBool(R.string.set_engine_enable_uploadlog_key, true);
-    }
-
-    public boolean mdlEnableUploadLog() {
-        return getBool(R.string.set_mdl_enable_uploadlog_key, true);
-    }
-
     public boolean enablePreload() {
         return getBool(R.string.set_enable_preload_key, true);
     }
@@ -119,10 +97,6 @@ public class ClientSettings {
 
     public boolean enableVideoHW() {
         return getBool(R.string.set_video_hardware_decode_key, false);
-    }
-
-    public boolean enableStrategyCommon() {
-        return getBool(R.string.enable_common_strategy_key, true);
     }
 
     public boolean enableStrategyPreload() {

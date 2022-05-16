@@ -440,9 +440,6 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
             // open debug log
             engine.setIntOption(PLAYER_OPTION_OUTPUT_LOG, 1);
         }
-        // enable key message upload：default is enable
-        engine.setReportLogEnable(settings.engineEnableUploadLog());
-        DataLoaderHelper.getDataLoader().setReportLogEnable(settings.mdlEnableUploadLog());
         // set resolution
         engine.configResolution(PreloadStrategy.START_PLAY_RESOLUTION);
     }
