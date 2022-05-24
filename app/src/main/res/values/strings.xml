@@ -84,10 +84,8 @@
     <string name="disable_add_license_key" translatable="false">add_license_enabled_key</string>
 
     <string name="setting_engine_strategy">Engine Strategy(Need Restart App)</string>
-    <string name="enable_common_strategy">Enable Common Strategy</string>
     <string name="enable_preload_strategy">Enable Preload Strategy</string>
     <string name="enable_pre_render_strategy">Enable PreRender Strategy</string>
-    <string name="enable_common_strategy_key">enable_common_strategy_key</string>
     <string name="enable_preload_strategy_key">enable_preload_strategy_key</string>
     <string name="enable_pre_render_strategy_key">enable_pre_render_strategy_key</string>
 
@@ -131,12 +129,6 @@
 
     <string name="set_enable_barrage_mask">Enable Barrage Mask</string>
     <string name="set_enable_barrage_mask_key" translatable="false">set_enable_barrage_mask_key</string>
-
-    <string name="set_engine_enable_uploadlog">Enable TTVideoEngine UploadLog</string>
-    <string name="set_engine_enable_uploadlog_key" translatable="false">set_engine_enable_uploadlog_key</string>
-
-    <string name="set_mdl_enable_uploadlog">Enable MDL UploadLog</string>
-    <string name="set_mdl_enable_uploadlog_key" translatable="false">set_mdl_enable_uploadlog_key</string>
 
     <string name="device_id">device ID</string>
     <string name="did">did</string>
