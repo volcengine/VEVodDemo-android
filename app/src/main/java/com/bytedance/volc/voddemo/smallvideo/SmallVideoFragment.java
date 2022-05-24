@@ -47,13 +47,13 @@ import com.bytedance.volc.voddemo.smallvideo.pager.PagerLayoutManager;
 import com.bytedance.volc.voddemo.smallvideo.pager.RecyclerViewPagerListener;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.strategy.EngineStrategyListener;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.bytedance.volc.voddemo.data.VideoItem.VIDEO_TYPE_SMALL;
-import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_COMMON;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
@@ -78,11 +78,6 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
         super.onCreate(savedInstanceState);
         ClientSettings settings = VodApp.getClientSettings();
 
-        if (settings.enableStrategyCommon()) {
-            // VOD key step Strategy Common: enable
-            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_COMMON, STRATEGY_SCENE_SMALL_VIDEO);
-        }
-
         if (settings.enableStrategyPreload()) {
             // VOD key step Strategy Preload 1: enable
             TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
@@ -95,11 +90,12 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
             TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER,
                     STRATEGY_SCENE_SMALL_VIDEO);
             // VOD key step Strategy PreRender 3: set listener
-            TTVideoEngine.setEngineStrategyListener(ttVideoEngine -> {
-                // VOD key step Strategy PreRender instead of cover 1: use TEXTURE_RENDER
-                ttVideoEngine.setIntOption(PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
-                // VOD key step Strategy PreRender 4: config preRender engine
-                VOLCVideoController.configEngine(ttVideoEngine);
+            TTVideoEngine.setEngineStrategyListener(new EngineStrategyListener() {
+                @Override
+                public void onPreRenderEngineCreated(final TTVideoEngine engine) {
+                    // VOD key step Strategy PreRender 4: config preRender engine
+                    VOLCVideoController.configEngine(engine);
+                }
             });
         }
 
@@ -117,7 +113,10 @@ public class SmallVideoFragment extends Fragment implements RecyclerViewPagerLis
                 videoView.setVideoController(new VOLCVideoController(videoView.getContext(), data,
                         videoView));
 
-                videoView.setDisplayMode(DisplayMode.DISPLAY_MODE_ASPECT_FIT);
+                // DisplayMode is not required when using PLAYER_OPTION_USE_TEXTURE_RENDER
+                if (!settings.enableStrategyPreRender()) {
+                    videoView.setDisplayMode(DisplayMode.DISPLAY_MODE_ASPECT_FIT);
+                }
 
                 videoView.addLayer(new CoverLayer());
                 videoView.addLayer(new DebugLayer());

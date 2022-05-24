@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // VOD key step init 6: Request app permissions
+        // VOD key step init 3: Request app permissions
         requestPermissions();
 
         if (savedInstanceState == null) {

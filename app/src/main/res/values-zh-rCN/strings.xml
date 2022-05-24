@@ -53,7 +53,6 @@
     <string name="mdl_setting">MDL 设置</string>
 
     <string name="setting_engine_strategy">Engine 策略（重启生效）</string>
-    <string name="enable_common_strategy">开启通用策略</string>
     <string name="enable_preload_strategy">开启预加载策略</string>
     <string name="enable_pre_render_strategy">开启预渲染策略</string>
 
@@ -81,9 +80,7 @@
     <string name="set_video_enable_drm">开启 DRM</string>
     <string name="set_video_enable_bash">开启 BASH</string>
     <string name="test_module">测试工具</string>
-    <string name="set_engine_enable_uploadlog">开启 TTVideoEngine 埋点上报</string>
     <string name="device_id_get">点击获取</string>
-    <string name="set_mdl_enable_uploadlog">开启 MDL 埋点上报</string>
     <string name="clean_mdl_cache">清除 MDL 缓存</string>
     <string name="set_mdl_cache_size">MDL 缓存容量大小</string>
     <string name="setting_open_api">OpenApi 设置</string>

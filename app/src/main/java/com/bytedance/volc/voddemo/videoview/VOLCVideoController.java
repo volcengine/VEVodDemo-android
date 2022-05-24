@@ -39,8 +39,10 @@ import com.ss.ttvideoengine.utils.Error;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 import java.util.List;
 
+import static com.bytedance.volc.voddemo.utils.ThreadUtils.runOnWorkThread;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG;
+import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER;
 import static com.ss.ttvideoengine.TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE;
 
 public class VOLCVideoController implements VideoController, VideoInfoListener {
@@ -185,7 +187,7 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
                 .setPlayAuthToken(mVideoItem.getAuthToken())
                 .setEncodeType(encodeType)
                 .build();
-        this.mVideoPlayListener = listener;
+        this.mVideoPlayListener = new UiThreadVideoPlayListener(listener);
     }
 
     private void initEngine() {
@@ -226,6 +228,10 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
     }
 
     public void play() {
+        runOnWorkThread(this::doPlay);
+    }
+
+    private void doPlay() {
         initEngine();
 
         if (mSurface != null && mSurface.isValid()) {
@@ -239,12 +245,20 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
     }
 
     public void pause() {
+        runOnWorkThread(this::doPause);
+    }
+
+    private void doPause() {
         if (mVideoEngine != null) {
             mVideoEngine.pause();
         }
     }
 
     public void release() {
+        runOnWorkThread(this::doRelease);
+    }
+
+    private void doRelease() {
         if (mVideoEngine == null) {
             return;
         }
@@ -264,6 +278,10 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
 
     @Override
     public void mute() {
+        runOnWorkThread(this::doMute);
+    }
+
+    private void doMute() {
         if (mVideoEngine != null) {
             mVideoEngine.setIsMute(true);
         }
@@ -318,6 +336,10 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
     }
 
     public void setSurface(Surface surface) {
+        runOnWorkThread(() -> doSetSurface(surface));
+    }
+
+    private void doSetSurface(Surface surface) {
         mSurface = surface;
         if (mSurface == null || !mSurface.isValid()) {
             mSurface = null;
@@ -328,6 +350,7 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
         }
 
         if (mVideoEngine != null) {
+            mVideoPlayListener.onNeedCover();
             mVideoEngine.setSurface(mSurface);
             if (mPlayAfterSurfaceValid) {
                 mVideoEngine.play();
@@ -372,6 +395,10 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
     }
 
     public void seekTo(int msec) {
+        runOnWorkThread(() -> doSeekTo(msec));
+    }
+
+    private void doSeekTo(int msec) {
         if (mVideoEngine == null) {
             return;
         }
@@ -403,15 +430,16 @@ public class VOLCVideoController implements VideoController, VideoInfoListener {
             engine.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABEL_HARDWARE_DECODE,
                     settings.enableVideoHW() ? 1 : 0);
         }
+        if (settings.enableStrategyPreRender()) {
+            // VOD key step Strategy PreRender instead of cover 1: use TEXTURE_RENDER
+            engine.setIntOption(PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
+        }
         // Loop Playback
         engine.setLooping(true);
         if (BuildConfig.DEBUG) {
             // open debug log
             engine.setIntOption(PLAYER_OPTION_OUTPUT_LOG, 1);
         }
-        // enable key message upload：default is enable
-        engine.setReportLogEnable(settings.engineEnableUploadLog());
-        DataLoaderHelper.getDataLoader().setReportLogEnable(settings.mdlEnableUploadLog());
         // set resolution
         engine.configResolution(PreloadStrategy.START_PLAY_RESOLUTION);
     }

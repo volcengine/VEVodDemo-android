@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bytedance.applog.AppLog;
 import com.bytedance.volc.voddemo.R;
 import com.bytedance.volc.voddemo.VodApp;
+import com.pandora.common.applog.AppLogWrapper;
 import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class SettingActivity extends AppCompatActivity {
         TextView tvDid = findViewById(R.id.tv_did);
         findViewById(R.id.bt_getDid).setOnClickListener(v -> {
             rlDid.setVisibility(View.VISIBLE);
-            final String did = AppLog.getDid();
+            final String did = AppLogWrapper.getDid();
             TTVideoEngineLog.d(TAG, "did " + did);
             tvDid.setText(did);
         });
