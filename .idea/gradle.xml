@@ -4,18 +4,25 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="testRunner" value="PLATFORM" />
+        <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="1.8 (2)" />
+        <option name="gradleJvm" value="1.8" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/vod-demo" />
+            <option value="$PROJECT_DIR$/vod-demo-api" />
+            <option value="$PROJECT_DIR$/vod-playerkit" />
+            <option value="$PROJECT_DIR$/vod-playerkit/vod-player" />
+            <option value="$PROJECT_DIR$/vod-playerkit/vod-player-ui" />
+            <option value="$PROJECT_DIR$/vod-playerkit/vod-player-utils" />
+            <option value="$PROJECT_DIR$/vod-playerkit/vod-player-volcengine" />
+            <option value="$PROJECT_DIR$/vod-scenekit" />
+            <option value="$PROJECT_DIR$/vod-settingskit" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
-        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>

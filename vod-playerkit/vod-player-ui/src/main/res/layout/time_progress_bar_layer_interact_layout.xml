@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2021 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2021/12/3
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="44dp"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:id="@+id/likeContainer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <ImageView
+                android:id="@+id/likeIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_centerInParent="true"
+                android:scaleType="centerInside"
+                android:src="@drawable/time_progress_bar_layer_fullscreen_interact_like_num" />
+
+            <TextView
+                android:id="@+id/likeNum"
+                android:layout_width="wrap_content"
+                android:layout_height="12dp"
+                android:layout_below="@id/likeIcon"
+                android:layout_alignLeft="@+id/likeIcon"
+                android:layout_gravity="left|bottom"
+                android:layout_marginBottom="9dp"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:translationX="12dp"
+                android:translationY="-14dp"
+                tools:text="11111111" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/commentContainer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="24dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <ImageView
+                android:id="@+id/commentIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_centerInParent="true"
+                android:scaleType="centerInside"
+                android:src="@drawable/time_progress_bar_layer_fullscreen_interact_comment_num" />
+
+            <TextView
+                android:id="@+id/commentNum"
+                android:layout_width="wrap_content"
+                android:layout_height="12dp"
+                android:layout_below="@id/commentIcon"
+                android:layout_alignLeft="@+id/commentIcon"
+                android:layout_gravity="left|bottom"
+                android:layout_marginBottom="9dp"
+                android:maxLines="1"
+                android:padding="0dp"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:translationX="12dp"
+                android:translationY="-14dp"
+                tools:text="11111111" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/danmakuContainer"
+            android:layout_width="160dp"
+            android:layout_height="36dp"
+            android:layout_marginLeft="24dp"
+            android:background="#29FFFFFF"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/danmakuIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/time_progress_bar_layer_danmaku_on" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="@string/time_progress_send_danmaku"
+                android:textColor="#A3FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_alignParentRight="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/subtitleContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="4dp"
+                android:src="@drawable/time_progress_bar_layer_fullscreen_interact_subtitle_closed" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:text="@string/time_progress_subtitle"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/speedContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="4dp"
+                android:src="@drawable/time_progress_bar_layer_fullscreen_interact_speed" />
+
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                tools:text="倍速" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qualityContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_marginRight="10dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="4dp"
+                android:src="@drawable/time_progress_bar_layer_fullscreen_interact_quality" />
+
+            <TextView
+                android:id="@+id/quality"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:gravity="center_vertical"
+                android:padding="0dp"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                tools:text="1080P" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>
