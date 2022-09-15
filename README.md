@@ -49,6 +49,11 @@ cd VEVodDemo-android
 
 暂不接受 PullRequests。
 
+# 火山引擎点播 SDK 官网文档
+- [集成准备](https://www.volcengine.com/docs/4/65774)
+- [快速开始](https://www.volcengine.com/docs/4/112130)
+- [ChangeLog](https://www.volcengine.com/docs/4/66437)
+
 # License
 
 ```text
