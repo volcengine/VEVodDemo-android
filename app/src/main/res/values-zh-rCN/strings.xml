@@ -1,101 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2021 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2021/12/28
+  -->
+
 <resources>
     <string name="app_name">视频点播</string>
-    <string name="solutions">体验一站式视频点播解决方案</string>
-
-    <string name="small_video">小视频</string>
-    <string name="long_video">长视频</string>
-    <string name="short_video">短视频</string>
-    <string name="record_video">视频录制</string>
-    <string name="edit_video">视频编辑</string>
-    <string name="home">首页</string>
-    <string name="mine">我</string>
-    <string name="ok">确认</string>
-
-
-    <string name="api_request_failed">请求数据失败</string>
-    <string name="speed">倍速</string>
-    <string name="download">下载</string>
-    <string name="debug">调试</string>
-    <string name="radio_mode">音频模式</string>
-    <string name="danmaku_mask">蒙版弹幕</string>
-    <string name="player_volume">播放器音量</string>
-
-    <string name="start_download">开始下载</string>
-
-    <string name="select_all">全选</string>
-    <string name="delete">删除</string>
-    <string name="video_details">视频详情 内容介绍，内容省略</string>
-
-    <string name="user_name">字节云</string>
-    <string name="user_sign">追求极致~</string>
-    <string name="watched_history">观看历史</string>
-    <string name="cached_videos">缓存视频</string>
-    <string name="settings">设置</string>
-    <string name="settings_all">进入设置 ></string>
-    <string name="edit">编辑</string>
-    <string name="cancel">取消</string>
-    <string name="watched">已观看</string>
-    <string name="not_watched">未观看</string>
-
-    <string name="all">全部 ></string>
-    <string name="suggest_list">今日推荐</string>
-    <string name="all_movies">电视剧</string>
-    <string name="mask_danmaku">蒙版弹幕示例</string>
-
-    <string name="short_video_settings">短视频设置</string>
-    <string name="long_video_settings">长视频设置</string>
-
-    <string name="setting_decode">解码器设置</string>
-    <string name="setting_player">播放设置</string>
-    <string name="setting_format">格式设置</string>
-    <string name="engine_setting">TTVideoEngine 设置</string>
-    <string name="mdl_setting">MDL 设置</string>
-
-    <string name="setting_engine_strategy">Engine 策略（重启生效）</string>
-    <string name="enable_preload_strategy">开启预加载策略</string>
-    <string name="enable_pre_render_strategy">开启预渲染策略</string>
-
-    <string name="set_enable_manual_video_hardware_decode">手动控制视频硬解</string>
-    <string name="set_video_hardware_decode">视频硬解码</string>
-    <string name="set_video_loop">循环播放</string>
-    <string name="set_video_enable_dash">开启 Dash</string>
-    <string name="set_video_enable_H265">开启 H265</string>
-    <string name="set_enable_preload">预加载</string>
-    <string name="set_video_disable_start_accurate_seek">关闭启播精准seek</string>
-    <string name="set_enable_barrage_mask">开启蒙版弹幕</string>
-    <string name="choose_in_list">选择[%s]配置值</string>
-    <string name="un_select_all">取消全选</string>
-    <string name="replay">重播</string>
-    <string name="video_load_fail">视频加载失败</string>
-    <string name="click_to_retry">点击重试</string>
-    <string name="download_succeed">下载成功</string>
-    <string name="already_downloaded">已经下载完成</string>
-    <string name="download_paused">暂停下载</string>
-    <string name="downloading">下载中</string>
-    <string name="download_finished">下载完成</string>
-    <string name="goto_details">查看详情</string>
-    <string name="enable_user_settings">开启自定义 Settings</string>
-    <string name="set_video_enable_hls">开启 HLS</string>
-    <string name="set_video_enable_drm">开启 DRM</string>
-    <string name="set_video_enable_bash">开启 BASH</string>
-    <string name="test_module">测试工具</string>
-    <string name="device_id_get">点击获取</string>
-    <string name="clean_mdl_cache">清除 MDL 缓存</string>
-    <string name="set_mdl_cache_size">MDL 缓存容量大小</string>
-    <string name="setting_open_api">OpenApi 设置</string>
-    <string name="setting_app">客户端设置</string>
-    <string name="enable_open_api_2">开启 OpenApi 2.0</string>
-    <string name="setting_app_startup">应用启动初始化设置</string>
-    <string name="disable_add_license">关闭应用启动加载 License</string>
-
-    <string name="error_input">输入错误</string>
-    <string name="set_audio_hardware_decode">音频硬解码</string>
-    <string name="set_mdl_enable_custom_httpdns">开启 MDL 自定义 HttpDNS</string>
-    <string name="set_video_enable_H265_playauthtoken">开启 PlayAuthToken 签入 H265(OpenApi2.0 Only)</string>
-    <string name="set_enable_pcdn">开启 PCDN</string>
-    <string name="enable_byte_vod_sdk_async_init"> 开启子线程初始化点播SDK </string>
-
-    <string name="press_again_to_exit">再按一次退出</string>
-    <string name="invalid_cache_path">缓存路径无效</string>
 </resources>

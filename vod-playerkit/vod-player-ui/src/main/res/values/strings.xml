@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2021 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2021/12/29
+  -->
+
+<resources>
+    <string name="time_progress_bar_speed">Speed</string>
+    <string name="tips_sync_start_time">Watched at %1$s last time, continue playback.</string>
+    <string name="play_error_text">Playback Error</string>
+    <string name="play_complete_replay">Replay</string>
+    <string name="more_dialog_item_share">Share</string>
+    <string name="more_dialog_item_collect">Star</string>
+    <string name="more_dialog_item_download">Download</string>
+    <string name="more_dialog_item_danmaku">Danmaku settings</string>
+    <string name="more_dialog_item_full_width">Aspect Fill</string>
+    <string name="more_dialog_item_audio_mode">Audio only</string>
+    <string name="more_dialog_item_play_background">Background playback</string>
+    <string name="more_dialog_item_timer">Timer stop</string>
+    <string name="more_dialog_item_assist_func">Assist functions</string>
+    <string name="more_dialog_item_not_interested">Not interested</string>
+    <string name="more_dialog_item_feedback">Feedback</string>
+    <string name="more_dialog_item_report">Report</string>
+    <string name="quality_select_title">Quality Select</string>
+    <string name="speed_select_dialog_title">Speed Select</string>
+    <string name="speed_select_default">(Default)</string>
+    <string name="quality_select_tips_will_switch">Definition is being switched to %1$s</string>
+    <string name="quality_select_tips_switched">%1$s has been switched success</string>
+    <string name="more_dialog_item_noloop">No loop</string>
+    <string name="more_dialog_item_loop">Loop</string>
+    <string name="time_progress_subtitle">字幕</string>
+    <string name="time_progress_send_danmaku">发送弹幕</string>
+    <string name="more_dialog_category_loop_mode">循环模式</string>
+    <string name="media_seek_bar_text2">00:00</string>
+    <string name="media_seekbar_text1">00:00</string>
+</resources>

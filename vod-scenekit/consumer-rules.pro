@@ -1,0 +1,1 @@
+-keep class com.bytedance.volc.vod.scenekit.**{*;}
