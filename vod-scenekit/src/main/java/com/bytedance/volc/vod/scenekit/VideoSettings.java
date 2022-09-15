@@ -153,7 +153,7 @@ public class VideoSettings {
                         "短视频账号",
                         Option.STRATEGY_IMMEDIATELY,
                         String.class,
-                        "small-video",
+                        "short-video",
                         null)));
 
         settings.add(SettingItem.createOptionItem(CATEGORY_SHORT_VIDEO,
@@ -189,7 +189,7 @@ public class VideoSettings {
                         "中视频账号",
                         Option.STRATEGY_IMMEDIATELY,
                         String.class,
-                        "small-video",
+                        "feedvideo",
                         null)));
         settings.add(SettingItem.createOptionItem(CATEGORY_FEED_VIDEO,
                 new Option(
@@ -213,7 +213,7 @@ public class VideoSettings {
                         "长视频账号",
                         Option.STRATEGY_IMMEDIATELY,
                         String.class,
-                        "small-video",
+                        "long-video",
                         null)));
     }
 
