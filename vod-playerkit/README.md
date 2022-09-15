@@ -1,6 +1,29 @@
 # 播放控件层接入
 
-playerkit 是开源的，可以 copy 或 link 到项目中使用，根据需要进行源码修改。
+播放控件层（PlayerKit）是火山引擎开源的播放器 UI 控件，主要功能如下：
+
+1. 封装了[火山引擎播放器 SDK](https://www.volcengine.com/docs/4/65774)，屏蔽了播放器的使用细节。
+2. 提供了 VideoView 控件，使用者只需要关注 View 层的实现即可。
+3. 基于 VideoView 提供了播放界面浮层管理，方便基于 VideoLayer 实现灵活、可复用的播放 UI。
+4. 集成了默认风格的播放界面，帮助快速搭建播放场景。（可选）
+
+## PlayerKit 目录结构
+
+```text
+|--config                     // gradle 配置目录
+|--vod-playerkit              // 播放控件层根目录
+|--|--vod-player              // 播放器适配层（定义了一套标准播放器接口）
+|--|--vod-player-volcengine   // 火山引擎播放器实现模块
+|--|--vod-player-utils        // 工具类模块
+|--|--vod-player-ui           // 控件层内置的默认风格的业务 ui 模块
+```
+
+| 模块 | 描述 |是否必须 | 介绍 |
+| :---- | :---- | :---- | :---- |
+| vod-player | 播放器适配层模块 | 必须 | 1. 定义了控件层播放器的标准接口，方便适配各种播放器。<br>2. 封装了VideoView 和 VideoLayer，方便客户基于 VideoLayer 实现灵活/高复用的播放UI。<br>3. 封装了 PlaybackController 把一次播放 Session 开始/结束时 Player/VideoView/MediaSource 的相互调用关系串起来。 |
+| vod-player-volcengine | 火山引擎播放器实现模块 | 必须 | 1. 用播件层的播放器接口，实现了火山引擎播放器.<br>2. 封装了火山引擎播放器初始化模块，方便业务快速集成。火山引擎播放器 [官方文档](https://www.volcengine.com/docs/4/52) |
+| vod-player-util | 工具类模块 | 必须 | 各模块需要的常见工具类如 logcat 输出等 |
+| vod-player-ui | 默认风格的业务 ui 模块 | 非必须 | 基于 VideoLayer 系统，参考西瓜/抖音播放界面风格实现了一些默认的 UI 来帮助业务快速集成。若默认风格不满足需求，可以随意修改源码。|
 
 ## PlayerKit 集成
 
@@ -9,83 +32,75 @@ playerkit 是开源的，可以 copy 或 link 到项目中使用，根据需要�
 ```shell
 git clone https://github.com/volcengine/VEVodDemo-android
 cd VEVodDemo-android
-git checkout feature/playerkit/dev
 ```
 
-2. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了 mavenCentral() 和 火山引擎maven 服务。
+2. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了`google`、`mavenCentral()` 和 `火山引擎 maven` 服务。
 
 ```groovy
 allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven {
-            url "https://artifact.bytedance.com/repository/Volcengine/" // volc public maven repo
+            url "https://artifact.bytedance.com/repository/Volcengine/" // 火山引擎 maven 服务
         }
     }
 }
 ```
 
-3. 在 settings.gradle 中引入 playerkit 模块
+3. 拷贝控件层模块
+
+拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
+
+```text
+config
+vod-playerkit
+```
+
+4. 在 settings.gradle 中引入 PlayerKit 模块
 
 ```groovy
 include ':app'
 
-gradle.ext.playerKitModulePrefix = 'vod-playerkit:'
-// 这里示例 playerkit app 同级目录的 case。 您需要根据 VEVodDemo-android 的 clone 路径来调整这里的路径
-// 或者将 playerkit 目录拷贝到项目中，采用下面的路径集成
-apply from: new File(getRootDir(), 'vod-playerkit/config/library_settings.gradle')
+gradle.ext.playerKitModulePrefix = 'volc-' // 可选配置。若想给引入的 module 添加前缀增加辨识度可以配置。
+// 这里示例 vod-playerkit 和 app 同级目录的 case。 
+// 若不想把 vod-playerkit 拷贝到自己的工程目录也可以，调整下面的引入路径即可。
+apply from: file("config/vod_playerkit_library_settings.gradle")
 ```
 
-4. 在 App module 的 build.gradle 中引入 playerkit 依赖
+5. 在 App module 的 build.gradle 中引入 PlayerKit 依赖
 
 ```groovy
+// 在 app 的 build.gradle 文件添加 Java 8 支持
+android {
+    // ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
 dependencies {
-    implementation project(":${gradle.ext.playerKitModulePrefix}flavor:flavor-volc-ui")
+    // 若配置了模块前缀为 volc-，则引入子模块需要以 volc- 作为前缀。没配置则不用。
+    api project(":volc-vod-playerkit:vod-player")
+    api project(":volc-vod-playerkit:vod-player-utils")
+    api project(":volc-vod-playerkit:vod-player-volcengine")
+    api project(":volc-vod-playerkit:vod-player-ui")
 }
 ```
 
-5. sync 一下 gradle，完成集成.
-   <img src="doc/res/image/img.png" width="200">
+6. App 权限及混淆规则配置
+- 点播 SDK 应用权限、混淆规则参考： [集成准备](https://www.volcengine.com/docs/4/65774)
+- 场景控件无新增权限，混淆规则已配置在 `consumer-rules.pro` 使用方无需关心
 
-## PlayerKit 模块说明
+7. sync 一下 gradle，AndroidStudio 中 vod-playerkit 模块正确引入，并没有报错则完成集成.
 
-```text
-|--|--vod-playerkit             // 火山引擎点播 SDK 播放控件层 SDK
-|--|--|--config                 // 控件层 gradle 配置目录
-|--|--|--core
-|--|--|--|--player-volcengine   // 火山引擎播放器实现模块
-|--|--|--flavor
-|--|--|--|--flavor-basic        // 包含：播放器适配层
-|--|--|--|--flavor-volc         // 包含：播放器适配层 + 火山引擎播放器内核实现（player-volcengine）
-|--|--|--|--flavor-volc-ui      // 包含：播放器适配层 + 火山引擎播放器内核实现（player-volcengine） + 控件层内置的默认风格的业务 ui 模块（player-ui）
-|--|--|--library
-|--|--|--|--player              // 播放器适配层（定义了一套标准播放器接口）
-|--|--|--|--player-playback     // 播放流程控制模块
-|--|--|--|--player-settings     // 播放器 options 配置模块
-|--|--|--|--player-utils        // 工具类模块
-|--|--|--ui
-|--|--|--|--player-ui           // 控件层内置的默认风格的业务 ui 模块
-```
-
-| 模块 | 描述 |  |
-| ---- | ---- | ---- |
-| :ui:player-ui | 默认风格的业务 ui 模块 | 我们基于播放控件层 Layer 系统，参考西瓜/抖音播放界面风格实现了一些默认的 UI 来帮助业务快速集成。若默认风格不满足需求，可以随意修改源码。|
-| :core:player-volcengine | 火山引擎播放器实现模块  | 1. 用播件层的播放器接口，实现了火山引擎播放器.2. 封装了火山引擎播放器初始化模块，方便业务快速集成。火山引擎播放器 [官方文档](https://www.volcengine.com/docs/4/52) |
-| :library:player-settings | 播放器 options 配置模块 | 方便业务在 App 中调整播放器配置                              |
-| :library:player-playback | 播放流程控制模块 | 1. 封装了VideoView 和 VideoLayer，方便客户基于 VideoLayer 实现灵活/高复用的播放UI。2. 封装了 PlaybackController 把一次播放 Session 开始/结束时 Player/VideoView/MediaSource 的相互调用关系串起来。 |
-| :library:player | 播放器适配层模块 | 定义了控件层播放器的标准接口，方便适配各种播放器。 |
-| :library:player-util | 工具类模块 | 各模块需要的常见工具类如 logcat 输出等 |
+<img src="../doc/res/image/project_include_vod_playerkit.png" width="400">
 
 ## PlayerKit 快速开始
 
-下面用一个简单的例子快速展示 playerkit 的使用方式。完成后即可完成类似西瓜视频单个视频的播放界面，包含各种播放相关功能。 在完成 playerkit 的集成后，以下代码可以直接 copy
+下面用一个简单的例子快速展示 PlayerKit 的使用方式。完成后即可完成类似西瓜视频单个视频的播放界面，包含各种播放相关功能。 在完成 PlayerKit 的集成后，以下代码可以直接 copy
 到工程中使用。
-
-<video width="720" height="1280" controls>
-    <source src="movie.mp4" type="doc/res/video/quick_start_demo.mp4">
-</video>
 
 1. 初始化 SDK
 
@@ -101,21 +116,21 @@ public class App extends Application {
         L.ENABLE_LOG = true; // 控件层 logcat 开关
 
         VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
-                .setAppId("229234")
-                .setAppName("VOLCVodDemo")
+                .setAppId("your app id")
+                .setAppName("your app English name")
                 .setAppRegion("china")
-                .setAppChannel("github_channel")
+                .setAppChannel("your app channel")
                 .setAppVersion(BuildConfig.VERSION_NAME)
-                .setLicenseUri("assets:///license2/volc_vod_demo_license2.lic")
+                .setLicenseUri("your license assets path")
                 .build();
         VolcPlayerInit.init(this, appInfo);
     }
 }
 ```
 
-* 初始化需要的 APP_ID / LicenseUri 信息请登陆火山引擎点播控制台获取,
-  参考官方文档: [管理应用](https://www.volcengine.com/docs/4/65772)
 * VolcPlayerInit 中实现了 [快速开始](https://www.volcengine.com/docs/4/65783) 中初始化部分，只需要传入相关初始化参数即可。
+* 初始化需要的 appId/appName/licenseUri 等信息请登陆火山引擎点播控制台获取,
+  参考官方文档: [管理应用](https://www.volcengine.com/docs/4/65772)
 
 2. 使用 VideoView 进行播放
 
@@ -124,13 +139,13 @@ public class App extends Application {
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="match_parent" 
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <com.bytedance.playerkit.player.playback.VideoView
+    <com.bytedance.playerkit.player.playback.VideoView 
         android:id="@+id/videoView"
-        android:layout_width="match_parent"
+        android:layout_width="match_parent" 
         android:layout_height="match_parent" />
 
 </FrameLayout>
@@ -143,6 +158,11 @@ public class SimpleVideoActivity extends AppCompatActivity {
 
     private VideoView videoView;
 
+    public static void intentInto(Activity activity) {
+        Intent intent = new Intent(activity, SimpleVideoActivity.class);
+        activity.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,7 +172,7 @@ public class SimpleVideoActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        
+
         // 1. create VideoView instance
         videoView = findViewById(R.id.videoView);
 
@@ -198,29 +218,29 @@ public class SimpleVideoActivity extends AppCompatActivity {
 
     /**
      * 创建多分辨率播放源，配合 QualitySelectDialogLayer 可以默认实现清晰度切换功能。
-     * 下面使用的 cdn url 可能过期，可以替换成自己的播放源
+     * 下面使用的 url 需要替换成真实的播放地址
      */
     private MediaSource createDirectUrlMultiQualityMediaSource() {
         MediaSource mediaSource = new MediaSource(UUID.randomUUID().toString(), MediaSource.SOURCE_TYPE_URL);
 
         Track track1 = new Track();
         track1.setTrackType(Track.TRACK_TYPE_VIDEO);
-        track1.setUrl("http://vod-demo-play.volccdn.com/5c16acfc7441b063c881c42b01bf0621/6320435e/video/tos/cn/tos-cn-v-c91ba9/89742152c58249b4a1195b422be26c39/");
+        track1.setUrl("http://example.com/video_360p.mp4");
         track1.setQuality(new Quality(Quality.QUALITY_RES_360, "360P"));
 
         Track track2 = new Track();
         track2.setTrackType(Track.TRACK_TYPE_VIDEO);
-        track2.setUrl("http://vod-demo-play.volccdn.com/aa9a0ee27981ce723b57bf6ae2509a3c/6320435e/video/tos/cn/tos-cn-v-c91ba9/435833d5158e4f40962fb8385da0806d/");
+        track2.setUrl("http://example.com/video_480p.mp4");
         track2.setQuality(new Quality(Quality.QUALITY_RES_480, "480P"));
 
         Track track3 = new Track();
         track3.setTrackType(Track.TRACK_TYPE_VIDEO);
-        track3.setUrl("http://vod-demo-play.volccdn.com/fa181c9eff91ac39c5c067525932db1d/6320435e/video/tos/cn/tos-cn-v-c91ba9/9e8966fbd41547c69615562678506821/");
+        track3.setUrl("http://example.com/video_720p.mp4");
         track3.setQuality(new Quality(Quality.QUALITY_RES_720, "720P"));
 
         Track track4 = new Track();
         track4.setTrackType(Track.TRACK_TYPE_VIDEO);
-        track4.setUrl("http://vod-demo-play.volccdn.com/df56fb9527bd5099fb8406100c0fe57e/6320435f/video/tos/cn/tos-cn-v-c91ba9/9ef67ccb2b5e43bfbb555b54adf2745d/");
+        track4.setUrl("http://example.com/video_1080p.mp4");
         track4.setQuality(new Quality(Quality.QUALITY_RES_1080, "1080P"));
 
         mediaSource.setTracks(Arrays.asList(track1, track2, track3, track4));
@@ -231,7 +251,7 @@ public class SimpleVideoActivity extends AppCompatActivity {
      * 快速创建单清晰度播放源
      */
     private MediaSource createDirectUrlSimpleMediaSource() {
-        String url = "http://vod-demo-play.volccdn.com/aa9a0ee27981ce723b57bf6ae2509a3c/6320435e/video/tos/cn/tos-cn-v-c91ba9/435833d5158e4f40962fb8385da0806d/";
+        String url = "http://example.com/video_480p.mp4"; // 必传
         // media Id 和 cacheKey 若不指定，内部会自动生成
         return MediaSource.createUrlSource(/*mediaId*/null, url, /*cacheKey*/null);
     }
@@ -240,8 +260,8 @@ public class SimpleVideoActivity extends AppCompatActivity {
      * 快速创建 vid 播放源
      */
     private MediaSource createVidMediaSource() {
-        String mediaId = "your video id";
-        String playAuthToken = "your video id's playAuthToken";
+        String mediaId = "your video id"; // 必传
+        String playAuthToken = "your video id's playAuthToken"; // 必传
         return MediaSource.createIdSource(mediaId, playAuthToken);
     }
 
@@ -277,4 +297,4 @@ public class SimpleVideoActivity extends AppCompatActivity {
 }
 ```
 
-播放控件层的更多用法请参考 app demo 中的实现。
+播放控件层的更多用法请参考[场景控件层](../vod-scenekit/README.md)的实现。
