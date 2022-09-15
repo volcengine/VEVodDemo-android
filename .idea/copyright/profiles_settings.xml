@@ -1,0 +1,7 @@
+<component name="CopyrightManager">
+  <settings default="bytedance_apache">
+    <module2copyright>
+      <element module="Project Source Files" copyright="bytedance_apache" />
+    </module2copyright>
+  </settings>
+</component>

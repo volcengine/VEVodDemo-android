@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2021 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2021/12/28
+  -->
+
+<resources>
+    <string name="time_progress_bar_speed">倍速</string>
+    <string name="more_dialog_item_share">分享</string>
+    <string name="more_dialog_item_collect">收藏</string>
+    <string name="more_dialog_item_download">缓存</string>
+    <string name="more_dialog_item_danmaku">弹幕设置</string>
+    <string name="more_dialog_item_full_width">满屏</string>
+    <string name="more_dialog_item_audio_mode">音频播放</string>
+    <string name="more_dialog_item_play_background">后台播放</string>
+    <string name="more_dialog_item_timer">定时关闭</string>
+    <string name="more_dialog_item_assist_func">辅助功能</string>
+    <string name="more_dialog_item_not_interested">不感兴趣</string>
+    <string name="more_dialog_item_feedback">意见反馈</string>
+    <string name="more_dialog_item_report">举报</string>
+    <string name="quality_select_title">清晰度</string>
+    <string name="speed_select_dialog_title">倍速</string>
+    <string name="speed_select_default">(默认)</string>
+    <string name="tips_sync_start_time">从上次观看的位置播放 %1$s</string>
+    <string name="play_error_text">播放错误</string>
+    <string name="play_complete_replay">重播</string>
+    <string name="quality_select_tips_will_switch">清晰度正在切到 %1$s</string>
+    <string name="quality_select_tips_switched">清晰度切换成功，当前清晰度 %1$s</string>
+    <string name="more_dialog_item_noloop">不循环</string>
+    <string name="more_dialog_item_loop">单集循环</string>
+    <string name="time_progress_subtitle">字幕</string>
+    <string name="time_progress_send_danmaku">发送弹幕</string>
+    <string name="more_dialog_category_loop_mode">循环模式</string>
+    <string name="media_seek_bar_text2">00:00</string>
+    <string name="media_seekbar_text1">00:00</string>
+</resources>
