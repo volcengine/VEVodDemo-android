@@ -575,6 +575,7 @@ public class Mapper {
                             .setUrl(track.getUrl())
                             .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
                             .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
+                            .setPlayAuth(track.getEncryptedKey())
                             .build())
                     .build();
         }
