@@ -30,6 +30,8 @@ public class VolcSettings {
 
     public static boolean PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH = true;
 
+    public static boolean PLAYER_OPTION_ENABLE_DASH = true;
+
     public static boolean PLAYER_OPTION_OUTPUT_LOG = false;
 
     public static boolean PLAYER_OPTION_ASYNC_PLAYER = true;

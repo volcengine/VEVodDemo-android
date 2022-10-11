@@ -15,3 +15,5 @@
 local.properties
 
 build-publish
+
+.idea/bytedance_as_plugin.xml
