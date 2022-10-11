@@ -47,8 +47,6 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEBUG_UI_NOTIFY, 1);
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DASH, 1);
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
 
         if (VolcSettings.PLAYER_OPTION_USE_TEXTURE_RENDER) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
@@ -63,8 +61,13 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, VolcSettings.PLAYER_OPTION_OUTPUT_LOG ? 1 : 0);
 
+        // For now 'hls seamless switch option' is conflict with 'dash option'
+        // will fixed in feature SDK release.
         if (VolcSettings.PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH, 1);
+        } else if (VolcSettings.PLAYER_OPTION_ENABLE_DASH) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DASH, 1);
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
         }
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, VolcSettings.OPTION_USE_AUDIO_TRACK_VOLUME ? 1 : 0);
