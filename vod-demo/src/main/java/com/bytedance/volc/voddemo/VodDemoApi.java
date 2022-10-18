@@ -21,6 +21,7 @@ package com.bytedance.volc.voddemo;
 import android.app.Activity;
 import android.content.Context;
 
+import com.bytedance.volc.voddemo.ui.audio.SampleAudioActivity;
 import com.bytedance.volc.voddemo.ui.main.MainActivity;
 
 public class VodDemoApi {
@@ -36,7 +37,8 @@ public class VodDemoApi {
     }
 
     public static void intentInto(Activity activity, boolean showActionBar) {
-        MainActivity.intentInto(activity, showActionBar);
+        //MainActivity.intentInto(activity, showActionBar);
         //SimpleVideoActivity.intentInto(activity);
+        SampleAudioActivity.intentInto(activity);
     }
 }
