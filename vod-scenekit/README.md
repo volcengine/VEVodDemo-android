@@ -6,7 +6,8 @@
 
 ```text
 |--config               // gradle 配置目录
-|--vod-scenekit         // 场景控件根目录
+|--vod-playerkit        // 播放控件层根目录
+|--vod-scenekit         // 场景控件层根目录
 |--vod-settingskit      // 播放设置模块
 ```
 
@@ -19,7 +20,19 @@ git clone https://github.com/volcengine/VEVodDemo-android
 cd VEVodDemo-android
 ```
 
-2. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了`google`、`mavenCentral()` 和 `火山引擎 maven` 服务。
+2. 拷贝场景控件层模块
+
+拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
+
+```text
+config
+vod-playerkit
+vod-scenekit
+vod-settingskit
+```
+> 拷贝完成后，建议做一次 git commit，并在 commit message 中记录 VEVodDemo-android 当前最新的 commit id。后续因业务需要可能会更改源码，那这次 commit 就可以起到追溯作用。
+
+3. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了`google`、`mavenCentral()` 和 `火山引擎 maven` 服务。
 
 ```groovy
 allprojects {
@@ -33,25 +46,12 @@ allprojects {
 }
 ```
 
-3. 拷贝场景控件层模块
-
-拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
-
-```text
-config
-vod-playerkit
-vod-scenekit
-vod-settingskit
-```
-
 4. 在 settings.gradle 中引入 SceneKit 模块
 
 ```groovy
 include ':app'
 
-gradle.ext.playerKitModulePrefix = 'volc-' // 可选配置。若想给引入的 module 添加前缀增加辨识度可以配置。
 apply from: file("config/vod_playerkit_library_settings.gradle")
-gradle.ext.sceneKitModulePrefix = 'volc-'  // 可选配置。若想给引入的 module 添加前缀增加辨识度可以配置。
 apply from: file("config/vod_scenekit_library_settings.gradle")
 ```
 
@@ -68,13 +68,12 @@ android {
 }
 
 dependencies {
-    // 若配置了模块前缀为 volc-，则引入子模块需要以 volc- 作为前缀。没配置则不用。
-    api project(":volc-vod-scenekit")
+    api project(":vod-scenekit")
 }
 ```
 
 6. App 权限及混淆规则配置
-    - 点播 SDK 应用权限、混淆规则参考： [集成准备](https://www.volcengine.com/docs/4/65774)
+    - 添加点播 SDK 应用权限、混淆规则。参考： [集成准备](https://www.volcengine.com/docs/4/65774)
     - 场景控件无新增权限，混淆规则已配置在 `consumer-rules.pro` 使用方无需关心
 
 7. sync 一下 gradle，AndroidStudio 中模块正确引入，并没有报错则完成集成.
@@ -96,6 +95,8 @@ public class App extends Application {
 
         L.ENABLE_LOG = true; // 控件层 logcat 开关
 
+        VideoSettings.init(this); // 初始化设置模块
+
         VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
                 .setAppId("your app id")
                 .setAppName("your app English name")
@@ -104,7 +105,7 @@ public class App extends Application {
                 .setAppVersion(BuildConfig.VERSION_NAME)
                 .setLicenseUri("your license assets path")
                 .build();
-        VolcPlayerInit.init(this, appInfo);
+        VolcPlayerInit.init(this, appInfo); // 初始化播放控件层
     }
 }
 ```
@@ -138,17 +139,41 @@ public class ShortVideoActivity extends AppCompatActivity {
 
     private static List<VideoItem> createItems() {
         List<VideoItem> videoItems = new ArrayList<>();
-        // 传入 videoUrl + coverUrl(可选)
+        // direct url 播放，传入 videoUrl + coverUrl(可选)
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_0.mp4", "http://www.example.com/cover_0.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_1.mp4", "http://www.example.com/cover_1.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_2.mp4", "http://www.example.com/cover_2.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_3.mp4", "http://www.example.com/cover_3.jpg"));
+
+        // vid 播放，传入 vid + playAuthToken + coverUrl(可选)
+        videoItems.add(VideoItem.createVidItem("vid_example_0", "playAuthToken_example_0", "http://www.example.com/cover_0.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_1", "playAuthToken_example_1", "http://www.example.com/cover_1.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_2", "playAuthToken_example_2", "http://www.example.com/cover_2.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_3", "playAuthToken_example_3", "http://www.example.com/cover_3.jpg"));
         return videoItems;
     }
 }
 ```
 
 3. 快速实现中视频场景
+
+中视频场景涉及横竖屏切换，对应 activity 需要在 AndroidManifest 中配置 android:configChanges 属性。`screenSize|orientation` 必须配置。
+
+> AndroidManifest.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:name=".App">
+        <activity
+            android:name=".FeedVideoActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+    </application>
+</manifest>
+```
 
 > FeedVideoActivity.java
 
@@ -172,20 +197,26 @@ public class FeedVideoActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onBackPressed() {
+    public void onBackPressed() {
         if (mSceneView.onBackPressed()) {
-            return true;
+            return;
         }
-        return super.onBackPressed();
+        super.onBackPressed();
     }
 
     private static List<VideoItem> createItems() {
         List<VideoItem> videoItems = new ArrayList<>();
-        //传入 videoUrl + coverUrl(可选)
+        // direct url 播放，传入 videoUrl + coverUrl(可选)
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_0.mp4", "http://www.example.com/cover_0.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_1.mp4", "http://www.example.com/cover_1.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_2.mp4", "http://www.example.com/cover_2.jpg"));
         videoItems.add(VideoItem.createUrlItem("http://www.example.com/video_3.mp4", "http://www.example.com/cover_3.jpg"));
+
+        // vid 播放，传入 vid + playAuthToken + coverUrl(可选)
+        videoItems.add(VideoItem.createVidItem("vid_example_0", "playAuthToken_example_0", "http://www.example.com/cover_0.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_1", "playAuthToken_example_1", "http://www.example.com/cover_1.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_2", "playAuthToken_example_2", "http://www.example.com/cover_2.jpg"));
+        videoItems.add(VideoItem.createVidItem("vid_example_3", "playAuthToken_example_3", "http://www.example.com/cover_3.jpg"));
         return videoItems;
     }
 }
