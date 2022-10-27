@@ -34,7 +34,16 @@ git clone https://github.com/volcengine/VEVodDemo-android
 cd VEVodDemo-android
 ```
 
-2. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了`google`、`mavenCentral()` 和 `火山引擎 maven` 服务。
+2. 拷贝控件层模块
+
+拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
+```text
+config
+vod-playerkit
+```
+> 拷贝完成后，建议做一次 git commit，并在 commit message 中记录 VEVodDemo-android 当前最新的 commit id。后续因业务需要可能会更改源码，那这次 commit 就可以起到追溯作用。
+
+3. 确保 project 根目录下的 build.gradle 文件中的 repositories 中配置了`google`、`mavenCentral()` 和 `火山引擎 maven` 服务。
 
 ```groovy
 allprojects {
@@ -48,23 +57,11 @@ allprojects {
 }
 ```
 
-3. 拷贝控件层模块
-
-拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
-
-```text
-config
-vod-playerkit
-```
-
 4. 在 settings.gradle 中引入 PlayerKit 模块
 
 ```groovy
 include ':app'
 
-gradle.ext.playerKitModulePrefix = 'volc-' // 可选配置。若想给引入的 module 添加前缀增加辨识度可以配置。
-// 这里示例 vod-playerkit 和 app 同级目录的 case。 
-// 若不想把 vod-playerkit 拷贝到自己的工程目录也可以，调整下面的引入路径即可。
 apply from: file("config/vod_playerkit_library_settings.gradle")
 ```
 
@@ -81,16 +78,15 @@ android {
 }
 
 dependencies {
-    // 若配置了模块前缀为 volc-，则引入子模块需要以 volc- 作为前缀。没配置则不用。
-    api project(":volc-vod-playerkit:vod-player")
-    api project(":volc-vod-playerkit:vod-player-utils")
-    api project(":volc-vod-playerkit:vod-player-volcengine")
-    api project(":volc-vod-playerkit:vod-player-ui")
+    api project(":vod-playerkit:vod-player")
+    api project(":vod-playerkit:vod-player-utils")
+    api project(":vod-playerkit:vod-player-volcengine")
+    api project(":vod-playerkit:vod-player-ui")
 }
 ```
 
 6. App 权限及混淆规则配置
-- 点播 SDK 应用权限、混淆规则参考： [集成准备](https://www.volcengine.com/docs/4/65774)
+- 添加点播 SDK 应用权限、混淆规则。参考： [集成准备](https://www.volcengine.com/docs/4/65774)
 - 场景控件无新增权限，混淆规则已配置在 `consumer-rules.pro` 使用方无需关心
 
 7. sync 一下 gradle，AndroidStudio 中 vod-playerkit 模块正确引入，并没有报错则完成集成.
