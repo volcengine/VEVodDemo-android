@@ -101,7 +101,7 @@ public class SpeedSelectDialogLayer extends DialogListLayer<Float> {
         items.add(new Item<>(1f, "1.0x" + context.getString(R.string.speed_select_default)));
         items.add(new Item<>(1.25f, "1.25x"));
         items.add(new Item<>(1.5f, "1.5x"));
-        items.add(new Item<>(2.5f, "2.0x"));
+        items.add(new Item<>(2.0f, "2.0x"));
         Collections.reverse(items);
         return items;
     }
