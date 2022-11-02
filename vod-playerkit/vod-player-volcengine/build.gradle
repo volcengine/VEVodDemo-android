@@ -23,6 +23,8 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
 
     implementation "com.bytedanceapi:ttsdk-player_premium:${project.ext.bytedance.ttsdkVersion}"
+    implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"
     implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
 

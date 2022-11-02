@@ -45,4 +45,5 @@
     <string name="more_dialog_category_loop_mode">循环模式</string>
     <string name="media_seek_bar_text2">00:00</string>
     <string name="media_seekbar_text1">00:00</string>
+    <string name="more_dialog_item_super_res">超分</string>
 </resources>

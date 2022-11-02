@@ -618,6 +618,10 @@ public interface Player {
      */
     int getAudioSessionId();
 
+    void setSuperResolutionEnabled(boolean enabled);
+
+    boolean isSuperResolutionEnabled();
+
     /**
      * @return true: IO buffering. Otherwise, false.
      */

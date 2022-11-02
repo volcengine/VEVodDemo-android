@@ -41,4 +41,6 @@ public class VolcSettings {
     public static String PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE = TTVideoEngine.CODEC_TYPE_H264;
 
     public static boolean PLAYER_OPTION_ENABLE_SEEK_END = true;
+
+    public static boolean PLAYER_OPTION_ENABLE_SUPER_RESOLUTION_ABILITY = true;
 }

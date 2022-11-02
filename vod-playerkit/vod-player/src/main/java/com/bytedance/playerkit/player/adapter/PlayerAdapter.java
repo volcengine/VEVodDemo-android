@@ -213,6 +213,10 @@ public interface PlayerAdapter {
 
     int getAudioSessionId();
 
+    void setSuperResolutionEnabled(boolean enabled);
+
+    boolean isSuperResolutionEnabled();
+
     String dump();
 
     interface Listener extends SourceInfoListener, TrackListener {

@@ -57,6 +57,7 @@ import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.Error;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -483,6 +484,9 @@ class VolcPlayer implements PlayerAdapter {
     private void preparePlayer(StrategySource source, Map<String, String> headers) {
         mStrategySource = source;
         setupSource(mPlayer, source, headers);
+        if (VolcSettings.PLAYER_OPTION_ENABLE_SUPER_RESOLUTION_ABILITY) {
+            initSuperResolution();
+        }
         mPlayer.prepare();
     }
 
@@ -634,6 +638,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void resetInner() {
+        mSuperResolutionInit = false;
         mPreRenderPlayer = false;
         mSurface = null;
         mSurfaceHolder = null;
@@ -672,6 +677,8 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public long getCurrentPosition() {
         if (isInPlaybackState()) {
+            int reason = mPlayer.getIntOption(TTVideoEngine.PLAYER_OPTION_EFFECT_NOT_USE_REASON);
+            L.d(this, "getCurrentPosition", reason);
             return mPlayer.getCurrentPlaybackTime();
         }
         return 0L;
@@ -766,6 +773,50 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public int getAudioSessionId() {
         return mPlayer.getIntOption(TTVideoEngine.PLAYER_OPTION_AUDIOTRACK_SESSIONID);
+    }
+
+    private boolean mSuperResolutionInit;
+
+    /**
+     * 设置是否开启超分；
+     * 针对一个 TTVideoEngine 实例首次开启需要在 play 之前调用；
+     * 开启后，可在播放过程中调用，动态开关。true 开启，false 关闭。
+     */
+    @Override
+    public void setSuperResolutionEnabled(boolean enabled) {
+
+        initSuperResolution();
+
+        mPlayer.openTextureSR(true, enabled);
+
+        if (isInPlaybackState() && !isPlaying()) {
+            mPlayer.forceDraw();
+        }
+    }
+
+    public void initSuperResolution() {
+        if (mSuperResolutionInit) return;
+        mSuperResolutionInit = true;
+
+        // 必须要保障该文件夹路径是存在的，并且可读写的
+        File file = new File(mContext.getFilesDir(), "bytedance/playerkit/volcplayer/bmf");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        // 是否异步初始化超分
+        mPlayer.asyncInitSR(true);
+        // 设置播放过程中可动态控制关闭 or 开启超分
+        mPlayer.dynamicControlSR(true);
+        // 设置超分参数，第一个参数为超分算法，推荐使用 0（2 倍超分）
+        mPlayer.setSRInitConfig(0, file.getAbsolutePath(), "SR", "SR");
+        // 超分播放忽视分辨率限制，推荐使用
+        mPlayer.ignoreSRResolutionLimit(true);
+        mPlayer.openTextureSR(true, false);
+    }
+
+    @Override
+    public boolean isSuperResolutionEnabled() {
+        return mPlayer != null && mPlayer.isplaybackUsedSR();
     }
 
     @Override

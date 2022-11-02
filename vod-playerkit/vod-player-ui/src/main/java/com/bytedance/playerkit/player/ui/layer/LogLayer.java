@@ -147,6 +147,7 @@ public class LogLayer extends BaseLayer {
                     .append("x")
                     .append(player.getVideoHeight())
                     .append(")")
+                    .append(player.isSuperResolutionEnabled() ? "SR" : "")
                     .append("\n");
             info.append("Volume: ")
                     .append(mapVolume(player.getVolume()))

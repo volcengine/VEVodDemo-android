@@ -75,8 +75,8 @@ public class MoreDialogLayer extends DialogLayer {
         mAdapter = new Adapter() {
             @NonNull
             @Override
-            public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                RecyclerView.ViewHolder holder = super.onCreateViewHolder(parent, viewType);
+            public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                ItemViewHolder holder = super.onCreateViewHolder(parent, viewType);
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -85,6 +85,9 @@ public class MoreDialogLayer extends DialogLayer {
                         switch (item.type) {
                             case Item.RENDER_FULLSCREEN:
                                 toggleDisplayMode();
+                                break;
+                            case Item.SUPER_RES:
+                                toggleSuperResolution(holder, position, item);
                                 break;
                             default:
                                 Toast.makeText(context(), v.getResources().getString(item.title) +
@@ -215,6 +218,16 @@ public class MoreDialogLayer extends DialogLayer {
         }
     }
 
+    private void toggleSuperResolution(Adapter.ItemViewHolder holder, int position, Item item) {
+        Player player = player();
+        if (player != null) {
+            item.selected = !item.selected;
+            player.setSuperResolutionEnabled(item.selected);
+        }
+        holder.image.setSelected(item.selected);
+        holder.text.setSelected(item.selected);
+    }
+
     private List<Item> createItems(Context context) {
         List<Item> items = new ArrayList<>();
         items.add(new Item(Item.SHARE, R.string.more_dialog_item_share, R.drawable.more_dialog_layer_share_ic, false));
@@ -229,6 +242,7 @@ public class MoreDialogLayer extends DialogLayer {
         items.add(new Item(Item.NOT_INTERESTED, R.string.more_dialog_item_not_interested, R.drawable.more_dialog_layer_not_interested_ic, false));
         items.add(new Item(Item.FEED_BACK, R.string.more_dialog_item_feedback, R.drawable.more_dialog_layer_feedback_ic, false));
         items.add(new Item(Item.REPORT, R.string.more_dialog_item_report, R.drawable.more_dialog_layer_report_ic, false));
+        items.add(new Item(Item.SUPER_RES, R.string.more_dialog_item_super_res, R.drawable.more_dialog_layer_super_res_selector, false));
         return items;
     }
 
@@ -245,6 +259,7 @@ public class MoreDialogLayer extends DialogLayer {
         static final int NOT_INTERESTED = 9;
         static final int FEED_BACK = 10;
         static final int REPORT = 11;
+        static final int SUPER_RES = 12;
 
         int type;
         @StringRes
@@ -261,7 +276,7 @@ public class MoreDialogLayer extends DialogLayer {
         }
     }
 
-    static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    static class Adapter extends RecyclerView.Adapter<Adapter.ItemViewHolder> {
 
         private final List<Item> mItems = new ArrayList<>();
 
@@ -273,20 +288,24 @@ public class MoreDialogLayer extends DialogLayer {
 
         @NonNull
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.more_dialog_layer_item, parent, false);
             return new ItemViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
             Item item = getItem(position);
-            ((ItemViewHolder) holder).bind(item);
+            holder.bind(item);
             int row = position / 5;
 
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
             lp.topMargin = row == 0 ? 0 : (int) UIUtils.dip2Px(holder.itemView.getContext(), 16);
+
+            holder.image.setSelected(item.selected);
+            holder.text.setSelected(item.selected);
         }
+
 
         @Override
         public int getItemCount() {
