@@ -285,6 +285,7 @@ public class SettingsFragment extends Fragment {
             @Override
             void bind(SettingItem item, int position) {
                 Boolean value = item.option.value(Boolean.class);
+                switchView.setOnCheckedChangeListener(null);
                 if (value == null) {
                     switchView.setChecked(false);
                     switchView.setEnabled(false);
