@@ -24,7 +24,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 
 
 public class LongVideoItemDecoration extends RecyclerView.ItemDecoration {

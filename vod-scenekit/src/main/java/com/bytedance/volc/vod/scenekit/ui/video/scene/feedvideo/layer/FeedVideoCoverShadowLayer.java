@@ -30,8 +30,8 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
-import com.bytedance.playerkit.player.ui.layer.base.AnimateLayer;
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.R;

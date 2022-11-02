@@ -30,7 +30,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.settingskit.SettingsFragment;

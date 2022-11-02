@@ -16,7 +16,6 @@
             <option value="$PROJECT_DIR$/vod-demo-api" />
             <option value="$PROJECT_DIR$/vod-playerkit" />
             <option value="$PROJECT_DIR$/vod-playerkit/vod-player" />
-            <option value="$PROJECT_DIR$/vod-playerkit/vod-player-ui" />
             <option value="$PROJECT_DIR$/vod-playerkit/vod-player-utils" />
             <option value="$PROJECT_DIR$/vod-playerkit/vod-player-volcengine" />
             <option value="$PROJECT_DIR$/vod-scenekit" />

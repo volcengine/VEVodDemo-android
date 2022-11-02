@@ -41,7 +41,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
-import com.bytedance.playerkit.player.ui.utils.TimeUtils;
+import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.impl.R;
 

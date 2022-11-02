@@ -22,4 +22,9 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="pip_animation">
+        <item name="android:windowEnterAnimation">@anim/anim_pip_show</item>
+        <item name="android:windowExitAnimation">@anim/anim_pip_dismiss</item>
+    </style>
 </resources>

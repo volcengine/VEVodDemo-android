@@ -36,7 +36,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bytedance.playerkit.player.ui.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;

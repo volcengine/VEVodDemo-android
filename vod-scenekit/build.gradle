@@ -31,6 +31,5 @@ dependencies {
     api project(":${project.ext.modulePrefix}vod-playerkit:vod-player")
     api project(":${project.ext.modulePrefix}vod-playerkit:vod-player-utils")
     api project(":${project.ext.modulePrefix}vod-playerkit:vod-player-volcengine")
-    api project(":${project.ext.modulePrefix}vod-playerkit:vod-player-ui")
     api project(":${project.ext.modulePrefix}vod-settingskit")
 }

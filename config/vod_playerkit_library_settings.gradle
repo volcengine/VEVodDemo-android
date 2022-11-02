@@ -29,9 +29,9 @@ println("playerkit -> modulePrefix -> " + modulePrefix)
 
 include modulePrefix + "vod-playerkit"
 project(modulePrefix + "vod-playerkit").projectDir = rootDir
-
-include modulePrefix + "vod-playerkit:vod-player-ui"
-project(modulePrefix + "vod-playerkit:vod-player-ui").projectDir = new File(rootDir, "vod-player-ui")
+//
+//include modulePrefix + "vod-playerkit:vod-player-ui"
+//project(modulePrefix + "vod-playerkit:vod-player-ui").projectDir = new File(rootDir, "vod-player-ui")
 
 include modulePrefix + "vod-playerkit:vod-player-utils"
 project(modulePrefix + "vod-playerkit:vod-player-utils").projectDir = new File(rootDir, "vod-player-utils")

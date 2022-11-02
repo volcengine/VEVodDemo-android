@@ -18,10 +18,10 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene;
 
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_DETAIL;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_FEED;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_LONG;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_SHORT;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_DETAIL;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_FEED;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_LONG;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_SHORT;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,7 +36,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.detail.DetailVideoFragment;

@@ -19,7 +19,7 @@
 package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer;
 
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.ui.layer.SimpleProgressBarLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.SimpleProgressBarLayer;
 
 public class ShortVideoProgressBarLayer extends SimpleProgressBarLayer {
 

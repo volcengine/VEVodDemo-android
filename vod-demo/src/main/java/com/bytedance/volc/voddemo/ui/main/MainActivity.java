@@ -23,7 +23,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 
 public class MainActivity extends BaseActivity {

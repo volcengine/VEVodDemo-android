@@ -26,7 +26,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
-import com.bytedance.playerkit.player.ui.layer.TitleBarLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.playerkit.player.volcengine.model.VidParams;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
