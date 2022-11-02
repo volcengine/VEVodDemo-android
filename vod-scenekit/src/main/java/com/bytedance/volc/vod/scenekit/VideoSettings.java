@@ -60,6 +60,7 @@ public class VideoSettings {
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
+    public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
 
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
@@ -136,6 +137,16 @@ public class VideoSettings {
                         CATEGORY_DEBUG,
                         DEBUG_ENABLE_LOG_LAYER,
                         "开启 LogLayer",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_DEBUG,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_DEBUG,
+                        DEBUG_ENABLE_DEBUG_TOOL,
+                        "开启 Debug 工具",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.FALSE,

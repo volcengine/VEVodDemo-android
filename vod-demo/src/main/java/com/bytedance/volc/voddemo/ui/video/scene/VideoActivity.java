@@ -36,6 +36,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
@@ -102,6 +104,18 @@ public class VideoActivity extends BaseActivity {
             fm.beginTransaction().add(R.id.container, fragment, tag).commit();
         } else {
             fm.beginTransaction().attach(fragment).commit();
+        }
+
+        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)){
+            VolcPlayerStatic.setDebugToolContainerView(findViewById(R.id.debugTool));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)) {
+            VolcPlayerStatic.releaseDebugTool();
         }
     }
 
@@ -262,6 +276,9 @@ public class VideoActivity extends BaseActivity {
             } else {
                 toolbar.setElevation(UIUtils.dip2Px(this, 1));
                 ((ViewGroup.MarginLayoutParams) findViewById(R.id.container)
+                        .getLayoutParams())
+                        .topMargin = (int) UIUtils.dip2Px(this, 40);
+                ((ViewGroup.MarginLayoutParams) findViewById(R.id.debugTool)
                         .getLayoutParams())
                         .topMargin = (int) UIUtils.dip2Px(this, 40);
             }

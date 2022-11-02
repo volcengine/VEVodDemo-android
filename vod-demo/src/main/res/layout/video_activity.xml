@@ -29,6 +29,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <FrameLayout
+        android:id="@+id/debugTool"
+        android:layout_gravity="left"
+        android:layout_width="300dp"
+        android:layout_height="match_parent" />
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -38,5 +44,4 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:titleTextColor="@android:color/black"
         tools:title="Test Title" />
-
 </FrameLayout>
