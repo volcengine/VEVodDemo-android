@@ -39,7 +39,7 @@
         android:gravity="center"
         android:maxLines="1"
         android:padding="0dp"
-        android:textColor="#A3FFFFFF"
+        android:textColor="@color/more_dialog_layer_item_title_color"
         android:textSize="12sp"
         tools:text="分享" />
 

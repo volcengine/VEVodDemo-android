@@ -29,8 +29,9 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayer;
 import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 
-public class LoopLayer extends VideoLayer {
+public class PlayerConfigLayer extends VideoLayer {
     @Nullable
     @Override
     public String tag() {
@@ -58,6 +59,7 @@ public class LoopLayer extends VideoLayer {
             case PlayerEvent.Action.PREPARE:
                 Player player = event.owner(Player.class);
                 player.setLooping(true);
+                player.setSuperResolutionEnabled(VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION));
                 break;
         }
     };

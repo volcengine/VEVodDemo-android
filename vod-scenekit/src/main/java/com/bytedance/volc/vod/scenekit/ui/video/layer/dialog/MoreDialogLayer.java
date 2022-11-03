@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
@@ -41,15 +42,16 @@ import com.bytedance.playerkit.player.event.ActionSetLooping;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
-
+import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.DialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
-import com.bytedance.playerkit.utils.event.Dispatcher;
-import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.settingskit.Option;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -227,6 +229,10 @@ public class MoreDialogLayer extends DialogLayer {
         }
         holder.image.setSelected(item.selected);
         holder.text.setSelected(item.selected);
+
+        // change global options
+        Option superResOption = VideoSettings.option(VideoSettings.COMMON_SUPER_RESOLUTION);
+        superResOption.userValues().saveValue(superResOption, item.selected);
     }
 
     private List<Item> createItems(Context context) {
@@ -243,7 +249,11 @@ public class MoreDialogLayer extends DialogLayer {
         items.add(new Item(Item.NOT_INTERESTED, R.string.more_dialog_item_not_interested, R.drawable.more_dialog_layer_not_interested_ic, false));
         items.add(new Item(Item.FEED_BACK, R.string.more_dialog_item_feedback, R.drawable.more_dialog_layer_feedback_ic, false));
         items.add(new Item(Item.REPORT, R.string.more_dialog_item_report, R.drawable.more_dialog_layer_report_ic, false));
-        items.add(new Item(Item.SUPER_RES, R.string.more_dialog_item_super_res, R.drawable.more_dialog_layer_super_res_selector, false));
+
+        items.add(new Item(Item.SUPER_RES,
+                R.string.more_dialog_item_super_res,
+                R.drawable.more_dialog_layer_super_res_selector,
+                VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION)));
         return items;
     }
 
@@ -266,13 +276,13 @@ public class MoreDialogLayer extends DialogLayer {
         @StringRes
         int title;
         @DrawableRes
-        int resId;
+        int iconResId;
         boolean selected;
 
-        public Item(int type, @StringRes int title, @DrawableRes int resId, boolean selected) {
+        public Item(int type, @StringRes int title, @DrawableRes int iconResId, boolean selected) {
             this.type = type;
             this.title = title;
-            this.resId = resId;
+            this.iconResId = iconResId;
             this.selected = selected;
         }
     }
@@ -328,7 +338,7 @@ public class MoreDialogLayer extends DialogLayer {
             }
 
             public void bind(Item item) {
-                image.setImageDrawable(ResourcesCompat.getDrawable(itemView.getResources(), item.resId, null));
+                image.setImageDrawable(ResourcesCompat.getDrawable(itemView.getResources(), item.iconResId, null));
                 text.setText(item.title);
             }
         }

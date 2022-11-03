@@ -28,10 +28,7 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
-import com.bytedance.playerkit.player.volcengine.TTVideoEngineFactory;
-import com.bytedance.playerkit.player.volcengine.TTVideoEngineFactoryDefault;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
-import com.bytedance.playerkit.player.volcengine.VolcSettings;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
@@ -87,23 +84,5 @@ public class VodSDK {
         };
 
         VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector);
-
-        TTVideoEngineFactory.Default.set(new TTVideoEngineFactoryDefault() {
-            @Override
-            protected void onTTVideoEngineWillCreate(Context context, MediaSource mediaSource) {
-                int decoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
-                switch (decoderType) {
-                    case VideoSettings.Decoder.AUTO:
-                        VolcSettings.PLAYER_OPTION_ENABLE_HARDWARE_DECODE = null;
-                        break;
-                    case VideoSettings.Decoder.HARDWARE:
-                        VolcSettings.PLAYER_OPTION_ENABLE_HARDWARE_DECODE = Boolean.TRUE;
-                        break;
-                    case VideoSettings.Decoder.SOFTWARE:
-                        VolcSettings.PLAYER_OPTION_ENABLE_HARDWARE_DECODE = Boolean.FALSE;
-                        break;
-                }
-            }
-        });
     }
 }
