@@ -30,6 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -65,6 +66,12 @@ public class FeedVideoCoverShadowLayer extends AnimateLayer {
     @Override
     protected void onUnbindPlaybackController(@NonNull PlaybackController controller) {
         controller.removePlaybackListener(mPlaybackListener);
+    }
+
+    @Override
+    public void onVideoViewBindDataSource(MediaSource dataSource) {
+        super.onVideoViewBindDataSource(dataSource);
+        show();
     }
 
     private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {
