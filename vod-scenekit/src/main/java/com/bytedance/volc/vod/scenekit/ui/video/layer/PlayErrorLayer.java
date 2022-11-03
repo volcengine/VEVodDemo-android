@@ -75,7 +75,7 @@ public class PlayErrorLayer extends BaseLayer {
         super.show();
         TextView textView = getView();
         if (mException != null && textView != null) {
-            textView.setText(textView.getResources().getString(R.string.play_error_text) + "\n" + mException);
+            textView.setText(textView.getResources().getString(R.string.vevod_play_error_text) + "\n" + mException);
         }
     }
 

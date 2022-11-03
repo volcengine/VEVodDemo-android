@@ -17,23 +17,24 @@
   -->
 
 <resources>
-    <string name="app_name">VOLC Vod</string>
+    <string name="vevod_app_name">VOLC Vod</string>
 
-    <string name="vod_solutions">Video solutions in one station</string>
+    <string name="vevod_vod_solutions">Video solutions in one station</string>
 
-    <string name="short_video_with_desc">Short Video</string>
-    <string name="long_video">Long Video</string>
-    <string name="feed_video_with_desc">Feed Video</string>
+    <string name="vevod_short_video_with_desc">Short Video</string>
+    <string name="vevod_long_video">Long Video</string>
+    <string name="vevod_feed_video_with_desc">Feed Video</string>
 
-    <string name="short_video">Short Video</string>
-    <string name="feed_video">Feed Video</string>
+    <string name="vevod_short_video">Short Video</string>
+    <string name="vevod_feed_video">Feed Video</string>
 
-    <string name="home">Home</string>
-    <string name="settings">Settings</string>
-    <string name="detail_video">Detail Video</string>
-    <string name="long_video_title_hot_shows">Hot Shows</string>
-    <string name="long_video_title_today_recommend">Today Recommend</string>
-    <string name="long_video_title_recommend_for_you">Recommend For You</string>
-    <string name="settings_activity_title">Settings</string>
+    <string name="vevod_home">Home</string>
+    <string name="vevod_settings">Settings</string>
+    <string name="vevod_detail_video">Detail Video</string>
+    <string name="vevod_long_video_title_hot_shows">Hot Shows</string>
+    <string name="vevod_long_video_title_today_recommend">Today Recommend</string>
+    <string name="vevod_long_video_title_recommend_for_you">Recommend For You</string>
+    <string name="vevod_settings_activity_title">Settings</string>
+    <string name="vod_settings_activity_title">Settings</string>
 
 </resources>

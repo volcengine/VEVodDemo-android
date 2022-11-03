@@ -21,9 +21,9 @@
     <!-- Base application theme. -->
     <style name="VEVodAppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/vevod_color_primary</item>
+        <item name="colorPrimaryDark">@color/vevod_color_primary_dark</item>
+        <item name="colorAccent">@color/vevod_color_accent</item>
         <item name="android:windowBackground">@null</item>
         <item name="actionBarSize">40dp</item>
         <item name="windowActionBar">false</item>

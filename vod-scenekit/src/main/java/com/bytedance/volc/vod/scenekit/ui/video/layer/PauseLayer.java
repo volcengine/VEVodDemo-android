@@ -53,7 +53,7 @@ public class PauseLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.pause_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_pause_layer, parent, false);
         view.setOnClickListener(null);
         view.setClickable(false);
         return view;

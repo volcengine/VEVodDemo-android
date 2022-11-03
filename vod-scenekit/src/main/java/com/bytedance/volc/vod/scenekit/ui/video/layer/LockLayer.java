@@ -58,7 +58,7 @@ public class LockLayer extends AnimateLayer {
                 Gravity.CENTER_VERTICAL | Gravity.RIGHT));
         ((FrameLayout.LayoutParams) mImageView.getLayoutParams()).rightMargin = (int) UIUtils.dip2Px(context(), 60);
         mImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        mImageView.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.lock_layer_ic_selector, null));
+        mImageView.setImageDrawable(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.vevod_lock_layer_ic_selector, null));
         mImageView.setOnClickListener(v -> {
             layerHost().setLocked(!layerHost().isLocked());
             // locked -> loop playback

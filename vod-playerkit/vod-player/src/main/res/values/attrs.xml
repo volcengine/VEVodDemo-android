@@ -16,8 +16,8 @@
   ~ Create Date : 2021/12/3
   -->
 
-<resources>
-    <declare-styleable name="RatioFrameLayout">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <declare-styleable name="RatioFrameLayout" tools:ignore="ResourceName">
         <attr name="ratioMode" format="enum">
             <enum name="width" value="0" />
             <enum name="height" value="1" />

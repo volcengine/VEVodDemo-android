@@ -24,7 +24,7 @@
     </style>
 
     <style name="pip_animation">
-        <item name="android:windowEnterAnimation">@anim/anim_pip_show</item>
-        <item name="android:windowExitAnimation">@anim/anim_pip_dismiss</item>
+        <item name="android:windowEnterAnimation">@anim/vevod_anim_pip_show</item>
+        <item name="android:windowExitAnimation">@anim/vevod_anim_pip_dismiss</item>
     </style>
 </resources>

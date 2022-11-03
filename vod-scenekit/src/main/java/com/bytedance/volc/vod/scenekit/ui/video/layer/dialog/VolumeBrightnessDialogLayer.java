@@ -73,7 +73,7 @@ public class VolumeBrightnessDialogLayer extends DialogLayer {
 
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.volume_brightness_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_volume_brightness_layer, parent, false);
         mSeekBarContainer = view.findViewById(R.id.seekBarContainer);
         mSeekBar = view.findViewById(R.id.seekBar);
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

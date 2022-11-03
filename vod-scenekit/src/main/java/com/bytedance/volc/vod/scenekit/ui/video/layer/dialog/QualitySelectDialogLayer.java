@@ -86,7 +86,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
     @Nullable
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        setTitle(parent.getResources().getString(R.string.quality_select_title));
+        setTitle(parent.getResources().getString(R.string.vevod_quality_select_title));
         return super.createDialogView(parent);
     }
 
@@ -152,7 +152,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                     TipsLayer tipsLayer = host.findLayer(TipsLayer.class);
                     if (tipsLayer != null) {
                         Quality quality = e.target.getQuality();
-                        tipsLayer.show(context.getString(R.string.quality_select_tips_will_switch,
+                        tipsLayer.show(context.getString(R.string.vevod_quality_select_tips_will_switch,
                                 quality == null ? null : quality.getQualityDesc()));
                     }
                     break;
@@ -170,7 +170,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                     TipsLayer tipsLayer = host.findLayer(TipsLayer.class);
                     if (tipsLayer != null) {
                         Quality quality = e.current.getQuality();
-                        tipsLayer.show(context.getString(R.string.quality_select_tips_switched, quality == null ? null : quality.getQualityDesc()));
+                        tipsLayer.show(context.getString(R.string.vevod_quality_select_tips_switched, quality == null ? null : quality.getQualityDesc()));
                     }
                     break;
                 }

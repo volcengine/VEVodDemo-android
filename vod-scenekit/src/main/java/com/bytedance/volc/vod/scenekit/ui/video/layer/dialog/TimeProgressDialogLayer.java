@@ -48,7 +48,7 @@ public class TimeProgressDialogLayer extends DialogLayer {
 
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.time_progress_dialog_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_time_progress_dialog_layer, parent, false);
 
         mProgressBar = view.findViewById(R.id.progressBar);
         mTime = view.findViewById(R.id.time);

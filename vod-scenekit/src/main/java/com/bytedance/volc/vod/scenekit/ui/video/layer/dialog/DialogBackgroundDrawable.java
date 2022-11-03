@@ -45,7 +45,7 @@ public class DialogBackgroundDrawable extends Drawable {
     private final float mRoundRadius;
 
     public DialogBackgroundDrawable(Context context) {
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.dialog_layer_bg);
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.vevod_dialog_layer_bg);
         Shader mShader = new BitmapShader(bitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
         mPaint.setShader(mShader);
         mRoundRadius = UIUtils.dip2Px(context, 8f);

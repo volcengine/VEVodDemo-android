@@ -54,7 +54,7 @@ public class PlayPauseLayer extends AnimateLayer {
     @Override
     protected View createView(@NonNull ViewGroup parent) {
         final ImageView ivPlayPause = (ImageView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.play_pause_layer, parent, false);
+                .inflate(R.layout.vevod_play_pause_layer, parent, false);
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) ivPlayPause.getLayoutParams();
         layoutParams.gravity = Gravity.CENTER;
         ivPlayPause.setOnClickListener(new View.OnClickListener() {
@@ -121,14 +121,14 @@ public class PlayPauseLayer extends AnimateLayer {
         if (videoView == null) return;
         if (videoView.getPlayScene() == PlayScene.SCENE_FULLSCREEN) {
             playButton.setImageDrawable(ResourcesCompat.getDrawable(playButton.getResources(),
-                    R.drawable.play_pause_layer_fullscreen_ic_selector, null));
+                    R.drawable.vevod_play_pause_layer_fullscreen_ic_selector, null));
             final int size = (int) UIUtils.dip2Px(context(), 48);
             playButton.getLayoutParams().width = size;
             playButton.getLayoutParams().height = size;
             playButton.requestLayout();
         } else {
             playButton.setImageDrawable(ResourcesCompat.getDrawable(playButton.getResources(),
-                    R.drawable.play_pause_layer_halfscreen_ic_selector, null));
+                    R.drawable.vevod_play_pause_layer_halfscreen_ic_selector, null));
             final int size = (int) UIUtils.dip2Px(context(), 40);
             playButton.getLayoutParams().width = size;
             playButton.getLayoutParams().height = size;

@@ -107,7 +107,7 @@ public class DetailVideoFragment extends BaseFragment {
 
     @Override
     protected int getLayoutResId() {
-        return R.layout.detail_video_fragment;
+        return R.layout.vevod_detail_video_fragment;
     }
 
     @Override

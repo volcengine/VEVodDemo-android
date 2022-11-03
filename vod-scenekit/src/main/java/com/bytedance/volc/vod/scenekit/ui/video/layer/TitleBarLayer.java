@@ -53,7 +53,7 @@ public class TitleBarLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.title_bar_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_title_bar_layer, parent, false);
         View back = view.findViewById(R.id.back);
         View search = view.findViewById(R.id.search);
         View cast = view.findViewById(R.id.cast);

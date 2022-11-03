@@ -50,9 +50,9 @@ public class PlayCompleteLayer extends AnimateLayer {
     protected View createView(@NonNull ViewGroup parent) {
         TextView textView = new TextView(parent.getContext());
         textView.setGravity(Gravity.CENTER);
-        textView.setText(R.string.play_complete_replay);
+        textView.setText(R.string.vevod_play_complete_replay);
         textView.setTextColor(parent.getResources().getColor(android.R.color.white));
-        textView.setBackgroundColor(textView.getResources().getColor(R.color.play_complete_background));
+        textView.setBackgroundColor(textView.getResources().getColor(R.color.vevod_play_complete_background));
         textView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         textView.setOnClickListener(v -> startPlayback());

@@ -66,14 +66,14 @@ public class MainFragment extends BaseFragment {
             mShowActionBar = bundle.getBoolean(EXTRA_SHOW_ACTION_BAR, false);
         }
 
-        mItems.add(new Item(R.string.short_video_with_desc, R.drawable.vevod_main_scene_list_item_short_ic, Item.TYPE_PLAY_SCENE,
+        mItems.add(new Item(R.string.vevod_short_video_with_desc, R.drawable.vevod_main_scene_list_item_short_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_SHORT));
-        mItems.add(new Item(R.string.feed_video_with_desc, R.drawable.vevod_main_scene_list_item_feed_ic, Item.TYPE_PLAY_SCENE,
+        mItems.add(new Item(R.string.vevod_feed_video_with_desc, R.drawable.vevod_main_scene_list_item_feed_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_FEED));
-        mItems.add(new Item(R.string.long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
+        mItems.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_LONG));
 
-        mItems.add(new Item(R.string.settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
+        mItems.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
                 -1));
     }
 
@@ -81,7 +81,7 @@ public class MainFragment extends BaseFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.main_fragment, container, false);
+        return inflater.inflate(R.layout.vevod_main_fragment, container, false);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class MainFragment extends BaseFragment {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 View rootView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.main_fragment_item, parent, false);
+                        .inflate(R.layout.vevod_main_fragment_item, parent, false);
                 return new RecyclerView.ViewHolder(rootView) { /* ignore */
                 };
             }

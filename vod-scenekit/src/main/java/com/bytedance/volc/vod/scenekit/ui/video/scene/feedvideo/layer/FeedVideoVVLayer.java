@@ -86,7 +86,7 @@ public class FeedVideoVVLayer extends AnimateLayer {
 
         TextView textView = getView();
         if (textView != null) {
-            textView.setText(String.format("%s%s", textView.getContext().getString(R.string.feed_video_vv_layer_watch_count_info), TimeUtils.time2String(mediaSource.getDuration())));
+            textView.setText(String.format("%s%s", textView.getContext().getString(R.string.vevod_feed_video_vv_layer_watch_count_info), TimeUtils.time2String(mediaSource.getDuration())));
         }
     }
 

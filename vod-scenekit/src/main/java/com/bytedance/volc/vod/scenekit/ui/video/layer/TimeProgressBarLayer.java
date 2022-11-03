@@ -75,7 +75,7 @@ public class TimeProgressBarLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.time_progress_bar_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_time_progress_bar_layer, parent, false);
         mShadowView = view.findViewById(R.id.shadow);
 
         mSeekBar = view.findViewById(R.id.mediaSeekBar);
@@ -155,7 +155,7 @@ public class TimeProgressBarLayer extends AnimateLayer {
             lp.rightMargin = (int) UIUtils.dip2Px(context(), 10);
             mSeekBar.setLayoutParams(lp);
         }
-        mShadowView.setBackground(ResourcesCompat.getDrawable(view.getResources(), R.drawable.time_progress_bar_layer_halfscreen_shadow_shape, null));
+        mShadowView.setBackground(ResourcesCompat.getDrawable(view.getResources(), R.drawable.vevod_time_progress_bar_layer_halfscreen_shadow_shape, null));
     }
 
     private ViewStub mInteractViewStub;
@@ -262,7 +262,7 @@ public class TimeProgressBarLayer extends AnimateLayer {
         lp.leftMargin = (int) UIUtils.dip2Px(context(), 40);
         lp.rightMargin = (int) UIUtils.dip2Px(context(), 40);
         mSeekBar.setLayoutParams(lp);
-        mShadowView.setBackground(ResourcesCompat.getDrawable(view.getResources(), R.drawable.time_progress_bar_layer_fullscreen_shadow_shape, null));
+        mShadowView.setBackground(ResourcesCompat.getDrawable(view.getResources(), R.drawable.vevod_time_progress_bar_layer_fullscreen_shadow_shape, null));
     }
 
     private void syncProgress() {
@@ -334,10 +334,10 @@ public class TimeProgressBarLayer extends AnimateLayer {
             if (speed != 1) {
                 mSpeed.setText(SpeedSelectDialogLayer.mapSpeed(context(), speed));
             } else {
-                mSpeed.setText(R.string.time_progress_bar_speed);
+                mSpeed.setText(R.string.vevod_time_progress_bar_speed);
             }
         } else {
-            mSpeed.setText(R.string.time_progress_bar_speed);
+            mSpeed.setText(R.string.vevod_time_progress_bar_speed);
         }
     }
 

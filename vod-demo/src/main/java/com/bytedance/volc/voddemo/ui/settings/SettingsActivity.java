@@ -47,7 +47,7 @@ public class SettingsActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.settings_activity);
+        setContentView(R.layout.vevod_settings_activity);
 
         UIUtils.setSystemBarTheme(
                 this,
@@ -74,7 +74,7 @@ public class SettingsActivity extends BaseActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(R.string.settings_activity_title);
+            actionBar.setTitle(R.string.vevod_settings_activity_title);
         }
 
         if (savedInstanceState == null) {

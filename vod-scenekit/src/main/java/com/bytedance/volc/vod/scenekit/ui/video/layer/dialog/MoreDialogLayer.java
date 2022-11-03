@@ -28,7 +28,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
@@ -72,7 +71,7 @@ public class MoreDialogLayer extends DialogLayer {
 
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.more_dialog_layer, parent, false);
+        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_more_dialog_layer, parent, false);
         mGridView = view.findViewById(R.id.recyclerView);
         mGridView.setLayoutManager(new GridLayoutManager(parent.getContext(), 5));
         mAdapter = new Adapter() {
@@ -237,22 +236,22 @@ public class MoreDialogLayer extends DialogLayer {
 
     private List<Item> createItems(Context context) {
         List<Item> items = new ArrayList<>();
-        items.add(new Item(Item.SHARE, R.string.more_dialog_item_share, R.drawable.more_dialog_layer_share_ic, false));
-        items.add(new Item(Item.COLLECT, R.string.more_dialog_item_collect, R.drawable.more_dialog_layer_collect_ic_selecor, false));
-        items.add(new Item(Item.DOWNLOAD, R.string.more_dialog_item_download, R.drawable.more_dialog_layer_download_ic_selector, false));
-        items.add(new Item(Item.DANMAKU_CONFIG, R.string.more_dialog_item_danmaku, R.drawable.more_dialog_layer_danmaku_setting_ic, false));
-        items.add(new Item(Item.RENDER_FULLSCREEN, R.string.more_dialog_item_full_width, R.drawable.more_dialog_layer_fullwidth_ic_selector, false));
-        items.add(new Item(Item.PURE_AUDIO_MODE, R.string.more_dialog_item_audio_mode, R.drawable.more_dialog_layer_audio_mode_ic_selector, false));
-        items.add(new Item(Item.BACKGROUND, R.string.more_dialog_item_play_background, R.drawable.more_dialog_layer_play_background_ic_selector, false));
-        items.add(new Item(Item.TIMER, R.string.more_dialog_item_timer, R.drawable.more_dialog_layer_timer_ic_selector, false));
-        items.add(new Item(Item.ASSIST_FUNC, R.string.more_dialog_item_assist_func, R.drawable.more_dialog_layer_assist_func_ic, false));
-        items.add(new Item(Item.NOT_INTERESTED, R.string.more_dialog_item_not_interested, R.drawable.more_dialog_layer_not_interested_ic, false));
-        items.add(new Item(Item.FEED_BACK, R.string.more_dialog_item_feedback, R.drawable.more_dialog_layer_feedback_ic, false));
-        items.add(new Item(Item.REPORT, R.string.more_dialog_item_report, R.drawable.more_dialog_layer_report_ic, false));
+        items.add(new Item(Item.SHARE, R.string.vevod_more_dialog_item_share, R.drawable.vevod_more_dialog_layer_share_ic, false));
+        items.add(new Item(Item.COLLECT, R.string.vevod_more_dialog_item_collect, R.drawable.vevod_more_dialog_layer_collect_ic_selecor, false));
+        items.add(new Item(Item.DOWNLOAD, R.string.vevod_more_dialog_item_download, R.drawable.vevod_more_dialog_layer_download_ic_selector, false));
+        items.add(new Item(Item.DANMAKU_CONFIG, R.string.vevod_more_dialog_item_danmaku, R.drawable.vevod_more_dialog_layer_danmaku_setting_ic, false));
+        items.add(new Item(Item.RENDER_FULLSCREEN, R.string.vevod_more_dialog_item_full_width, R.drawable.vevod_more_dialog_layer_fullwidth_ic_selector, false));
+        items.add(new Item(Item.PURE_AUDIO_MODE, R.string.vevod_more_dialog_item_audio_mode, R.drawable.vevod_more_dialog_layer_audio_mode_ic_selector, false));
+        items.add(new Item(Item.BACKGROUND, R.string.vevod_more_dialog_item_play_background, R.drawable.vevod_more_dialog_layer_play_background_ic_selector, false));
+        items.add(new Item(Item.TIMER, R.string.vevod_more_dialog_item_timer, R.drawable.vevod_more_dialog_layer_timer_ic_selector, false));
+        items.add(new Item(Item.ASSIST_FUNC, R.string.vevod_more_dialog_item_assist_func, R.drawable.vevod_more_dialog_layer_assist_func_ic, false));
+        items.add(new Item(Item.NOT_INTERESTED, R.string.vevod_more_dialog_item_not_interested, R.drawable.vevod_more_dialog_layer_not_interested_ic, false));
+        items.add(new Item(Item.FEED_BACK, R.string.vevod_more_dialog_item_feedback, R.drawable.vevod_more_dialog_layer_feedback_ic, false));
+        items.add(new Item(Item.REPORT, R.string.vevod_more_dialog_item_report, R.drawable.vevod_more_dialog_layer_report_ic, false));
 
         items.add(new Item(Item.SUPER_RES,
-                R.string.more_dialog_item_super_res,
-                R.drawable.more_dialog_layer_super_res_selector,
+                R.string.vevod_more_dialog_item_super_res,
+                R.drawable.vevod_more_dialog_layer_super_res_selector,
                 VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION)));
         return items;
     }
@@ -300,7 +299,7 @@ public class MoreDialogLayer extends DialogLayer {
         @NonNull
         @Override
         public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.more_dialog_layer_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_more_dialog_layer_item, parent, false);
             return new ItemViewHolder(view);
         }
 

@@ -55,7 +55,7 @@ public class LoadingLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        ProgressBar progressBar = (ProgressBar) LayoutInflater.from(parent.getContext()).inflate(R.layout.loading_layer, parent, false);
+        ProgressBar progressBar = (ProgressBar) LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_loading_layer, parent, false);
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) progressBar.getLayoutParams();
         layoutParams.gravity = Gravity.CENTER;
         return progressBar;

@@ -79,7 +79,7 @@ public class SyncStartTimeLayer extends BaseLayer {
                     if (player.getStartTime() > 1000) {
                         TipsLayer tipsLayer = layerHost.findLayer(TipsLayer.class);
                         if (tipsLayer != null) {
-                            tipsLayer.show(context.getString(R.string.tips_sync_start_time,
+                            tipsLayer.show(context.getString(R.string.vevod_tips_sync_start_time,
                                     TimeUtils.time2String(player.getStartTime())));
                         }
                     }
