@@ -89,7 +89,7 @@ public class VideoActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         mScene = getIntent().getIntExtra(EXTRA_VIDEO_SCENE, SCENE_SHORT);
         Bundle mArgs = getIntent().getBundleExtra(EXTRA_ARGS);
-        setContentView(R.layout.video_activity);
+        setContentView(R.layout.vevod_video_activity);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -183,7 +183,7 @@ public class VideoActivity extends BaseActivity {
                 setActionBarTheme(
                         true,
                         true,
-                        getString(R.string.short_video),
+                        getString(R.string.vevod_short_video),
                         Color.TRANSPARENT,
                         getResources().getColor(android.R.color.white));
                 UIUtils.setSystemBarTheme(
@@ -200,7 +200,7 @@ public class VideoActivity extends BaseActivity {
                 setActionBarTheme(
                         true,
                         false,
-                        getString(R.string.long_video),
+                        getString(R.string.vevod_long_video),
                         getResources().getColor(android.R.color.white),
                         getResources().getColor(android.R.color.black));
                 UIUtils.setSystemBarTheme(
@@ -216,7 +216,7 @@ public class VideoActivity extends BaseActivity {
             case SCENE_FEED:
                 setActionBarTheme(
                         true,
-                        false, getString(R.string.feed_video),
+                        false, getString(R.string.vevod_feed_video),
                         getResources().getColor(android.R.color.white),
                         getResources().getColor(android.R.color.black));
                 UIUtils.setSystemBarTheme(

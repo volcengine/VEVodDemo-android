@@ -21,8 +21,8 @@ include ':app'
 
 println("rootDir -> " + getRootDir())
 
-apply from: file("config/vod_playerkit_library_settings.gradle")
-apply from: file("config/vod_scenekit_library_settings.gradle")
+apply from: file("gradle-config/vod_playerkit_library_settings.gradle")
+apply from: file("gradle-config/vod_scenekit_library_settings.gradle")
 
 include ':vod-demo'
 include ':vod-demo-api'

@@ -45,7 +45,7 @@ public class VolumeBrightnessIconLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.volume_brightness_icon_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_volume_brightness_icon_layer, parent, false);
         mVolume = view.findViewById(R.id.volumeContainer);
         mBrightness = view.findViewById(R.id.brightnessContainer);
         mVolume.setOnClickListener(new View.OnClickListener() {

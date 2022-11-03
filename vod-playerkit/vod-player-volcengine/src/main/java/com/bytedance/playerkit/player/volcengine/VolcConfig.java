@@ -36,7 +36,7 @@ public class VolcConfig implements Serializable {
     public int codecStrategyType;
     @Player.DecoderType
     public int playerDecoderType;
-    @Track.EncodeType
+    @Track.EncoderType
     public int sourceEncodeType;
 
     public boolean enableAudioTrackVolume = false;

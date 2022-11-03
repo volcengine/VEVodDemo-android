@@ -474,26 +474,26 @@ public class Mapper {
         if (encodeType != null) {
             switch (encodeType) {
                 case Source.EncodeType.H264:
-                    return Track.ENCODE_TYPE_H264;
+                    return Track.ENCODER_TYPE_H264;
                 case Source.EncodeType.h265:
-                    return Track.ENCODE_TYPE_H265;
+                    return Track.ENCODER_TYPE_H265;
                 case Source.EncodeType.h266:
-                    return Track.ENCODE_TYPE_H266;
+                    return Track.ENCODER_TYPE_H266;
             }
         }
-        return Track.ENCODE_TYPE_H264;
+        return Track.ENCODER_TYPE_H264;
     }
 
-    public static String trackEncodeType2VideoModelEncodeType(@Track.EncodeType int encodeType) {
-        switch (encodeType) {
-            case Track.ENCODE_TYPE_H264:
+    public static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
+        switch (encoderType) {
+            case Track.ENCODER_TYPE_H264:
                 return Source.EncodeType.H264;
-            case Track.ENCODE_TYPE_H265:
+            case Track.ENCODER_TYPE_H265:
                 return Source.EncodeType.h265;
-            case Track.ENCODE_TYPE_H266:
+            case Track.ENCODER_TYPE_H266:
                 return Source.EncodeType.h266;
         }
-        throw new IllegalArgumentException("unsupported encoderType " + encodeType);
+        throw new IllegalArgumentException("unsupported encoderType " + encoderType);
     }
 
     private static int videoModelFormat2MediaSourceMediaProtocol(IVideoModel videoModel) {
@@ -535,6 +535,38 @@ public class Mapper {
         return urls;
     }
 
+
+    static StrategySource mediaSource2StrategySource(MediaSource mediaSource,
+                                                     CacheKeyFactory cacheKeyFactory,
+                                                     TrackSelector selector,
+                                                     int selectType) throws IOException {
+        if (mediaSource == null) {
+            throw new IOException(new NullPointerException("mediaSource is null"));
+        }
+        final int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ?
+                TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
+        switch (mediaSource.getSourceType()) {
+            case MediaSource.SOURCE_TYPE_URL: {
+                Track track = null;
+                List<Track> tracks = mediaSource.getTracks(trackType);
+                if (selector != null && tracks != null) {
+                    track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
+                }
+                return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
+            }
+            case MediaSource.SOURCE_TYPE_ID: {
+                Track track = null;
+                if (selector != null) {
+                    track = selector.selectTrack(selectType, trackType, mockResolutionTracks, mediaSource);
+                }
+                if (track != null) {
+                    return mediaSource2VidPlayAuthTokenSource(mediaSource, track.getQuality());
+                }
+            }
+        }
+        return null;
+    }
+
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track != null) {
             VolcConfig volcConfig = getVolcConfig(mediaSource);
@@ -574,37 +606,6 @@ public class Mapper {
             builder.setEncodeType(encodeType);
         }
         return builder.build();
-    }
-
-    static StrategySource mediaSource2StrategySource(MediaSource mediaSource,
-                                                     CacheKeyFactory cacheKeyFactory,
-                                                     TrackSelector selector,
-                                                     int selectType) throws IOException {
-        if (mediaSource == null) {
-            throw new IOException(new NullPointerException("mediaSource is null"));
-        }
-        final int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ?
-                TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
-        switch (mediaSource.getSourceType()) {
-            case MediaSource.SOURCE_TYPE_URL: {
-                Track track = null;
-                List<Track> tracks = mediaSource.getTracks(trackType);
-                if (selector != null && tracks != null) {
-                    track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
-                }
-                return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
-            }
-            case MediaSource.SOURCE_TYPE_ID: {
-                Track track = null;
-                if (selector != null) {
-                    track = selector.selectTrack(selectType, trackType, mockResolutionTracks, mediaSource);
-                }
-                if (track != null) {
-                    return mediaSource2VidPlayAuthTokenSource(mediaSource, track.getQuality());
-                }
-            }
-        }
-        return null;
     }
 
     public static List<StrategySource> mediaSources2StrategySources(List<MediaSource> mediaSources, CacheKeyFactory cacheKeyFactory, TrackSelector selector, int selectType) {

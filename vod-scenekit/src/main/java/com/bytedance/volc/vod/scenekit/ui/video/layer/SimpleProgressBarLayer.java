@@ -49,7 +49,7 @@ public class SimpleProgressBarLayer extends AnimateLayer {
     @Nullable
     @Override
     protected View createView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.simple_progress_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_simple_progress_layer, parent, false);
         mSeekBar = view.findViewById(R.id.mediaSeekBar);
         mSeekBar.setOnSeekListener(new MediaSeekBar.OnUserSeekListener() {
 

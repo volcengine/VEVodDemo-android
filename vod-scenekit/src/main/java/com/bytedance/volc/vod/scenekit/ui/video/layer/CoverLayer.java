@@ -144,25 +144,13 @@ public class CoverLayer extends BaseLayer {
         final String coverUrl = resolveCoverUrl();
         Activity activity = activity();
         if (activity != null && !activity.isDestroyed()) {
-            if (TextUtils.isEmpty(coverUrl)) {
-                imageView.setImageDrawable(null);
-                imageView.setTag(null);
-            } else {
-                if (!TextUtils.equals((CharSequence) imageView.getTag(), coverUrl)) {
-                    Glide.with(imageView).load(coverUrl).listener(mGlideListener).into(imageView);
-                    imageView.setTag(coverUrl);
-                }
-            }
+            Glide.with(imageView).load(coverUrl).listener(mGlideListener).into(imageView);
         }
     }
 
     private final RequestListener<Drawable> mGlideListener = new RequestListener<Drawable>() {
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-            final ImageView imageView = getView();
-            if (imageView != null) {
-                imageView.setTag(null);
-            }
             return false;
         }
 

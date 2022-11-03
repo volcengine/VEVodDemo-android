@@ -53,7 +53,7 @@ public class TipsLayer extends AnimateLayer {
         TextView textView = new TextView(parent.getContext());
         textView.setTextColor(Color.WHITE);
         textView.setBackground(ResourcesCompat.getDrawable(parent.getResources(),
-                R.drawable.tips_layer_bg_shape,
+                R.drawable.vevod_tips_layer_bg_shape,
                 null));
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,

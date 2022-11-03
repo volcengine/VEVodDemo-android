@@ -123,17 +123,17 @@ class LongVideoDataTrans {
 
         GroupConfig groupConfig1 = new GroupConfig();
         groupConfig1.type = GroupConfig.TYPE_COUNT;
-        groupConfig1.title = context.getString(R.string.long_video_title_hot_shows);
+        groupConfig1.title = context.getString(R.string.vevod_long_video_title_hot_shows);
         groupConfig1.count = 4;
 
         GroupConfig groupConfig2 = new GroupConfig();
         groupConfig2.type = GroupConfig.TYPE_COUNT;
         groupConfig2.count = 4;
-        groupConfig2.title = context.getString(R.string.long_video_title_today_recommend);
+        groupConfig2.title = context.getString(R.string.vevod_long_video_title_today_recommend);
 
         GroupConfig groupConfig5 = new GroupConfig();
         groupConfig5.type = GroupConfig.TYPE_COUNT;
-        groupConfig5.title = context.getString(R.string.long_video_title_recommend_for_you);
+        groupConfig5.title = context.getString(R.string.vevod_long_video_title_recommend_for_you);
         groupConfig5.count = Integer.MAX_VALUE;
 
         groupConfigs.addAll(Arrays.asList(headerConfig, groupConfig1, groupConfig2, groupConfig5));

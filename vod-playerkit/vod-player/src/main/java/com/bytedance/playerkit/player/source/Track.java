@@ -53,30 +53,30 @@ public class Track implements Serializable {
 
     /**
      * Source encode type. One of
-     * {@link #ENCODE_TYPE_H264},
-     * {@link #ENCODE_TYPE_H265},
-     * {@link #ENCODE_TYPE_H266}
+     * {@link #ENCODER_TYPE_H264},
+     * {@link #ENCODER_TYPE_H265},
+     * {@link #ENCODER_TYPE_H266}
      */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENCODE_TYPE_UNKNOWN, ENCODE_TYPE_H264, ENCODE_TYPE_H265, ENCODE_TYPE_H266})
-    public @interface EncodeType {
+    @IntDef({ENCODE_TYPE_UNKNOWN, ENCODER_TYPE_H264, ENCODER_TYPE_H265, ENCODER_TYPE_H266})
+    public @interface EncoderType {
     }
 
     public static final int ENCODE_TYPE_UNKNOWN = 0;
-    public static final int ENCODE_TYPE_H264 = 1;
-    public static final int ENCODE_TYPE_H265 = 2;
-    public static final int ENCODE_TYPE_H266 = 3;
+    public static final int ENCODER_TYPE_H264 = 1;
+    public static final int ENCODER_TYPE_H265 = 2;
+    public static final int ENCODER_TYPE_H266 = 3;
 
-    public static String mapEncodeType(@EncodeType int encodeType) {
+    public static String mapEncoderType(@EncoderType int encodeType) {
         switch (encodeType) {
             case ENCODE_TYPE_UNKNOWN:
                 return "unknown";
-            case ENCODE_TYPE_H264:
+            case ENCODER_TYPE_H264:
                 return "H264";
-            case ENCODE_TYPE_H265:
+            case ENCODER_TYPE_H265:
                 return "H265";
-            case ENCODE_TYPE_H266:
+            case ENCODER_TYPE_H266:
                 return "H266";
             default:
                 throw new IllegalArgumentException("Unsupported encodeType " + encodeType);
@@ -129,7 +129,7 @@ public class Track implements Serializable {
 
     @Format
     private int format;
-    @EncodeType
+    @EncoderType
     private int encoderType;
     private int videoWidth;
     private int videoHeight;
@@ -238,12 +238,12 @@ public class Track implements Serializable {
         this.format = format;
     }
 
-    @EncodeType
+    @EncoderType
     public int getEncoderType() {
         return encoderType;
     }
 
-    public void setEncoderType(@EncodeType int encoderType) {
+    public void setEncoderType(@EncoderType int encoderType) {
         this.encoderType = encoderType;
     }
 
@@ -309,7 +309,7 @@ public class Track implements Serializable {
         if (quality != null) {
             return String.format(Locale.getDefault(), "[%s %s %dP %dFPS %s]",
                     L.obj2String(this),
-                    mapEncodeType(encoderType),
+                    mapEncoderType(encoderType),
                     quality.getQualityRes(),
                     quality.getQualityFps(),
                     Quality.mapQualityDynamicRange(quality.getQualityDynamicRange()));

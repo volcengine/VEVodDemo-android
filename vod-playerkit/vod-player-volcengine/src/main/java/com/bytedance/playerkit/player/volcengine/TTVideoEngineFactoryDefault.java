@@ -62,13 +62,13 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
                     break;
             }
             switch (volcConfig.sourceEncodeType) {
-                case Track.ENCODE_TYPE_H264:
+                case Track.ENCODER_TYPE_H264:
                     player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_H264);
                     break;
-                case Track.ENCODE_TYPE_H265:
+                case Track.ENCODER_TYPE_H265:
                     player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h265);
                     break;
-                case Track.ENCODE_TYPE_H266:
+                case Track.ENCODER_TYPE_H266:
                     player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h266);
                     break;
             }
@@ -78,8 +78,7 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_IMAGE_LAYOUT, IMAGE_LAYOUT_TO_FILL);
         }
-        // For now 'hls seamless switch option' is conflict with 'dash option'
-        // will fixed in feature SDK release.
+
         if (volcConfig.enableHlsSeamlessSwitch) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH, 1);
         }

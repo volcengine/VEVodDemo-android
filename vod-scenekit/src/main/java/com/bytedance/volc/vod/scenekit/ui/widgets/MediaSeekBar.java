@@ -61,7 +61,7 @@ public class MediaSeekBar extends RelativeLayout {
 
     public MediaSeekBar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        LayoutInflater.from(getContext()).inflate(R.layout.media_player_seekbar, this);
+        LayoutInflater.from(getContext()).inflate(R.layout.vevod_media_player_seekbar, this);
         text1 = findViewById(R.id.text1);
         text2 = findViewById(R.id.text2);
         seekBar = findViewById(R.id.seekBar);

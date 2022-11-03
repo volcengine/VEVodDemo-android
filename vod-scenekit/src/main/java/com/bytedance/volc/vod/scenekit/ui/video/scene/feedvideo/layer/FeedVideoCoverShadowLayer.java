@@ -50,7 +50,7 @@ public class FeedVideoCoverShadowLayer extends AnimateLayer {
     @Override
     protected View createView(@NonNull ViewGroup parent) {
         ImageView imageView = new ImageView(parent.getContext());
-        imageView.setBackground(parent.getResources().getDrawable(R.drawable.feed_video_item_cover_bottom_shadow));
+        imageView.setBackground(parent.getResources().getDrawable(R.drawable.vevod_feed_video_item_cover_bottom_shadow));
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 (int) UIUtils.dip2Px(parent.getContext(), 80));
         lp.gravity = Gravity.BOTTOM;

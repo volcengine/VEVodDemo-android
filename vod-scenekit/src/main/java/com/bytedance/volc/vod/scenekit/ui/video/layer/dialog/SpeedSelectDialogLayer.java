@@ -90,7 +90,7 @@ public class SpeedSelectDialogLayer extends DialogListLayer<Float> {
     @Nullable
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        setTitle(parent.getResources().getString(R.string.speed_select_dialog_title));
+        setTitle(parent.getResources().getString(R.string.vevod_speed_select_dialog_title));
         adapter().setList(createItems(parent.getContext()));
         return super.createDialogView(parent);
     }
@@ -99,7 +99,7 @@ public class SpeedSelectDialogLayer extends DialogListLayer<Float> {
         List<Item<Float>> items = new ArrayList<>();
         items.add(new Item<>(0.5f, "0.5x"));
         items.add(new Item<>(0.75f, "0.75x"));
-        items.add(new Item<>(1f, "1.0x" + context.getString(R.string.speed_select_default)));
+        items.add(new Item<>(1f, "1.0x" + context.getString(R.string.vevod_speed_select_default)));
         items.add(new Item<>(1.25f, "1.25x"));
         items.add(new Item<>(1.5f, "1.5x"));
         items.add(new Item<>(2.0f, "2.0x"));

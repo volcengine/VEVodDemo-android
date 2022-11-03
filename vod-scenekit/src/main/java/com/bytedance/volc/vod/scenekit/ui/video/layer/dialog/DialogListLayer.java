@@ -56,7 +56,7 @@ public abstract class DialogListLayer<T> extends DialogLayer {
     @Nullable
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dialog_list_layer, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_dialog_list_layer, parent, false);
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(parent.getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(mAdapter);
@@ -132,7 +132,7 @@ public abstract class DialogListLayer<T> extends DialogLayer {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.dialog_list_layer_item, parent, false);
+            View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_dialog_list_layer_item, parent, false);
             RecyclerView.ViewHolder holder = new RecyclerView.ViewHolder(item) {
             };
             holder.itemView.setOnClickListener(v -> {

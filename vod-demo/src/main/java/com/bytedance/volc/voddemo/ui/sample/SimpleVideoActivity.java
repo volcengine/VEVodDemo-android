@@ -71,7 +71,7 @@ public class SimpleVideoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.simple_video_activity);
+        setContentView(R.layout.vevod_simple_video_activity);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {

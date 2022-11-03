@@ -16,7 +16,8 @@
   ~ Create Date : 2021/12/28
   -->
 
-<network-security-config>
+<network-security-config xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ResourceName">
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates

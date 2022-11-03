@@ -31,8 +31,9 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.bytedance.playerkit.player.Player;
@@ -207,14 +208,19 @@ public class FullScreenLayer extends BaseLayer implements VideoLayerHost.BackPre
         }
     }
 
-    private final DefaultLifecycleObserver mLifecycleObserver = new DefaultLifecycleObserver() {
+    private final LifecycleObserver mLifecycleObserver = new LifecycleEventObserver() {
         @Override
-        public void onResume(@NonNull LifecycleOwner owner) {
-            VideoView videoView = videoView();
-            if (videoView == null) return;
-            if (!isFullScreen()) return;
-            if (mFullScreenSceneInfo == null) return;
-            PlaySceneNavigator.setSystemBarTheme(videoView, mFullScreenSceneInfo);
+        public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+            switch (event) {
+                case ON_RESUME: {
+                    VideoView videoView = videoView();
+                    if (videoView == null) return;
+                    if (!isFullScreen()) return;
+                    if (mFullScreenSceneInfo == null) return;
+                    PlaySceneNavigator.setSystemBarTheme(videoView, mFullScreenSceneInfo);
+                    break;
+                }
+            }
         }
     };
 

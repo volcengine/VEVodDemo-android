@@ -121,7 +121,7 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.feed_video_item, parent, false), mOnItemViewListener);
+                .inflate(R.layout.vevod_feed_video_item, parent, false), mOnItemViewListener);
     }
 
     @Override
