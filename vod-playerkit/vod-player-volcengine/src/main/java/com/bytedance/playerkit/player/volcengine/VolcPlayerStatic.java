@@ -19,10 +19,13 @@
 package com.bytedance.playerkit.player.volcengine;
 
 import android.view.Surface;
+import android.view.ViewGroup;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.pandora.common.env.Env;
 import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.TTVideoEngineInterface;
+import com.ss.ttvideoengine.debugtool2.DebugTool;
 
 import java.util.List;
 
@@ -62,5 +65,18 @@ public class VolcPlayerStatic {
 
     public static String getSDKVersion() {
         return Env.getVersion();
+    }
+
+    // 添加展示 debug 信息的布局，debug 信息页面撑满 containerView
+    // 需要在调用 Engine 播放之前设置，
+    // 设置布局后，Debug 工具会监听哪个 Engine 实例调用了 play，并将相关信息显示到布局。
+    public static void setDebugToolContainerView(ViewGroup containerView) {
+        DebugTool.release();
+        DebugTool.setContainerView(containerView);
+    }
+
+    // 完成 Debug 工具使用时，您可调用release()方法释放资源
+    public static void releaseDebugTool() {
+        DebugTool.release();
     }
 }

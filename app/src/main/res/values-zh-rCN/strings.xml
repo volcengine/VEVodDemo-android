@@ -17,5 +17,5 @@
   -->
 
 <resources>
-    <string name="app_name">视频点播</string>
+    <string name="vevod_app_name">视频点播</string>
 </resources>

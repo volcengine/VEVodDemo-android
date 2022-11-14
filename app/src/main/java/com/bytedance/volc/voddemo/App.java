@@ -30,7 +30,7 @@ public class App extends Application {
     private static final String APP_CHANNEL = "VOLCVodDemoAndroid";
     private static final String APP_REGION = "china";
     private static final String APP_VERSION = BuildConfig.VERSION_NAME;
-    private static final String LICENSE_URI = "assets:///license2/volc_vod_demo_license2.lic";
+    private static final String LICENSE_URI = "assets:///license2/l-101667-ch-vod-a-.lic";
 
     @SuppressLint("StaticFieldLeak")
     private static Context sContext;

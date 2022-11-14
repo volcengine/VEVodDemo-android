@@ -28,7 +28,9 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
 import com.bytedance.playerkit.utils.FileUtils;
 import com.bytedance.volc.vod.settingskit.Option;
@@ -60,9 +62,12 @@ public class VideoSettings {
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
+    public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
 
+    public static final String COMMON_CODEC_STRATEGY = "common_codec_strategy";
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
+    public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
 
 
     private static Options sOptions;
@@ -70,10 +75,16 @@ public class VideoSettings {
     @SuppressLint("StaticFieldLeak")
     private static Context sContext;
 
-    public static class Decoder {
-        public static final int AUTO = 0;
-        public static final int HARDWARE = 1;
-        public static final int SOFTWARE = 2;
+    public static class DecoderType {
+        public static final int AUTO = Player.DECODER_TYPE_UNKNOWN;
+        public static final int HARDWARE = Player.DECODER_TYPE_HARDWARE;
+        public static final int SOFTWARE = Player.DECODER_TYPE_SOFTWARE;
+    }
+
+    public static class CodecStrategy {
+        public static final int CODEC_STRATEGY_DISABLE = VolcConfig.CODEC_STRATEGY_DISABLE;
+        public static final int CODEC_STRATEGY_COST_SAVING_FIRST = VolcConfig.CODEC_STRATEGY_COST_SAVING_FIRST;
+        public static final int CODEC_STRATEGY_HARDWARE_DECODE_FIRST = VolcConfig.CODEC_STRATEGY_HARDWARE_DECODE_FIRST;
     }
 
     public static void init(Context context) {
@@ -93,29 +104,29 @@ public class VideoSettings {
         return options;
     }
 
-    private static Options get() {
-        return sOptions;
+    public static Option option(String key) {
+        return sOptions.option(key);
     }
 
     public static int intValue(String key) {
-        return get().option(key).intValue();
+        return option(key).intValue();
     }
 
     public static boolean booleanValue(String key) {
-        return get().option(key).booleanValue();
+        return option(key).booleanValue();
     }
 
     public static long longValue(String key) {
-        return get().option(key).longValue();
+        return option(key).longValue();
     }
 
     public static float floatValue(String key) {
-        return get().option(key).floatValue();
+        return option(key).floatValue();
     }
 
     @Nullable
     public static String stringValue(String key) {
-        return get().option(key).stringValue();
+        return option(key).stringValue();
     }
 
     private static List<SettingItem> createSettings() {
@@ -136,6 +147,16 @@ public class VideoSettings {
                         CATEGORY_DEBUG,
                         DEBUG_ENABLE_LOG_LAYER,
                         "开启 LogLayer",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_DEBUG,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_DEBUG,
+                        DEBUG_ENABLE_DEBUG_TOOL,
+                        "开启 Debug 工具",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.FALSE,
@@ -224,21 +245,48 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_SELECTABLE_ITEMS,
                         CATEGORY_COMMON_VIDEO,
-                        COMMON_HARDWARE_DECODE,
-                        "开启硬解码",
+                        COMMON_CODEC_STRATEGY,
+                        "Codec 策略",
                         Option.STRATEGY_IMMEDIATELY,
                         Integer.class,
-                        Decoder.AUTO,
-                        Arrays.asList(Decoder.AUTO, Decoder.HARDWARE, Decoder.SOFTWARE)),
+                        CodecStrategy.CODEC_STRATEGY_DISABLE,
+                        Arrays.asList(CodecStrategy.CODEC_STRATEGY_DISABLE,
+                                CodecStrategy.CODEC_STRATEGY_COST_SAVING_FIRST,
+                                CodecStrategy.CODEC_STRATEGY_HARDWARE_DECODE_FIRST)),
                 new SettingItem.ValueMapper() {
                     @Override
                     public String toString(Object value) {
                         switch ((Integer) value) {
-                            case Decoder.AUTO:
+                            case CodecStrategy.CODEC_STRATEGY_DISABLE:
+                                return "关闭";
+                            case CodecStrategy.CODEC_STRATEGY_COST_SAVING_FIRST:
+                                return "成本优先";
+                            case CodecStrategy.CODEC_STRATEGY_HARDWARE_DECODE_FIRST:
+                                return "硬解优先";
+                        }
+                        return null;
+                    }
+                }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_HARDWARE_DECODE,
+                        "开启硬解码",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        DecoderType.AUTO,
+                        Arrays.asList(DecoderType.AUTO, DecoderType.HARDWARE, DecoderType.SOFTWARE)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case DecoderType.AUTO:
                                 return "自动";
-                            case Decoder.HARDWARE:
+                            case DecoderType.HARDWARE:
                                 return "硬解";
-                            case Decoder.SOFTWARE:
+                            case DecoderType.SOFTWARE:
                                 return "软解";
                         }
                         return null;
@@ -254,6 +302,17 @@ public class VideoSettings {
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.TRUE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_SUPER_RESOLUTION,
+                        "开启超分",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
                         null)));
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,

@@ -26,8 +26,8 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
-import com.bytedance.playerkit.player.ui.layer.TitleBarLayer;
-import com.bytedance.playerkit.player.volcengine.model.VidParams;
+import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
@@ -187,9 +187,6 @@ public class VideoItem implements Parcelable {
         final MediaSource mediaSource;
         if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
             mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
-            boolean isH265 = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265);
-            VidParams vidParams = new VidParams(isH265 ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264);
-            mediaSource.putExtra(VidParams.EXTRA_VID_PARAMS, vidParams);
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
             mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
         } else {
@@ -199,10 +196,21 @@ public class VideoItem implements Parcelable {
         mediaSource.setDuration(videoItem.duration);
         mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
         mediaSource.putExtra(TitleBarLayer.EXTRA_TITLE, videoItem.title);
+        mediaSource.putExtra(VolcConfig.EXTRA_VOLC_CONFIG, createVolcConfig());
         if (sycProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
         }
         return mediaSource;
+    }
+
+    @NonNull
+    public static VolcConfig createVolcConfig() {
+        VolcConfig volcConfig = new VolcConfig();
+        volcConfig.codecStrategyType = VideoSettings.intValue(VideoSettings.COMMON_CODEC_STRATEGY);
+        volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
+        volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
+        volcConfig.enableSuperResolution = VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION);
+        return volcConfig;
     }
 
     @Nullable

@@ -268,7 +268,7 @@ public class SettingsFragment extends Fragment {
 
             static CategoryTitleHolder create(ViewGroup parent) {
                 return new CategoryTitleHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_category_title, parent, false));
+                        .inflate(R.layout.vevod_settings_item_category_title, parent, false));
             }
         }
 
@@ -285,6 +285,7 @@ public class SettingsFragment extends Fragment {
             @Override
             void bind(SettingItem item, int position) {
                 Boolean value = item.option.value(Boolean.class);
+                switchView.setOnCheckedChangeListener(null);
                 if (value == null) {
                     switchView.setChecked(false);
                     switchView.setEnabled(false);
@@ -304,7 +305,7 @@ public class SettingsFragment extends Fragment {
 
             static RatioButtonViewHolder create(ViewGroup parent) {
                 return new RatioButtonViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_ratio_button, parent, false));
+                        .inflate(R.layout.vevod_settings_item_ratio_button, parent, false));
             }
         }
 
@@ -357,7 +358,7 @@ public class SettingsFragment extends Fragment {
 
             static SelectableItemsViewHolder create(ViewGroup parent) {
                 return new SelectableItemsViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_selectable_items, parent, false));
+                        .inflate(R.layout.vevod_settings_item_selectable_items, parent, false));
             }
         }
 
@@ -421,7 +422,7 @@ public class SettingsFragment extends Fragment {
 
             static EditableTextViewHolder create(ViewGroup parent) {
                 return new EditableTextViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_editable_text, parent, false));
+                        .inflate(R.layout.vevod_settings_item_editable_text, parent, false));
             }
         }
 
@@ -460,7 +461,7 @@ public class SettingsFragment extends Fragment {
 
             static CopyableTextViewHolder create(ViewGroup parent) {
                 return new CopyableTextViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_copyable_text, parent, false));
+                        .inflate(R.layout.vevod_settings_item_copyable_text, parent, false));
             }
         }
 
@@ -488,7 +489,7 @@ public class SettingsFragment extends Fragment {
 
             static ClickableViewHolder create(ViewGroup parent) {
                 return new ClickableViewHolder(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.settings_item_clickable_item, parent, false));
+                        .inflate(R.layout.vevod_settings_item_clickable_item, parent, false));
             }
         }
     }

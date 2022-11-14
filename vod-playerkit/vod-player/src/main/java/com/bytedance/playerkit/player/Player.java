@@ -223,6 +223,36 @@ public interface Player {
         }
     }
 
+    /**
+     * Decoder type. One of
+     * {@link #DECODER_TYPE_UNKNOWN},
+     * {@link #DECODER_TYPE_SOFTWARE},
+     * {@link #DECODER_TYPE_HARDWARE}
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({DECODER_TYPE_UNKNOWN,
+            DECODER_TYPE_SOFTWARE,
+            DECODER_TYPE_HARDWARE})
+    @interface DecoderType {
+    }
+
+    int DECODER_TYPE_UNKNOWN = 0;
+    int DECODER_TYPE_SOFTWARE = 1;
+    int DECODER_TYPE_HARDWARE = 2;
+
+    static String mapDecoderType(@DecoderType int type) {
+        switch (type) {
+            case DECODER_TYPE_UNKNOWN:
+                return "unknown";
+            case DECODER_TYPE_SOFTWARE:
+                return "software";
+            case DECODER_TYPE_HARDWARE:
+                return "hardware";
+            default:
+                throw new IllegalArgumentException("unsupported decoder type:" + type);
+        }
+    }
+
     interface Factory {
         class Default {
             private static Factory sInstance;
@@ -617,6 +647,10 @@ public interface Player {
      * @see #setAudioSessionId(int)
      */
     int getAudioSessionId();
+
+    void setSuperResolutionEnabled(boolean enabled);
+
+    boolean isSuperResolutionEnabled();
 
     /**
      * @return true: IO buffering. Otherwise, false.

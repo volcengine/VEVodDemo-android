@@ -23,7 +23,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 
 public class MainActivity extends BaseActivity {
@@ -36,9 +36,13 @@ public class MainActivity extends BaseActivity {
         activity.startActivity(intent);
     }
 
+    private boolean mShowActionBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mShowActionBar = getIntent().getBooleanExtra(MainFragment.EXTRA_SHOW_ACTION_BAR, false);
 
         UIUtils.setSystemBarTheme(
                 this,
@@ -61,9 +65,13 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        final Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        if (mShowActionBar) {
+            super.onBackPressed();
+        } else {
+            final Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 }

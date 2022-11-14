@@ -17,20 +17,20 @@
   -->
 
 <resources>
-    <string name="app_name">视频点播</string>
-    <string name="vod_solutions">体验一站式视频点播解决方案</string>
-    <string name="short_video_with_desc">短视频（竖屏类抖音）</string>
-    <string name="feed_video_with_desc">中视频（横屏）</string>
-    <string name="long_video">长视频</string>
+    <string name="vevod_app_name">视频点播</string>
+    <string name="vevod_vod_solutions">体验一站式视频点播解决方案</string>
+    <string name="vevod_short_video_with_desc">短视频（竖屏类抖音）</string>
+    <string name="vevod_feed_video_with_desc">中视频（横屏）</string>
+    <string name="vevod_long_video">长视频</string>
 
-    <string name="short_video">短视频</string>
-    <string name="feed_video">中视频</string>
+    <string name="vevod_short_video">短视频</string>
+    <string name="vevod_feed_video">中视频</string>
 
-    <string name="settings">设置</string>
-    <string name="detail_video">视频详情页</string>
-    <string name="long_video_title_hot_shows">热播剧场</string>
-    <string name="long_video_title_today_recommend">今日推荐</string>
-    <string name="long_video_title_recommend_for_you">为你推荐</string>
-    <string name="home">Home</string>
-    <string name="settings_activity_title">设置</string>
+    <string name="vevod_settings">设置</string>
+    <string name="vevod_detail_video">视频详情页</string>
+    <string name="vevod_long_video_title_hot_shows">热播剧场</string>
+    <string name="vevod_long_video_title_today_recommend">今日推荐</string>
+    <string name="vevod_long_video_title_recommend_for_you">为你推荐</string>
+    <string name="vevod_home">Home</string>
+    <string name="vevod_settings_activity_title">设置</string>
 </resources>

@@ -41,7 +41,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
-import com.bytedance.playerkit.player.ui.utils.TimeUtils;
+import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.impl.R;
 
@@ -201,7 +201,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         @Override
         void bind(int position, Item item, List<Item> items, OnItemClickListener onItemClickListener) {
             VideoItem videoItem = item.videoItem;
-            Glide.with(cover).load(videoItem.getCover()).addListener(new RequestListener<Drawable>() {
+            Glide.with(cover).load(videoItem.getCover()).listener(new RequestListener<Drawable>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                     return false;
@@ -224,7 +224,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         static RecyclerView.ViewHolder create(ViewGroup parent) {
             View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.long_video_item, parent, false);
+                    .inflate(R.layout.vevod_long_video_item, parent, false);
             return new VideoItemViewHolder(itemView);
         }
     }
@@ -250,7 +250,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         static RecyclerView.ViewHolder create(ViewGroup parent) {
             View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.long_video_item_group_title, parent, false);
+                    .inflate(R.layout.vevod_long_video_item_group_title, parent, false);
             return new GroupTitleViewHolder(itemView);
         }
     }
@@ -273,7 +273,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         static RecyclerView.ViewHolder create(ViewGroup parent) {
             View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.long_video_item_header, parent, false);
+                    .inflate(R.layout.vevod_long_video_item_header, parent, false);
             return new HeaderViewHolder(itemView);
         }
 
@@ -332,7 +332,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             static RecyclerView.ViewHolder create(ViewGroup parent) {
                 return new HeaderViewItemViewHolder(
                         LayoutInflater.from(parent.getContext())
-                                .inflate(R.layout.long_video_item_header_item,
+                                .inflate(R.layout.vevod_long_video_item_header_item,
                                         parent,
                                         false));
             }

@@ -23,7 +23,10 @@ import static com.ss.ttvideoengine.TTVideoEngineInterface.IMAGE_LAYOUT_TO_FILL;
 
 import android.content.Context;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Track;
+import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.TTVideoEngine;
 
 import java.util.HashMap;
@@ -33,63 +36,64 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
-
-        onTTVideoEngineWillCreate(context, mediaSource);
+        VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
 
         final TTVideoEngine player;
-        if (VolcSettings.PLAYER_OPTION_ASYNC_PLAYER) {
+        if (volcConfig.enableEngineLooper) {
             Map<String, Object> params = new HashMap<>();
             params.put("enable_looper", true);
             player = new TTVideoEngine(context, PLAYER_TYPE_OWN, params);
         } else {
             player = new TTVideoEngine(context, PLAYER_TYPE_OWN);
         }
+
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, L.ENABLE_LOG ? 1 : 0);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEBUG_UI_NOTIFY, 1);
 
-        if (VolcSettings.PLAYER_OPTION_USE_TEXTURE_RENDER) {
+        if (volcConfig.codecStrategyType == VolcConfig.CODEC_STRATEGY_DISABLE) {
+            switch (volcConfig.playerDecoderType) {
+                case Player.DECODER_TYPE_HARDWARE:
+                    player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HARDWARE_DECODE, 1);
+                    break;
+                case Player.DECODER_TYPE_SOFTWARE:
+                    player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HARDWARE_DECODE, 0);
+                    break;
+            }
+            switch (volcConfig.sourceEncodeType) {
+                case Track.ENCODER_TYPE_H264:
+                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_H264);
+                    break;
+                case Track.ENCODER_TYPE_H265:
+                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h265);
+                    break;
+                case Track.ENCODER_TYPE_H266:
+                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h266);
+                    break;
+            }
+        }
+
+        if (volcConfig.enableTextureRender) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_IMAGE_LAYOUT, IMAGE_LAYOUT_TO_FILL);
         }
 
-        if (VolcSettings.PLAYER_OPTION_ENABLE_HARDWARE_DECODE != null) {
-            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HARDWARE_DECODE, VolcSettings.PLAYER_OPTION_ENABLE_HARDWARE_DECODE ? 1 : 0);
-        }
-
-        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, VolcSettings.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE);
-
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, VolcSettings.PLAYER_OPTION_OUTPUT_LOG ? 1 : 0);
-
-        // For now 'hls seamless switch option' is conflict with 'dash option'
-        // will fixed in feature SDK release.
-        if (VolcSettings.PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH) {
+        if (volcConfig.enableHlsSeamlessSwitch) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HLS_SEAMLESS_SWITCH, 1);
-        } else if (VolcSettings.PLAYER_OPTION_ENABLE_DASH) {
+        }
+        if (volcConfig.enableDash) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DASH, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
         }
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, volcConfig.enableAudioTrackVolume ? 1 : 0);
 
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, VolcSettings.OPTION_USE_AUDIO_TRACK_VOLUME ? 1 : 0);
-
-        if (VolcSettings.PLAYER_OPTION_ENABLE_SEEK_END) {
+        if (volcConfig.enableSeekEnd) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_KEEP_FORMAT_THREAD_ALIVE, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_END, 1);
-        }
-
-        if (VolcSettings.PLAYER_OPTION_HARDWARE_DECODER_ASYNC_INIT) {
-            if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_ID) {
-                // for vid
-                player.setAsyncInit(true, -1);
-            } else {
-                // TODO for direct url
-                // player.setAsyncInit(true, 1); h265
-                // player.setAsyncInit(true, 0); h264
-            }
         }
         return player;
     }
 
-    protected void onTTVideoEngineWillCreate(Context context, MediaSource mediaSource) {
-    }
+
 }

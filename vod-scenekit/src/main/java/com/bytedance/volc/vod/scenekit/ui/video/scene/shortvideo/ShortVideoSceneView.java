@@ -79,7 +79,7 @@ public class ShortVideoSceneView extends FrameLayout implements RefreshAble, Loa
             }
         });
         mLoadMoreProgressBar = (ContentLoadingProgressBar) LayoutInflater.from(context)
-                .inflate(R.layout.short_video_loading_more, this, false);
+                .inflate(R.layout.vevod_short_video_loading_more, this, false);
         mLoadMoreProgressBar.setVisibility(GONE);
         addView(mLoadMoreProgressBar, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,

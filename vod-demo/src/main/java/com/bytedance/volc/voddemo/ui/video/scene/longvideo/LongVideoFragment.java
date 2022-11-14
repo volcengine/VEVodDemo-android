@@ -36,7 +36,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bytedance.playerkit.player.ui.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
@@ -119,8 +119,8 @@ public class LongVideoFragment extends BaseFragment {
             DetailVideoFragment detail = DetailVideoFragment.newInstance(bundle);
             activity.getSupportFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right,
-                            R.anim.slide_in_right, R.anim.slide_out_right)
+                    .setCustomAnimations(R.anim.vevod_slide_in_right, R.anim.vevod_slide_out_right,
+                            R.anim.vevod_slide_in_right, R.anim.vevod_slide_out_right)
                     .addToBackStack(null)
                     .add(android.R.id.content, detail, DetailVideoFragment.class.getName())
                     .commit();
@@ -183,6 +183,7 @@ public class LongVideoFragment extends BaseFragment {
             @Override
             public void onSuccess(Page<VideoItem> page) {
                 L.d(this, "refresh", "success");
+                if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
                 dismissRefreshing();
                 mDataTrans.setList(mAdapter, videoItems);
@@ -191,6 +192,7 @@ public class LongVideoFragment extends BaseFragment {
             @Override
             public void onError(Exception e) {
                 L.d(this, "refresh", e, "error");
+                if (getActivity() == null) return;
                 dismissRefreshing();
                 Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
             }
@@ -234,6 +236,7 @@ public class LongVideoFragment extends BaseFragment {
                 @Override
                 public void onSuccess(Page<VideoItem> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
                     dismissLoadingMore();
                     mDataTrans.append(mAdapter, videoItems);
@@ -242,6 +245,7 @@ public class LongVideoFragment extends BaseFragment {
                 @Override
                 public void onError(Exception e) {
                     L.d(this, "loadMore", "error", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     dismissLoadingMore();
                     Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
                 }

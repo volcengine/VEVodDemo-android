@@ -23,15 +23,15 @@ import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bytedance.playerkit.player.adapter.PlayerAdapter;
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
-import com.bytedance.playerkit.player.volcengine.model.VidParams;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.model.BareVideoInfo;
@@ -362,14 +362,14 @@ public class Mapper {
     public static int mapScalingMode(int mode) {
         int scalingMode = TTVideoEngine.IMAGE_LAYOUT_TO_FILL;
         switch (mode) {
-            case PlayerAdapter.SCALING_MODE_DEFAULT:
-                scalingMode = TTVideoEngine.IMAGE_LAYOUT_TO_FILL;
-                break;
-            case PlayerAdapter.SCALING_MODE_ASPECT_FIT:
+            case Player.SCALING_MODE_ASPECT_FIT:
                 scalingMode = TTVideoEngine.IMAGE_LAYOUT_ASPECT_FIT;
                 break;
-            case PlayerAdapter.SCALING_MODE_ASPECT_FILL:
+            case Player.SCALING_MODE_ASPECT_FILL:
                 scalingMode = TTVideoEngine.IMAGE_LAYOUT_ASPECT_FILL;
+                break;
+            case Player.SCALING_MODE_DEFAULT:
+                scalingMode = TTVideoEngine.IMAGE_LAYOUT_TO_FILL;
                 break;
         }
         return scalingMode;
@@ -484,8 +484,8 @@ public class Mapper {
         return Track.ENCODER_TYPE_H264;
     }
 
-    public static String trackEncodeType2VideoModelEncodeType(@Track.Encoder int encodeType) {
-        switch (encodeType) {
+    public static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
+        switch (encoderType) {
             case Track.ENCODER_TYPE_H264:
                 return Source.EncodeType.H264;
             case Track.ENCODER_TYPE_H265:
@@ -493,7 +493,7 @@ public class Mapper {
             case Track.ENCODER_TYPE_H266:
                 return Source.EncodeType.h266;
         }
-        throw new IllegalArgumentException("unsupported encoderType " + encodeType);
+        throw new IllegalArgumentException("unsupported encoderType " + encoderType);
     }
 
     private static int videoModelFormat2MediaSourceMediaProtocol(IVideoModel videoModel) {
@@ -569,15 +569,19 @@ public class Mapper {
 
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track != null) {
-            return new DirectUrlSource.Builder()
+            VolcConfig volcConfig = getVolcConfig(mediaSource);
+            DirectUrlSource.Builder builder =  new DirectUrlSource.Builder()
                     .setVid(mediaSource.getMediaId())
                     .addItem(new DirectUrlSource.UrlItem.Builder()
                             .setUrl(track.getUrl())
                             .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
                             .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
                             .setPlayAuth(track.getEncryptedKey())
-                            .build())
-                    .build();
+                            .build());
+            if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
+                builder.setCodecStrategy(volcConfig.codecStrategyType);
+            }
+            return builder.build();
         }
         return null;
     }
@@ -587,17 +591,21 @@ public class Mapper {
         if (quality != null) {
             resolution = quality2Resolution(quality);
         }
-        final VidParams vidParams = mediaSource.getExtra(VidParams.EXTRA_VID_PARAMS, VidParams.class);
-        final String encodeType = vidParams != null && vidParams.encodeType == Track.ENCODER_TYPE_H265 ?
-                Source.EncodeType.h265 : Source.EncodeType.H264;
 
-        return new VidPlayAuthTokenSource.Builder()
+        final VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+
+        VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .setPlayAuthToken(mediaSource.getPlayAuthToken())
-                .setResolution(resolution)
-                .setCodecStrategy(Source.KEY_HARDWARE_DECODE_FIRST)
-                .setEncodeType(encodeType)
-                .build();
+                .setResolution(resolution);
+
+        if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
+            builder.setCodecStrategy(volcConfig.codecStrategyType);
+        } else {
+            final String encodeType = trackEncodeType2VideoModelEncodeType(volcConfig.sourceEncodeType);
+            builder.setEncodeType(encodeType);
+        }
+        return builder.build();
     }
 
     public static List<StrategySource> mediaSources2StrategySources(List<MediaSource> mediaSources, CacheKeyFactory cacheKeyFactory, TrackSelector selector, int selectType) {
@@ -615,5 +623,16 @@ public class Mapper {
             }
         }
         return strategySources;
+    }
+
+    @NonNull
+    public static VolcConfig getVolcConfig(MediaSource mediaSource) {
+        if (mediaSource == null) return VolcConfig.DEFAULT;
+
+        VolcConfig volcConfig = mediaSource.getExtra(VolcConfig.EXTRA_VOLC_CONFIG, VolcConfig.class);
+        if (volcConfig == null) {
+            return VolcConfig.DEFAULT;
+        }
+        return volcConfig;
     }
 }

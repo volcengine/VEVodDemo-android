@@ -18,10 +18,10 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene;
 
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_DETAIL;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_FEED;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_LONG;
-import static com.bytedance.playerkit.player.ui.scene.PlayScene.SCENE_SHORT;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_DETAIL;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_FEED;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_LONG;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_SHORT;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,7 +36,9 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.detail.DetailVideoFragment;
@@ -87,7 +89,7 @@ public class VideoActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         mScene = getIntent().getIntExtra(EXTRA_VIDEO_SCENE, SCENE_SHORT);
         Bundle mArgs = getIntent().getBundleExtra(EXTRA_ARGS);
-        setContentView(R.layout.video_activity);
+        setContentView(R.layout.vevod_video_activity);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -102,6 +104,18 @@ public class VideoActivity extends BaseActivity {
             fm.beginTransaction().add(R.id.container, fragment, tag).commit();
         } else {
             fm.beginTransaction().attach(fragment).commit();
+        }
+
+        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)){
+            VolcPlayerStatic.setDebugToolContainerView(findViewById(R.id.debugTool));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)) {
+            VolcPlayerStatic.releaseDebugTool();
         }
     }
 
@@ -169,7 +183,7 @@ public class VideoActivity extends BaseActivity {
                 setActionBarTheme(
                         true,
                         true,
-                        getString(R.string.short_video),
+                        getString(R.string.vevod_short_video),
                         Color.TRANSPARENT,
                         getResources().getColor(android.R.color.white));
                 UIUtils.setSystemBarTheme(
@@ -186,7 +200,7 @@ public class VideoActivity extends BaseActivity {
                 setActionBarTheme(
                         true,
                         false,
-                        getString(R.string.long_video),
+                        getString(R.string.vevod_long_video),
                         getResources().getColor(android.R.color.white),
                         getResources().getColor(android.R.color.black));
                 UIUtils.setSystemBarTheme(
@@ -202,7 +216,7 @@ public class VideoActivity extends BaseActivity {
             case SCENE_FEED:
                 setActionBarTheme(
                         true,
-                        false, getString(R.string.feed_video),
+                        false, getString(R.string.vevod_feed_video),
                         getResources().getColor(android.R.color.white),
                         getResources().getColor(android.R.color.black));
                 UIUtils.setSystemBarTheme(
@@ -262,6 +276,9 @@ public class VideoActivity extends BaseActivity {
             } else {
                 toolbar.setElevation(UIUtils.dip2Px(this, 1));
                 ((ViewGroup.MarginLayoutParams) findViewById(R.id.container)
+                        .getLayoutParams())
+                        .topMargin = (int) UIUtils.dip2Px(this, 40);
+                ((ViewGroup.MarginLayoutParams) findViewById(R.id.debugTool)
                         .getLayoutParams())
                         .topMargin = (int) UIUtils.dip2Px(this, 40);
             }
