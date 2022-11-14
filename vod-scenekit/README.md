@@ -5,7 +5,7 @@
 ## SceneKit 目录结构
 
 ```text
-|--config               // gradle 配置目录
+|--gradle-config        // gradle 配置目录
 |--vod-playerkit        // 播放控件层根目录
 |--vod-scenekit         // 场景控件层根目录
 |--vod-settingskit      // 播放设置模块
@@ -25,7 +25,7 @@ cd VEVodDemo-android
 拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
 
 ```text
-config
+gradle-config
 vod-playerkit
 vod-scenekit
 vod-settingskit
@@ -51,8 +51,8 @@ allprojects {
 ```groovy
 include ':app'
 
-apply from: file("config/vod_playerkit_library_settings.gradle")
-apply from: file("config/vod_scenekit_library_settings.gradle")
+apply from: file("gradle-config/vod_playerkit_library_settings.gradle")
+apply from: file("gradle-config/vod_scenekit_library_settings.gradle")
 ```
 
 5. 在 App module 的 build.gradle 中引入 SceneKit 依赖

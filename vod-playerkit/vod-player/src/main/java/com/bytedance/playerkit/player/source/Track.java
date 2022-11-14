@@ -59,16 +59,19 @@ public class Track implements Serializable {
      */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENCODER_TYPE_H264, ENCODER_TYPE_H265, ENCODER_TYPE_H266})
-    public @interface Encoder {
+    @IntDef({ENCODE_TYPE_UNKNOWN, ENCODER_TYPE_H264, ENCODER_TYPE_H265, ENCODER_TYPE_H266})
+    public @interface EncoderType {
     }
 
-    public static final int ENCODER_TYPE_H264 = 0;
-    public static final int ENCODER_TYPE_H265 = 1;
+    public static final int ENCODE_TYPE_UNKNOWN = 0;
+    public static final int ENCODER_TYPE_H264 = 1;
+    public static final int ENCODER_TYPE_H265 = 2;
     public static final int ENCODER_TYPE_H266 = 3;
 
-    public static String mapEncoderType(@Encoder int encodeType) {
+    public static String mapEncoderType(@EncoderType int encodeType) {
         switch (encodeType) {
+            case ENCODE_TYPE_UNKNOWN:
+                return "unknown";
             case ENCODER_TYPE_H264:
                 return "H264";
             case ENCODER_TYPE_H265:
@@ -126,7 +129,7 @@ public class Track implements Serializable {
 
     @Format
     private int format;
-    @Encoder
+    @EncoderType
     private int encoderType;
     private int videoWidth;
     private int videoHeight;
@@ -235,12 +238,12 @@ public class Track implements Serializable {
         this.format = format;
     }
 
-    @Encoder
+    @EncoderType
     public int getEncoderType() {
         return encoderType;
     }
 
-    public void setEncoderType(@Encoder int encoderType) {
+    public void setEncoderType(@EncoderType int encoderType) {
         this.encoderType = encoderType;
     }
 

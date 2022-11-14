@@ -18,6 +18,8 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_ENABLE_BMF;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -93,7 +95,7 @@ public class VolcPlayerInit {
     }
 
     public static File cacheDir(Context context) {
-        return new File(context.getCacheDir(), "bytedance/vod/video_cache");
+        return new File(context.getCacheDir(), "bytedance/playerkit/volcplayer/video_cache");
     }
 
     private static void initVOD(Context context, AppInfo appInfo) {
@@ -103,6 +105,8 @@ public class VolcPlayerInit {
         }
 
         TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_NEED_SPEED_TEST_BY_TIMEINTERNAL, 1); // speed test
+
+        TTVideoEngine.setIntValue(PLAYER_OPTION_ENABLE_BMF, 1); // enable bmf super resolution
 
         File videoCacheDir = cacheDir(context);
         if (!videoCacheDir.exists()) videoCacheDir.mkdirs();

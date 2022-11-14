@@ -16,6 +16,6 @@
   ~ Create Date : 2022/9/13
   -->
 
-<resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="ic_launcher_background" tools:ignore="ResourceName">#FFFFFF</color>
 </resources>

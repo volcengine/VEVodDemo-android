@@ -26,7 +26,7 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.playerkit.player.ui.layer.CoverLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;

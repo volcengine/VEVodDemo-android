@@ -30,3 +30,8 @@
 -keep class com.pandora.ttlicense2.**{*;}
 -keep class com.pandora.common.applog.**{*;}
 -keep class com.pandora.vod.VodSDK {*;}
+
+# 超分
+-keep class com.ss.bmf.** {*;}
+-keep class com.ss.bmf_mods.** {*;}
+-keep class com.ss.bmf_mods_api.** {*;}

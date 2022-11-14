@@ -18,8 +18,13 @@
 
 <resources>
 
-    <style name="CircleImage">
+    <style name="vevod_circle_image">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="vevod_pip_animation">
+        <item name="android:windowEnterAnimation">@anim/vevod_anim_pip_show</item>
+        <item name="android:windowExitAnimation">@anim/vevod_anim_pip_dismiss</item>
     </style>
 </resources>

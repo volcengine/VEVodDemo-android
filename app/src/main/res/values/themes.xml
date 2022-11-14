@@ -16,10 +16,10 @@
   ~ Create Date : 2021/12/28
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_bg</item>
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar" tools:ignore="ResourceName">
+        <item name="android:windowBackground">@drawable/vevod_splash_bg</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

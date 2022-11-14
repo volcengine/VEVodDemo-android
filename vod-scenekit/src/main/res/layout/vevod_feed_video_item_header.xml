@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2021 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2021/12/28
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="12dp"
+    android:paddingTop="18dp"
+    android:paddingRight="12dp"
+    android:paddingBottom="8dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/userAvatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="8dp"
+        android:src="@drawable/vevod_feed_video_user_volc_avatar"
+        app:shapeAppearanceOverlay="@style/vevod_circle_image" />
+
+    <TextView
+        android:id="@+id/userName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/userAvatar"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/userAvatar"
+        android:gravity="center_vertical"
+        android:text="火山引擎 VoD"
+        android:textColor="#73767A"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/dot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/userName"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_toRightOf="@id/userName"
+        android:gravity="center_vertical"
+        android:text="·"
+        android:textColor="#73767A"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/follow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/userName"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/dot"
+        android:gravity="center_vertical"
+        android:text="关注"
+        android:textColor="@color/vevod_video_feed_item_header_follow_color"
+        android:textSize="12sp" />
+
+
+    <ImageView
+        android:id="@+id/more"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/vevod_feed_video_item_header_ic_three_dot_more" />
+
+    <TextView
+        android:id="@+id/videoDesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userName"
+        android:layout_marginTop="4dp"
+        android:layout_toRightOf="@id/userAvatar"
+        android:gravity="center_vertical"
+        android:textColor="#0C0D0F"
+        android:textSize="15sp"
+        tools:text="火山引擎，智能激发增长" />
+
+</RelativeLayout>

@@ -76,7 +76,7 @@ public class FeedVideoFragment extends BaseFragment {
 
     @Override
     protected int getLayoutResId() {
-        return R.layout.feed_video_fragment;
+        return R.layout.vevod_feed_video_fragment;
     }
 
     @Override
@@ -103,6 +103,7 @@ public class FeedVideoFragment extends BaseFragment {
             @Override
             public void onSuccess(Page<VideoItem> page) {
                 L.d(this, "refresh", "success");
+                if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
                 mSceneView.dismissRefreshing();
                 if (!videoItems.isEmpty()) {
@@ -113,6 +114,7 @@ public class FeedVideoFragment extends BaseFragment {
             @Override
             public void onError(Exception e) {
                 L.d(this, "refresh", e, "error");
+                if (getActivity() == null) return;
                 mSceneView.dismissRefreshing();
                 Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
             }
@@ -128,6 +130,7 @@ public class FeedVideoFragment extends BaseFragment {
                 @Override
                 public void onSuccess(Page<VideoItem> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
@@ -136,6 +139,7 @@ public class FeedVideoFragment extends BaseFragment {
                 @Override
                 public void onError(Exception e) {
                     L.d(this, "loadMore", e, "error", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     mSceneView.dismissLoadingMore();
                     Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
                 }

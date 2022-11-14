@@ -1,0 +1,44 @@
+[
+  {
+    "name": ":vod-demo-api",
+    "publishable": true,
+    "path": "vod-demo-api",
+    "attachName": "vod-demo-api"
+  },
+  {
+    "name": ":vod-demo",
+    "publishable": true,
+    "path": "vod-demo",
+    "attachName": "vod-demo"
+  },
+  {
+    "name": ":vod-playerkit:vod-player",
+    "publishable": true,
+    "path": "vod-playerkit/vod-player",
+    "attachName": "vod-playerkit:vod-player"
+  },
+  {
+    "name": ":vod-playerkit:vod-player-utils",
+    "publishable": true,
+    "path": "vod-playerkit/vod-player-utils",
+    "attachName": "vod-playerkit:vod-player-utils"
+  },
+  {
+    "name": ":vod-playerkit:vod-player-volcengine",
+    "publishable": true,
+    "path": "vod-playerkit/vod-player-volcengine",
+    "attachName": "vod-playerkit:vod-player-volcengine"
+  },
+  {
+    "name": ":vod-scenekit",
+    "publishable": true,
+    "path": "vod-scenekit",
+    "attachName": "vod-scenekit"
+  },
+  {
+    "name": ":vod-settingskit",
+    "publishable": true,
+    "path": "vod-settingskit",
+    "attachName": "vod-settingskit"
+  }
+]

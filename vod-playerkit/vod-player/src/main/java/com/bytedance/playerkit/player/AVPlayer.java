@@ -853,6 +853,21 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
+    public void setSuperResolutionEnabled(boolean enabled) {
+
+        if (checkIsRelease("setSuperResolutionEnabled")) return;
+        L.d(this, "setSuperResolutionEnabled", isSuperResolutionEnabled(), enabled);
+        mPlayer.setSuperResolutionEnabled(enabled);
+    }
+
+    @Override
+    public boolean isSuperResolutionEnabled() {
+        if (checkIsRelease("isSuperResolutionEnabled")) return false;
+
+        return mPlayer.isSuperResolutionEnabled();
+    }
+
+    @Override
     public boolean isBuffering() {
         return mIsBuffering;
     }

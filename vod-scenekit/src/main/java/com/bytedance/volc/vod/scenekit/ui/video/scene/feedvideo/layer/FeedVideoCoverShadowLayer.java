@@ -30,8 +30,9 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
-import com.bytedance.playerkit.player.ui.layer.base.AnimateLayer;
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.R;
@@ -49,7 +50,7 @@ public class FeedVideoCoverShadowLayer extends AnimateLayer {
     @Override
     protected View createView(@NonNull ViewGroup parent) {
         ImageView imageView = new ImageView(parent.getContext());
-        imageView.setBackground(parent.getResources().getDrawable(R.drawable.feed_video_item_cover_bottom_shadow));
+        imageView.setBackground(parent.getResources().getDrawable(R.drawable.vevod_feed_video_item_cover_bottom_shadow));
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 (int) UIUtils.dip2Px(parent.getContext(), 80));
         lp.gravity = Gravity.BOTTOM;
@@ -65,6 +66,12 @@ public class FeedVideoCoverShadowLayer extends AnimateLayer {
     @Override
     protected void onUnbindPlaybackController(@NonNull PlaybackController controller) {
         controller.removePlaybackListener(mPlaybackListener);
+    }
+
+    @Override
+    public void onVideoViewBindDataSource(MediaSource dataSource) {
+        super.onVideoViewBindDataSource(dataSource);
+        show();
     }
 
     private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {

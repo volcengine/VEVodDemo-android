@@ -1,1 +1,2 @@
 -keep class com.bytedance.volc.vod.scenekit.**{*;}
+-keep class com.bytedance.playerkit.player.ui.**{*;}

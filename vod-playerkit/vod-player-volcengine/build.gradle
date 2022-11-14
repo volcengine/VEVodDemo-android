@@ -17,15 +17,53 @@
  */
 
 apply plugin: 'com.android.library'
-apply from: "${gradle.ext.playerKitRootDir}/../config/library.gradle"
+apply from: rootProject.file("gradle-config/constants.gradle")
+def publishFile = rootProject.file("publish.gradle")
+if (publishFile.exists()) {
+    apply from: publishFile
+}
+
+android {
+    compileSdkVersion project.ext.compileSdkVersion
+    buildToolsVersion project.ext.buildToolsVersion
+
+    resourcePrefix 'vevod_'
+
+    defaultConfig {
+        minSdkVersion project.ext.minSdkVersion
+        targetSdkVersion project.ext.targetSdkVersion
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
 
 dependencies {
+    testImplementation "junit:junit:${project.ext.junit}"
+    androidTestImplementation "androidx.test.ext:junit:${project.ext.androidxTestJunit}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${project.ext.androidxTestEspressoCore}"
+
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
 
     implementation "com.bytedanceapi:ttsdk-player_premium:${project.ext.bytedance.ttsdkVersion}"
+    implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+    implementation "com.bytedanceapi:ttvideoengine-debugtool:0.3.0.1"
+
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"
     implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
 
-    implementation project(modulePrefix + 'vod-playerkit:vod-player')
-    implementation project(modulePrefix + 'vod-playerkit:vod-player-utils')
+    implementation project(':vod-playerkit:vod-player')
+    implementation project(':vod-playerkit:vod-player-utils')
 }

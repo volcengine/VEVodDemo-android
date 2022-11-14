@@ -30,7 +30,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.bytedance.playerkit.player.ui.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.settingskit.SettingsFragment;
@@ -47,7 +47,7 @@ public class SettingsActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.settings_activity);
+        setContentView(R.layout.vevod_settings_activity);
 
         UIUtils.setSystemBarTheme(
                 this,
@@ -65,6 +65,7 @@ public class SettingsActivity extends BaseActivity {
                 R.drawable.vevod_actionbar_back,
                 null));
         toolbar.setTitleTextColor(getResources().getColor(android.R.color.black));
+        toolbar.setBackgroundColor(Color.WHITE);
         if (toolbar.getNavigationIcon() != null) {
             toolbar.getNavigationIcon().setTint(getResources().getColor(android.R.color.black));
         }
@@ -74,7 +75,7 @@ public class SettingsActivity extends BaseActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(R.string.settings_activity_title);
+            actionBar.setTitle(R.string.vevod_settings_activity_title);
         }
 
         if (savedInstanceState == null) {

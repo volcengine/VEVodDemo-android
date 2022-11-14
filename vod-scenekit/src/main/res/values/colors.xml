@@ -17,6 +17,7 @@
   -->
 
 <resources>
+    <color name="vevod_play_complete_background">#88000000</color>
 
 
 </resources>

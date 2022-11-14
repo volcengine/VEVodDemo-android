@@ -69,7 +69,7 @@ public class ShortVideoFragment extends BaseFragment {
 
     @Override
     protected int getLayoutResId() {
-        return R.layout.short_video_fragment;
+        return R.layout.vevod_short_video_fragment;
     }
 
     @Override
@@ -95,6 +95,7 @@ public class ShortVideoFragment extends BaseFragment {
             @Override
             public void onSuccess(Page<VideoItem> page) {
                 L.d(this, "refresh", "success");
+                if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
                 mSceneView.dismissRefreshing();
                 mSceneView.pageView().setItems(videoItems);
@@ -103,6 +104,7 @@ public class ShortVideoFragment extends BaseFragment {
             @Override
             public void onError(Exception e) {
                 L.d(this, "refresh", e, "error");
+                if (getActivity() == null) return;
                 mSceneView.dismissRefreshing();
                 Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
             }
@@ -117,6 +119,7 @@ public class ShortVideoFragment extends BaseFragment {
                 @Override
                 public void onSuccess(Page<VideoItem> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
@@ -125,6 +128,7 @@ public class ShortVideoFragment extends BaseFragment {
                 @Override
                 public void onError(Exception e) {
                     L.d(this, "loadMore", "error", mBook.nextPageIndex());
+                    if (getActivity() == null) return;
                     mSceneView.dismissLoadingMore();
                     Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
                 }

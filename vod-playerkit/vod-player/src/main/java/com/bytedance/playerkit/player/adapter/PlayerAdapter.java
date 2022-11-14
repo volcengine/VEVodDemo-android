@@ -27,6 +27,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
@@ -38,26 +39,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 public interface PlayerAdapter {
-
-    /**
-     * Scaling mode. One of
-     * {@link #SCALING_MODE_DEFAULT},
-     * {@link #SCALING_MODE_ASPECT_FIT},
-     * {@link #SCALING_MODE_ASPECT_FILL}
-     */
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SCALING_MODE_DEFAULT,
-            SCALING_MODE_ASPECT_FIT,
-            SCALING_MODE_ASPECT_FILL})
-    @interface ScalingMode {
-    }
-
-    /**
-     * @see MediaPlayer#VIDEO_SCALING_MODE_SCALE_TO_FIT
-     */
-    int SCALING_MODE_DEFAULT = 0;
-    int SCALING_MODE_ASPECT_FIT = 1;
-    int SCALING_MODE_ASPECT_FILL = 2;
 
     class Info {
         /* Do not change these values without updating their counterparts
@@ -149,7 +130,7 @@ public interface PlayerAdapter {
 
     void setDisplay(@Nullable SurfaceHolder display);
 
-    void setVideoScalingMode(@ScalingMode int mode);
+    void setVideoScalingMode(@Player.ScalingMode int mode);
 
     void setDataSource(@NonNull MediaSource source) throws IOException;
 
@@ -212,6 +193,10 @@ public interface PlayerAdapter {
     void setAudioSessionId(int audioSessionId);
 
     int getAudioSessionId();
+
+    void setSuperResolutionEnabled(boolean enabled);
+
+    boolean isSuperResolutionEnabled();
 
     String dump();
 

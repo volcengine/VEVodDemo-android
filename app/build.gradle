@@ -19,11 +19,13 @@
 plugins {
     id 'com.android.application'
 }
-apply from: "../config/constants.gradle"
+apply from: rootProject.file("gradle-config/constants.gradle")
 
 android {
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
+
+    //resourcePrefix 'vevod_'
 
     defaultConfig {
         applicationId "com.bytedance.volc.voddemo"

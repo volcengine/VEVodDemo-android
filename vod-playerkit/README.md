@@ -10,7 +10,7 @@
 ## PlayerKit 目录结构
 
 ```text
-|--config                     // gradle 配置目录
+|--gradle-config              // gradle 配置目录
 |--vod-playerkit              // 播放控件层根目录
 |--|--vod-player              // 播放器适配层（定义了一套标准播放器接口）
 |--|--vod-player-volcengine   // 火山引擎播放器实现模块
@@ -38,7 +38,7 @@ cd VEVodDemo-android
 
 拷贝如下几个文件夹到工程根目录下，层级结构与 VEVodDemo-Android 保持一致
 ```text
-config
+gradle-config
 vod-playerkit
 ```
 > 拷贝完成后，建议做一次 git commit，并在 commit message 中记录 VEVodDemo-android 当前最新的 commit id。后续因业务需要可能会更改源码，那这次 commit 就可以起到追溯作用。
@@ -62,7 +62,7 @@ allprojects {
 ```groovy
 include ':app'
 
-apply from: file("config/vod_playerkit_library_settings.gradle")
+apply from: file("gradle-config/vod_playerkit_library_settings.gradle")
 ```
 
 5. 在 App module 的 build.gradle 中引入 PlayerKit 依赖
