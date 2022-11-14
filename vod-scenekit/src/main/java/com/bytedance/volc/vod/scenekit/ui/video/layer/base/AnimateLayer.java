@@ -254,8 +254,8 @@ public abstract class AnimateLayer extends BaseLayer {
     public void show() {
         removeDismissRunnable();
         if (mAnimator != null && mAnimator.isStarted()) {
-            mAnimator.cancel();
             mAnimator.removeAllListeners();
+            mAnimator.cancel();
         }
         super.show();
         resetViewAnimateProperty();
@@ -266,8 +266,8 @@ public abstract class AnimateLayer extends BaseLayer {
     public void dismiss() {
         removeDismissRunnable();
         if (mAnimator != null && mAnimator.isStarted()) {
-            mAnimator.cancel();
             mAnimator.removeAllListeners();
+            mAnimator.cancel();
         }
         super.dismiss();
         resetViewAnimateProperty();
@@ -278,8 +278,8 @@ public abstract class AnimateLayer extends BaseLayer {
     public void hide() {
         removeDismissRunnable();
         if (mAnimator != null && mAnimator.isStarted()) {
-            mAnimator.cancel();
             mAnimator.removeAllListeners();
+            mAnimator.cancel();
         }
         super.hide();
         resetViewAnimateProperty();
