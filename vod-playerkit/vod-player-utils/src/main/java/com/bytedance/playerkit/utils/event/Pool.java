@@ -27,20 +27,20 @@ import java.util.Map;
 class Pool {
     private static final Map<Class<? extends Event>, Pools.SimplePool<Event>> sPools = new ArrayMap<>();
 
-    static <T extends Event> T acquire(Class<T> clazz) {
-        Pools.SimplePool<Event> pools = sPools.get(clazz);
-        if (pools == null) {
-            pools = new Pools.SimplePool<>(5);
-            sPools.put(clazz, pools);
+    synchronized static <T extends Event> T acquire(Class<T> clazz) {
+        Pools.SimplePool<Event> pool = sPools.get(clazz);
+        if (pool == null) {
+            pool = new Pools.SimplePool<>(5);
+            sPools.put(clazz, pool);
         }
-        final Event event = pools.acquire();
+        final Event event = pool.acquire();
         if (event != null) {
             return clazz.cast(event);
         }
         return Factory.create(clazz);
     }
 
-    static void release(Event event) {
+    synchronized static void release(Event event) {
         event.recycle();
         final Pools.SimplePool<Event> eventPool = sPools.get(event.getClass());
         if (eventPool != null) {
