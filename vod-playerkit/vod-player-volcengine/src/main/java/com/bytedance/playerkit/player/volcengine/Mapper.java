@@ -484,6 +484,7 @@ public class Mapper {
         return Track.ENCODER_TYPE_H264;
     }
 
+    @Nullable
     public static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
         switch (encoderType) {
             case Track.ENCODER_TYPE_H264:
@@ -493,7 +494,7 @@ public class Mapper {
             case Track.ENCODER_TYPE_H266:
                 return Source.EncodeType.h266;
         }
-        throw new IllegalArgumentException("unsupported encoderType " + encoderType);
+        return null;
     }
 
     private static int videoModelFormat2MediaSourceMediaProtocol(IVideoModel videoModel) {
