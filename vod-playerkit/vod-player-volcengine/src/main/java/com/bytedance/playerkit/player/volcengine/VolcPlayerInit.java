@@ -104,6 +104,8 @@ public class VolcPlayerInit {
             LicenseManager.turnOnLogcat(true);
         }
 
+        TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
+
         TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_NEED_SPEED_TEST_BY_TIMEINTERNAL, 1); // speed test
 
         TTVideoEngine.setIntValue(PLAYER_OPTION_ENABLE_BMF, 1); // enable bmf super resolution
