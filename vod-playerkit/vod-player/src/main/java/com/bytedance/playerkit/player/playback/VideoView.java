@@ -80,6 +80,8 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
 
     private int mPlayScene;
 
+    private Boolean mHasWindowFocus;
+
     public interface ViewEventListener {
         void onConfigurationChanged(Configuration newConfig);
 
@@ -208,8 +210,13 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        for (VideoViewListener listener : mListeners) {
-            listener.onWindowFocusChanged(hasWindowFocus);
+        // Using mHasWindowFocus to avoid onWindowFocusChanged callback multi times with same
+        // hasWindowFocus value on some devices.
+        if (mHasWindowFocus == null || mHasWindowFocus != hasWindowFocus) {
+            mHasWindowFocus = hasWindowFocus;
+            for (VideoViewListener listener : mListeners) {
+                listener.onWindowFocusChanged(hasWindowFocus);
+            }
         }
     }
 

@@ -204,6 +204,9 @@ public abstract class DisplayView {
             this.reuseSurface = reuseSurface;
             if (!reuseSurface && !textureView.isAttachedToWindow() && ttSurface != null) {
                 L.d(TextureDisplayView.this, "setReuseSurface", false, "destroy", ttSurface, ttSurface.getSurfaceTexture());
+                if (surfaceListener != null) {
+                    surfaceListener.onSurfaceDestroy(ttSurface);
+                }
                 ttSurface.releaseDeep();
                 ttSurface = null;
             } else {

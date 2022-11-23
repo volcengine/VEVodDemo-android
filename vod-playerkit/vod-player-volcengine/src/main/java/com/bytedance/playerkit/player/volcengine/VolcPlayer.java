@@ -26,6 +26,7 @@ import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -45,7 +46,6 @@ import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineListenerAdapter;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
-import com.ss.ttffmpeg.IFFmpegLoader;
 import com.ss.ttm.player.PlaybackParams;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 
 class VolcPlayer implements PlayerAdapter {
     private final Context mContext;
@@ -110,6 +111,25 @@ class VolcPlayer implements PlayerAdapter {
         @Override
         public PlayerAdapter create(Looper eventLooper) {
             return new VolcPlayer(mContext, mMediaSource);
+        }
+    }
+
+    private static final class EngineParams {
+        private final static WeakHashMap<TTVideoEngine, EngineParams> sPlayerParams = new WeakHashMap<>();
+
+        private boolean mSuperResolutionInitialized;
+
+        private synchronized static EngineParams get(TTVideoEngine engine) {
+            EngineParams params = sPlayerParams.get(engine);
+            if (params == null) {
+                params = new EngineParams();
+                sPlayerParams.put(engine, params);
+            }
+            return params;
+        }
+
+        private synchronized static EngineParams remove(TTVideoEngine engine) {
+            return sPlayerParams.remove(engine);
         }
     }
 
@@ -258,6 +278,19 @@ class VolcPlayer implements PlayerAdapter {
         if (mSurface != surface) {
             mPlayer.setSurface(surface);
             mSurface = surface;
+        } else if (surface != null) {
+            refreshSurface();
+        }
+    }
+
+    private void refreshSurface() {
+        if (Mapper.getVolcConfig(mMediaSource).enableTextureRender) {
+            if (isInPlaybackState()) {
+                mPlayer.forceDraw();
+            }
+        } else {
+            mPlayer.setSurface(null);
+            mPlayer.setSurface(mSurface);
         }
     }
 
@@ -650,7 +683,6 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void resetInner() {
-        mSuperResolutionInit = false;
         mPreRenderPlayer = false;
         mSurface = null;
         mSurfaceHolder = null;
@@ -665,6 +697,7 @@ class VolcPlayer implements PlayerAdapter {
         mPlaybackParams.setSpeed(1f);
         mListener = null;
         mPlayerException = null;
+        EngineParams.remove(mPlayer);
     }
 
     @Override
@@ -785,8 +818,6 @@ class VolcPlayer implements PlayerAdapter {
         return mPlayer.getIntOption(TTVideoEngine.PLAYER_OPTION_AUDIOTRACK_SESSIONID);
     }
 
-    private boolean mSuperResolutionInit;
-
     /**
      * 设置是否开启超分；
      * 针对一个 TTVideoEngine 实例首次开启需要在 play 之前调用；
@@ -794,34 +825,39 @@ class VolcPlayer implements PlayerAdapter {
      */
     @Override
     public void setSuperResolutionEnabled(boolean enabled) {
-        mPlayer.openTextureSR(true, enabled);
-
-        if (isInPlaybackState() && !isPlaying()) {
-            mPlayer.forceDraw();
+        if (EngineParams.get(mPlayer).mSuperResolutionInitialized) {
+            mPlayer.openTextureSR(true, enabled);
+            if (isInPlaybackState() && !isPlaying()) {
+                mPlayer.forceDraw();
+            }
         }
     }
 
     private static void initSuperResolution(Context context, TTVideoEngine player, boolean enabled) {
-        // 必须要保障该文件夹路径是存在的，并且可读写的
-        File file = new File(context.getFilesDir(), "bytedance/playerkit/volcplayer/bmf");
-        if (!file.exists()) {
-            file.mkdirs();
+        if (!EngineParams.get(player).mSuperResolutionInitialized) {
+            // 必须要保障该文件夹路径是存在的，并且可读写的
+            File file = new File(context.getFilesDir(), "bytedance/playerkit/volcplayer/bmf");
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            // 是否异步初始化超分, 这里设置为 false
+            // 若设置为 true，只有在开启超分的时候才会开启 textureRender
+            player.asyncInitSR(false);
+            // 设置播放过程中可动态控制关闭 or 开启超分
+            player.dynamicControlSR(true);
+            // 设置超分参数，第一个参数为超分算法，推荐使用 0（2 倍超分）
+            player.setSRInitConfig(0, file.getAbsolutePath(), "SR", "SR");
+            // 超分播放忽视分辨率限制，推荐使用
+            player.ignoreSRResolutionLimit(true);
+            // 开启超分
+            EngineParams.get(player).mSuperResolutionInitialized = true;
         }
-        // 是否异步初始化超分
-        player.asyncInitSR(true);
-        // 设置播放过程中可动态控制关闭 or 开启超分
-        player.dynamicControlSR(true);
-        // 设置超分参数，第一个参数为超分算法，推荐使用 0（2 倍超分）
-        player.setSRInitConfig(0, file.getAbsolutePath(), "SR", "SR");
-        // 超分播放忽视分辨率限制，推荐使用
-        player.ignoreSRResolutionLimit(true);
-        // 开启超分
         player.openTextureSR(true, enabled);
     }
 
     @Override
     public boolean isSuperResolutionEnabled() {
-        return mPlayer != null && mPlayer.isplaybackUsedSR();
+        return mPlayer != null && EngineParams.get(mPlayer).mSuperResolutionInitialized && mPlayer.isplaybackUsedSR();
     }
 
     @Override
@@ -832,15 +868,18 @@ class VolcPlayer implements PlayerAdapter {
                 + (mPreRenderPlayer ? " pre" : "");
     }
 
+    @SuppressLint("SwitchIntDef")
     private boolean isInPlaybackState() {
-        switch (mState) {
-            case Player.STATE_PREPARED:
-            case Player.STATE_STARTED:
-            case Player.STATE_PAUSED:
-            case Player.STATE_COMPLETED:
-                return true;
-            default:
-                return false;
+        synchronized (this) {
+            switch (mState) {
+                case Player.STATE_PREPARED:
+                case Player.STATE_STARTED:
+                case Player.STATE_PAUSED:
+                case Player.STATE_COMPLETED:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 

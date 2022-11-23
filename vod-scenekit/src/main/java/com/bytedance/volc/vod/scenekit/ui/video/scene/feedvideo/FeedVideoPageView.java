@@ -40,10 +40,10 @@ import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoAdapter.OnItemViewListener;
 
 import java.util.List;
@@ -55,6 +55,7 @@ public class FeedVideoPageView extends FrameLayout {
     private Lifecycle mLifeCycle;
     private DetailPageNavigator mNavigator;
     private VideoView mCurrentVideoView;
+    private boolean mInterceptStartPlaybackOnResume;
 
     public interface DetailPageNavigator {
 
@@ -200,7 +201,7 @@ public class FeedVideoPageView extends FrameLayout {
         public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
             switch (event) {
                 case ON_RESUME:
-                    play();
+                    resume();
                     break;
                 case ON_PAUSE:
                     pause();
@@ -232,9 +233,22 @@ public class FeedVideoPageView extends FrameLayout {
         }
     }
 
+    public void resume() {
+        if (!mInterceptStartPlaybackOnResume) {
+            play();
+        }
+        mInterceptStartPlaybackOnResume = false;
+    }
+
     public void pause() {
         if (mCurrentVideoView != null) {
-            mCurrentVideoView.pausePlayback();
+            Player player = mCurrentVideoView.player();
+            if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+                mInterceptStartPlaybackOnResume = true;
+            } else {
+                mInterceptStartPlaybackOnResume = false;
+                mCurrentVideoView.pausePlayback();
+            }
         }
     }
 
