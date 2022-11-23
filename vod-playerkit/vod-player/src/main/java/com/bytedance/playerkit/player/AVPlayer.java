@@ -401,7 +401,6 @@ public class AVPlayer extends ExtraObject implements Player {
         if (checkIsRelease("setSurface")) return;
 
         L.d(this, "setSurface", mSurface, surface);
-        if (mSurface == surface) return;
         mDispatcher.obtain(ActionSetSurface.class, this).init(surface).dispatch();
         mSurface = surface;
         mPlayer.setSurface(surface);

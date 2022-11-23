@@ -49,6 +49,10 @@ public class ShortVideoCoverLayer extends CoverLayer {
         final VideoView videoView = videoView();
         if (videoView == null) return;
 
+        if (player() != null) {
+            return;
+        }
+
         final boolean rendered = ShortVideoStrategy.renderFrame(videoView);
         if (rendered) {
             L.d(this, "onSurfaceAvailable", videoView, surface, "preRender success");

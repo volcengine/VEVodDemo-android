@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
@@ -46,6 +47,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     private final ShortVideoAdapter mShortVideoAdapter;
     private final PlaybackController mController = new PlaybackController();
     private Lifecycle mLifeCycle;
+    private boolean mInterceptStartPlaybackOnResume;
 
     public ShortVideoPageView(@NonNull Context context) {
         this(context, null);
@@ -147,8 +149,21 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
     }
 
+    public void resume() {
+        if (!mInterceptStartPlaybackOnResume) {
+            play();
+        }
+        mInterceptStartPlaybackOnResume = false;
+    }
+
     public void pause() {
-        mController.pausePlayback();
+        Player player = mController.player();
+        if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+            mInterceptStartPlaybackOnResume = true;
+        } else {
+            mInterceptStartPlaybackOnResume = false;
+            mController.pausePlayback();
+        }
     }
 
     public void stop() {
@@ -163,7 +178,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
                 break;
             case ON_RESUME:
                 ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
-                play();
+                resume();
                 break;
             case ON_PAUSE:
                 pause();

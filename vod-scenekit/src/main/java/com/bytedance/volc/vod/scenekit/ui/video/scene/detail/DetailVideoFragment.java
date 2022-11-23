@@ -32,11 +32,15 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.FullScreenLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
@@ -57,12 +61,9 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SpeedSelectDialogLa
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.TimeProgressDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.VolumeBrightnessDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
-import com.bytedance.volc.vod.scenekit.utils.ViewUtils;
-import com.bytedance.volc.vod.scenekit.R;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
+import com.bytedance.volc.vod.scenekit.utils.ViewUtils;
 
 
 public class DetailVideoFragment extends BaseFragment {
@@ -74,6 +75,7 @@ public class DetailVideoFragment extends BaseFragment {
 
     private VideoView mSharedVideoView;
     private View mTransitionView;
+    private boolean mInterceptStartPlaybackOnResume;
 
     public DetailVideoFragment() {
     }
@@ -184,22 +186,47 @@ public class DetailVideoFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (mVideoView != null) {
-            mVideoView.startPlayback();
-        }
+        resume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mVideoView != null) {
-            mVideoView.pausePlayback();
-        }
+        pause();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        stop();
+    }
+
+    private void play() {
+        if (mVideoView != null) {
+            mVideoView.startPlayback();
+        }
+    }
+
+    private void resume() {
+        if (!mInterceptStartPlaybackOnResume) {
+            play();
+        }
+        mInterceptStartPlaybackOnResume = false;
+    }
+
+    private void pause() {
+        if (mVideoView != null) {
+            Player player = mVideoView.player();
+            if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+                mInterceptStartPlaybackOnResume = true;
+            } else {
+                mInterceptStartPlaybackOnResume = false;
+                mVideoView.pausePlayback();
+            }
+        }
+    }
+
+    private void stop() {
         if (mVideoView != null) {
             mVideoView.stopPlayback();
             mVideoView = null;

@@ -21,6 +21,7 @@ package com.bytedance.playerkit.player.playback;
 import static com.bytedance.playerkit.player.source.MediaSource.mediaEquals;
 import static com.bytedance.playerkit.utils.event.Dispatcher.EventListener;
 
+import android.os.Build;
 import android.os.Looper;
 import android.view.Surface;
 
@@ -443,9 +444,7 @@ public class PlaybackController {
         if (surface == null) return;
 
         // 1. update surface
-        if (surface != player.getSurface()) {
-            player.setSurface(surface);
-        }
+        player.setSurface(surface);
 
         @Player.PlayerState final int playerState = player.getState();
 
@@ -568,7 +567,7 @@ public class PlaybackController {
                 controller.mStartOnReadyCommand.run();
             } else {
                 final Player player = controller.player();
-                if (player != null && player.getSurface() != surface) {
+                if (player != null) {
                     player.setSurface(surface);
                 }
             }
@@ -600,21 +599,43 @@ public class PlaybackController {
             final VideoView videoView = controller.videoView();
             if (videoView == null) return;
 
+            final Player player = controller.player();
+            if (player == null) return;
+
             final int type = videoView.getDisplayViewType();
 
             switch (type) {
                 case DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW:
-                    if (videoView.isReuseSurface()) {
-                        return;
+                    if (!videoView.isReuseSurface()) {
+                        if (player.getSurface() == surface) {
+                            player.setSurface(null);
+                        }
                     }
+                    return;
                 case DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW:
-                    final Player player = controller.player();
-                    if (player != null && player.getSurface() == surface) {
+                    if (player.getSurface() == surface) {
                         player.setSurface(null);
                     }
                     return;
                 default:
                     throw new IllegalArgumentException("unsupported displayViewType: " + type);
+            }
+        }
+
+        @Override
+        public void onWindowFocusChanged(boolean hasWindowFocus) {
+
+            final PlaybackController controller = controllerRef.get();
+            if (controller == null) return;
+
+            L.d(controller, "onWindowFocusChanged", hasWindowFocus);
+
+            // Fix video frame is cleared by system after unlock screen.
+            if (hasWindowFocus) {
+                Player player = controller.player();
+                if (player != null && player.isInPlaybackState() && player.getSurface() != null) {
+                    player.setSurface(player.getSurface());
+                }
             }
         }
     }
