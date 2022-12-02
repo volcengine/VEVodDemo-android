@@ -165,7 +165,7 @@ public class AVPlayer extends ExtraObject implements Player {
             final long duration = player.getDuration();
             L.d(player, "onCompletion", "loop", player.isLooping(), currentPosition, duration);
             player.notifyProgressUpdate( /* currentPosition */ duration, duration);
-            player.mProgressTracker.stopTrackingProgress();
+            player.stopTrackingProgress();
             player.clearProgress();
             player.setState(STATE_COMPLETED);
             player.mDispatcher.obtain(StateCompleted.class, player).dispatch();
@@ -230,13 +230,13 @@ public class AVPlayer extends ExtraObject implements Player {
                 case PlayerAdapter.Info.MEDIA_INFO_VIDEO_RENDERING_START: {
                     L.d(player, "onInfo", "video rendering start");
                     player.mDispatcher.obtain(InfoVideoRenderingStart.class, player).dispatch();
-                    player.mProgressTracker.startTrackingProgress();
+                    player.startTrackingProgress();
                     break;
                 }
                 case PlayerAdapter.Info.MEDIA_INFO_AUDIO_RENDERING_START: {
                     L.d(player, "onInfo", "audio rendering start");
                     player.mDispatcher.obtain(InfoAudioRenderingStart.class, player).dispatch();
-                    player.mProgressTracker.startTrackingProgress();
+                    player.startTrackingProgress();
                     break;
                 }
                 case PlayerAdapter.Info.MEDIA_INFO_BUFFERING_START: {
@@ -244,14 +244,14 @@ public class AVPlayer extends ExtraObject implements Player {
                     player.mBufferIndex++;
                     L.d(player, "onInfo", "buffering start", player.mBufferIndex);
                     player.mDispatcher.obtain(InfoBufferingStart.class, player).init(player.mBufferIndex).dispatch();
-                    player.mProgressTracker.stopTrackingProgress();
+                    player.stopTrackingProgress();
                     break;
                 }
                 case PlayerAdapter.Info.MEDIA_INFO_BUFFERING_END: {
                     player.mIsBuffering = false;
                     L.d(player, "onInfo", "buffering end", player.mBufferIndex);
                     player.mDispatcher.obtain(InfoBufferingEnd.class, player).init(player.mBufferIndex).dispatch();
-                    player.mProgressTracker.startTrackingProgress();
+                    player.startTrackingProgress();
                     break;
                 }
                 case PlayerAdapter.Info.MEDIA_INFO_NOT_SEEKABLE: {
@@ -317,7 +317,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
             L.d(player, "onSeekComplete", player.getCurrentPosition());
             player.mDispatcher.obtain(InfoSeekComplete.class, player).dispatch();
-            player.mProgressTracker.startTrackingProgress();
+            player.startTrackingProgress();
         }
 
         @Override
@@ -369,7 +369,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
     private void moveToErrorState(PlayerException e) {
         L.e(this, "moveToErrorState", e);
-        mProgressTracker.stopTrackingProgress();
+        stopTrackingProgress();
         recordProgress();
         mPlayerException = e;
         setState(STATE_ERROR);
@@ -608,7 +608,7 @@ public class AVPlayer extends ExtraObject implements Player {
             moveToErrorState(new PlayerException(PlayerException.CODE_ERROR_ACTION, "seekTo", e));
             return;
         }
-        mProgressTracker.stopTrackingProgress();
+        stopTrackingProgress();
         mDispatcher.obtain(InfoSeekingStart.class, this).init(from, seekTo).dispatch();
     }
 
@@ -632,7 +632,7 @@ public class AVPlayer extends ExtraObject implements Player {
         setState(STATE_STARTED);
         mDispatcher.obtain(StateStarted.class, this).dispatch();
 
-        mProgressTracker.startTrackingProgress();
+        startTrackingProgress();
     }
 
     @Override
@@ -645,7 +645,7 @@ public class AVPlayer extends ExtraObject implements Player {
         if (isPaused()) return;
         L.d(this, "pause");
 
-        mProgressTracker.stopTrackingProgress();
+        stopTrackingProgress();
         mDispatcher.obtain(ActionPause.class, this).dispatch();
         recordProgress();
         try {
@@ -666,7 +666,7 @@ public class AVPlayer extends ExtraObject implements Player {
                 Player.STATE_STARTED, Player.STATE_PAUSED, Player.STATE_COMPLETED, Player.STATE_STOPPED);
 
         L.d(this, "stop");
-        mProgressTracker.stopTrackingProgress();
+        stopTrackingProgress();
 
         mDispatcher.obtain(ActionStop.class, this).dispatch();
         recordProgress();
@@ -685,7 +685,7 @@ public class AVPlayer extends ExtraObject implements Player {
         if (checkIsRelease("reset")) return;
 
         L.d(this, "reset");
-        mProgressTracker.stopTrackingProgress();
+        stopTrackingProgress();
         recordProgress();
         mPlayer.reset();
         resetInner();
@@ -712,7 +712,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
         L.d(this, "release");
         if (mProgressTracker != null) {
-            mProgressTracker.stopTrackingProgress();
+            stopTrackingProgress();
             mProgressTracker.release();
         }
 
@@ -1000,5 +1000,19 @@ public class AVPlayer extends ExtraObject implements Player {
 
     private void clearProgress() {
         ProgressRecorder.removeProgress(mMediaSource.getSyncProgressId());
+    }
+
+    private void startTrackingProgress() {
+        if (isPlaying() && !isBuffering()) {
+            if (mProgressTracker != null) {
+                mProgressTracker.startTrackingProgress();
+            }
+        }
+    }
+
+    private void stopTrackingProgress() {
+        if (mProgressTracker != null) {
+            mProgressTracker.stopTrackingProgress();
+        }
     }
 }
