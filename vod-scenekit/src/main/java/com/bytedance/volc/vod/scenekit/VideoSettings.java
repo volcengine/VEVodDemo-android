@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
 import com.bytedance.playerkit.utils.FileUtils;
@@ -66,8 +67,10 @@ public class VideoSettings {
 
     public static final String COMMON_CODEC_STRATEGY = "common_codec_strategy";
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
-    public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
     public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
+    public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
+    public static final String COMMON_SOURCE_VIDEO_FORMAT_TYPE = "common_source_video_format_type";
+    public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
 
 
     private static Options sOptions;
@@ -85,6 +88,12 @@ public class VideoSettings {
         public static final int CODEC_STRATEGY_DISABLE = VolcConfig.CODEC_STRATEGY_DISABLE;
         public static final int CODEC_STRATEGY_COST_SAVING_FIRST = VolcConfig.CODEC_STRATEGY_COST_SAVING_FIRST;
         public static final int CODEC_STRATEGY_HARDWARE_DECODE_FIRST = VolcConfig.CODEC_STRATEGY_HARDWARE_DECODE_FIRST;
+    }
+
+    public static class FormatType {
+        public static final int FORMAT_TYPE_MP4 = Track.FORMAT_MP4;
+        public static final int FORMAT_TYPE_DASH = Track.FORMAT_DASH;
+        public static final int FORMAT_TYPE_HLS = Track.FORMAT_HLS;
     }
 
     public static void init(Context context) {
@@ -297,6 +306,17 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
                         CATEGORY_COMMON_VIDEO,
+                        COMMON_SUPER_RESOLUTION,
+                        "开启超分",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
                         COMMON_SOURCE_ENCODE_TYPE_H265,
                         "开启 H265",
                         Option.STRATEGY_IMMEDIATELY,
@@ -306,10 +326,35 @@ public class VideoSettings {
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_SOURCE_VIDEO_FORMAT_TYPE,
+                        "视频格式",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        FormatType.FORMAT_TYPE_MP4,
+                        Arrays.asList(FormatType.FORMAT_TYPE_MP4, FormatType.FORMAT_TYPE_DASH, FormatType.FORMAT_TYPE_HLS)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case FormatType.FORMAT_TYPE_MP4:
+                                return "MP4";
+                            case FormatType.FORMAT_TYPE_DASH:
+                                return "DASH";
+                            case FormatType.FORMAT_TYPE_HLS:
+                                return "HLS";
+                        }
+                        return null;
+                    }
+                }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
                         Option.TYPE_RATIO_BUTTON,
                         CATEGORY_COMMON_VIDEO,
-                        COMMON_SUPER_RESOLUTION,
-                        "开启超分",
+                        COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM,
+                        "开启视频自研 DRM",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.FALSE,

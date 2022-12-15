@@ -376,8 +376,8 @@ public class Mapper {
     }
 
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
-        mediaSource.setTracks(videoInfoList2TrackList(videoModel));
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
+        mediaSource.setTracks(videoInfoList2TrackList(videoModel));
 
         long duration = videoModel.getVideoRefInt(VideoRef.VALUE_VIDEO_REF_VIDEO_DURATION) * 1000L;
         if (mediaSource.getDuration() <= 0) { // using app server
@@ -430,6 +430,8 @@ public class Mapper {
         track.setFileId(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILEID));
         track.setFileHash(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH));
         track.setFileSize(info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE));
+        // FIXME: openAPI 2.0 DURATION is second in float, using int is not accurate.
+        //track.setDuration(videoModel.getVideoRefInt(VideoRef.VALUE_VIDEO_REF_VIDEO_DURATION) * 1000L);
         track.setBitrate(info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE));
         //track.setPreloadSize();
 
