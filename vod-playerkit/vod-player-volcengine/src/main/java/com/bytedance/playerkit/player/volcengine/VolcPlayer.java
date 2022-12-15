@@ -845,8 +845,10 @@ class VolcPlayer implements PlayerAdapter {
             player.asyncInitSR(false);
             // 设置播放过程中可动态控制关闭 or 开启超分
             player.dynamicControlSR(true);
-            // 设置超分参数，第一个参数为超分算法，推荐使用 0（2 倍超分）
-            player.setSRInitConfig(0, file.getAbsolutePath(), "SR", "SR");
+            // algType 取值:
+            //  5：bmf v1 效果好
+            //  6：bmf v2 功耗低
+            player.setSRInitConfig(5, file.getAbsolutePath(), "SR", "SR", 2, 0, 0);
             // 超分播放忽视分辨率限制，推荐使用
             player.ignoreSRResolutionLimit(true);
             // 开启超分
