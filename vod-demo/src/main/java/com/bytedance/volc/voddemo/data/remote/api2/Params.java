@@ -17,13 +17,26 @@
  */
 package com.bytedance.volc.voddemo.data.remote.api2;
 
+import static com.bytedance.volc.voddemo.data.remote.api2.Params.Format.DASHFormat;
+import static com.bytedance.volc.voddemo.data.remote.api2.Params.Format.HLSFormat;
 import static com.bytedance.volc.voddemo.data.remote.api2.Params.Format.MP4Format;
+
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 
 public class Params {
 
     public static class Value {
 
         public static Integer format() {
+            final int format = VideoSettings.intValue(VideoSettings.COMMON_SOURCE_VIDEO_FORMAT_TYPE);
+            switch (format) {
+                case VideoSettings.FormatType.FORMAT_TYPE_MP4:
+                    return MP4Format;
+                case VideoSettings.FormatType.FORMAT_TYPE_DASH:
+                    return DASHFormat;
+                case VideoSettings.FormatType.FORMAT_TYPE_HLS:
+                    return HLSFormat;
+            }
             return MP4Format;
         }
 
@@ -36,6 +49,9 @@ public class Params {
         }
 
         public static String fileType() {
+            if (VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM)) {
+                return FileType.EVIDEO;
+            }
             return null;
         }
 

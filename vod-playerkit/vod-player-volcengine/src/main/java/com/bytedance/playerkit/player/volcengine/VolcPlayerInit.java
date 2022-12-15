@@ -104,11 +104,17 @@ public class VolcPlayerInit {
             LicenseManager.turnOnLogcat(true);
         }
 
-        TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
+        if (VolcConfigGlobal.ENABLE_HLS_CACHE_MODULE) {
+            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_HLS_PROXY, 1);
+        }
+        if (VolcConfigGlobal.ENABLE_USE_ORIGINAL_URL) {
+            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
+        }
+        if (VolcConfigGlobal.ENABLE_SUPER_RESOLUTION) {
+            TTVideoEngine.setIntValue(PLAYER_OPTION_ENABLE_BMF, 1); // enable bmf super resolution
+        }
 
         TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_NEED_SPEED_TEST_BY_TIMEINTERNAL, 1); // speed test
-
-        TTVideoEngine.setIntValue(PLAYER_OPTION_ENABLE_BMF, 1); // enable bmf super resolution
 
         File videoCacheDir = cacheDir(context);
         if (!videoCacheDir.exists()) videoCacheDir.mkdirs();
