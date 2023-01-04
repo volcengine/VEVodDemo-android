@@ -15,7 +15,6 @@
 |--|--vod-player              // 播放器适配层（定义了一套标准播放器接口）
 |--|--vod-player-volcengine   // 火山引擎播放器实现模块
 |--|--vod-player-utils        // 工具类模块
-|--|--vod-player-ui           // 控件层内置的默认风格的业务 ui 模块
 ```
 
 | 模块 | 描述 |是否必须 | 介绍 |
@@ -23,7 +22,6 @@
 | vod-player | 播放器适配层模块 | 必须 | 1. 定义了控件层播放器的标准接口，方便适配各种播放器。<br>2. 封装了VideoView 和 VideoLayer，方便客户基于 VideoLayer 实现灵活/高复用的播放UI。<br>3. 封装了 PlaybackController 把一次播放 Session 开始/结束时 Player/VideoView/MediaSource 的相互调用关系串起来。 |
 | vod-player-volcengine | 火山引擎播放器实现模块 | 必须 | 1. 用播件层的播放器接口，实现了火山引擎播放器.<br>2. 封装了火山引擎播放器初始化模块，方便业务快速集成。火山引擎播放器 [官方文档](https://www.volcengine.com/docs/4/52) |
 | vod-player-util | 工具类模块 | 必须 | 各模块需要的常见工具类如 logcat 输出等 |
-| vod-player-ui | 默认风格的业务 ui 模块 | 非必须 | 基于 VideoLayer 系统，参考西瓜/抖音播放界面风格实现了一些默认的 UI 来帮助业务快速集成。若默认风格不满足需求，可以随意修改源码。|
 
 ## PlayerKit 集成
 
@@ -81,7 +79,6 @@ dependencies {
     api project(":vod-playerkit:vod-player")
     api project(":vod-playerkit:vod-player-utils")
     api project(":vod-playerkit:vod-player-volcengine")
-    api project(":vod-playerkit:vod-player-ui")
 }
 ```
 
