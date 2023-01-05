@@ -20,6 +20,9 @@ package com.bytedance.playerkit.player.volcengine;
 
 import static com.ss.ttvideoengine.ITTVideoEngineInternal.PLAYER_TYPE_OWN;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.IMAGE_LAYOUT_TO_FILL;
+import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_SEGMENT_FORMAT_FLAG;
+import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_FMP4;
+import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_MP4;
 
 import android.content.Context;
 
@@ -85,6 +88,10 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         if (volcConfig.enableDash) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DASH, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
+        }
+        if (volcConfig.enableMP4SeamlessSwitch) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
+            player.setIntOption(PLAYER_OPTION_SEGMENT_FORMAT_FLAG, (1 << SEGMENT_FORMAT_FMP4) | (1 << SEGMENT_FORMAT_MP4));
         }
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, volcConfig.enableAudioTrackVolume ? 1 : 0);
 

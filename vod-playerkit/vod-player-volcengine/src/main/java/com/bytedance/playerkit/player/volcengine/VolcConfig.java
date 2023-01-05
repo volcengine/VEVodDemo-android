@@ -42,6 +42,7 @@ public class VolcConfig implements Serializable {
     public boolean enableAudioTrackVolume = false;
     public boolean enableTextureRender = true;
     public boolean enableHlsSeamlessSwitch = true;
+    public boolean enableMP4SeamlessSwitch = true;
     public boolean enableDash = true;
     public boolean enableEngineLooper = true;
     public boolean enableSeekEnd = true;

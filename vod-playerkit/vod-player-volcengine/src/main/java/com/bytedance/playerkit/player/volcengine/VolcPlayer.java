@@ -118,6 +118,8 @@ class VolcPlayer implements PlayerAdapter {
         private final static WeakHashMap<TTVideoEngine, EngineParams> sPlayerParams = new WeakHashMap<>();
 
         private boolean mSuperResolutionInitialized;
+        private int mVideoWidth;
+        private int mVideoHeight;
 
         private synchronized static EngineParams get(TTVideoEngine engine) {
             EngineParams params = sPlayerParams.get(engine);
@@ -349,6 +351,11 @@ class VolcPlayer implements PlayerAdapter {
                 IVideoModel videoModel = mPlayer.getIVideoModel();
                 if (videoModel != null && videoModel.isSupportHLSSeamlessSwitch()) {
                     return Mapper.getVolcConfig(mMediaSource).enableHlsSeamlessSwitch;
+                }
+            } else if (contentType == MediaSource.MEDIA_PROTOCOL_DEFAULT) {
+                IVideoModel videoModel = mPlayer.getIVideoModel();
+                if (videoModel != null && videoModel.isSupportBash()) {
+                    return Mapper.getVolcConfig(mMediaSource).enableMP4SeamlessSwitch;
                 }
             }
         }
@@ -734,11 +741,27 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public int getVideoWidth() {
+        if (isSupportSmoothTrackSwitching(TRACK_TYPE_VIDEO)) {
+            // Opt video TTVideoEngine#getVideoWidth/Height is not change after resolution changed
+            // when using seemless video switching
+            final EngineParams params = EngineParams.get(mPlayer);
+            if (params.mVideoWidth > 0) {
+                return params.mVideoWidth;
+            }
+        }
         return mPlayer.getVideoWidth();
     }
 
     @Override
     public int getVideoHeight() {
+        if (isSupportSmoothTrackSwitching(TRACK_TYPE_VIDEO)) {
+            // Opt video TTVideoEngine#getVideoWidth/Height is not change after resolution changed
+            // when using seemless video switching
+            final EngineParams params = EngineParams.get(mPlayer);
+            if (params.mVideoHeight > 0) {
+                return params.mVideoHeight;
+            }
+        }
         return mPlayer.getVideoHeight();
     }
 
@@ -1048,6 +1071,10 @@ class VolcPlayer implements PlayerAdapter {
             if (player == null) return;
             Listener listener = player.mListener;
             if (listener == null) return;
+
+            EngineParams params = EngineParams.get(player.mPlayer);
+            params.mVideoWidth = width;
+            params.mVideoHeight = height;
 
             listener.onVideoSizeChanged(player, width, height);
         }
