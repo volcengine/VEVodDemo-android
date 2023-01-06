@@ -41,7 +41,8 @@ public class Dispatcher {
     }
 
     public <T extends Event> T obtain(Class<T> clazz, Object owner) {
-        return clazz.cast(Pool.acquire(clazz).owner(owner).dispatcher(this));
+        final T event = Config.EVENT_POOL_ENABLE ? Pool.acquire(clazz) : Factory.create(clazz);
+        return clazz.cast(event.owner(owner).dispatcher(this));
     }
 
     public final void addEventListener(EventListener listener) {
@@ -78,11 +79,13 @@ public class Dispatcher {
             listener.onEvent(event);
         }
         if (event.dispatcher() == this) {
-            Pool.release(event);
+            if (Config.EVENT_POOL_ENABLE) {
+                Pool.release(event);
+            }
         }
     }
 
-    private static class H extends Handler {
+    private final static class H extends Handler {
         private final WeakReference<Dispatcher> mRef;
 
         H(@NonNull Looper looper, Dispatcher dispatcher) {

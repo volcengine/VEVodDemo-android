@@ -30,7 +30,7 @@ class Pool {
     synchronized static <T extends Event> T acquire(Class<T> clazz) {
         Pools.SimplePool<Event> pool = sPools.get(clazz);
         if (pool == null) {
-            pool = new Pools.SimplePool<>(5);
+            pool = new Pools.SimplePool<>(Config.EVENT_POOL_SIZE);
             sPools.put(clazz, pool);
         }
         final Event event = pool.acquire();
