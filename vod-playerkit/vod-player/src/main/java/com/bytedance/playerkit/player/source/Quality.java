@@ -30,27 +30,27 @@ import java.util.Objects;
 public class Quality {
     /**
      * Quality dynamic range type. One of
-     * {@link #QUALITY_COLOR_RANGE_SDR},
-     * {@link #QUALITY_COLOR_RANGE_SDR_PLUS},
-     * {@link #QUALITY_COLOR_RANGE_HDR}
+     * {@link #QUALITY_DYNAMIC_RANGE_SDR},
+     * {@link #QUALITY_DYNAMIC_RANGE_SDR_PLUS},
+     * {@link #QUALITY_DYNAMIC_RANGE_HDR}
      */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({QUALITY_COLOR_RANGE_SDR, QUALITY_COLOR_RANGE_SDR_PLUS, QUALITY_COLOR_RANGE_HDR})
+    @IntDef({QUALITY_DYNAMIC_RANGE_SDR, QUALITY_DYNAMIC_RANGE_SDR_PLUS, QUALITY_DYNAMIC_RANGE_HDR})
     public @interface QualityDynamicRange {
     }
 
-    public static final int QUALITY_COLOR_RANGE_SDR = 0;
-    public static final int QUALITY_COLOR_RANGE_SDR_PLUS = 1;
-    public static final int QUALITY_COLOR_RANGE_HDR = 2;
+    public static final int QUALITY_DYNAMIC_RANGE_SDR = 0;
+    public static final int QUALITY_DYNAMIC_RANGE_SDR_PLUS = 1;
+    public static final int QUALITY_DYNAMIC_RANGE_HDR = 2;
 
     public static String mapQualityDynamicRange(@QualityDynamicRange int colorRange) {
         switch (colorRange) {
-            case QUALITY_COLOR_RANGE_SDR:
+            case QUALITY_DYNAMIC_RANGE_SDR:
                 return "SDR";
-            case QUALITY_COLOR_RANGE_SDR_PLUS:
+            case QUALITY_DYNAMIC_RANGE_SDR_PLUS:
                 return "SDR+";
-            case QUALITY_COLOR_RANGE_HDR:
+            case QUALITY_DYNAMIC_RANGE_HDR:
                 return "HDR";
         }
         throw new IllegalArgumentException("Unsupported colorRange " + colorRange);
@@ -124,7 +124,7 @@ public class Quality {
     }
 
     public Quality(@QualityRes int qualityRes, String qualityDesc) {
-        this(qualityRes, QUALITY_COLOR_RANGE_SDR, QUALITY_FPS_DEFAULT, qualityDesc, null);
+        this(qualityRes, QUALITY_DYNAMIC_RANGE_SDR, QUALITY_FPS_DEFAULT, qualityDesc, null);
     }
 
     public Quality(@QualityRes int qualityRes,
