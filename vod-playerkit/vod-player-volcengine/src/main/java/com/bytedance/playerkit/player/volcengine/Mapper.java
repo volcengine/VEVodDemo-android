@@ -61,7 +61,7 @@ public class Mapper {
     static {
         map.put(Resolution.Standard,
                 new Quality(Quality.QUALITY_RES_360,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "360P",
                         Resolution.Standard
@@ -69,7 +69,7 @@ public class Mapper {
 
         map.put(Resolution.High,
                 new Quality(Quality.QUALITY_RES_480,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "480P",
                         Resolution.High
@@ -77,7 +77,7 @@ public class Mapper {
 
         map.put(Resolution.SuperHigh,
                 new Quality(Quality.QUALITY_RES_720,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "720P",
                         Resolution.SuperHigh
@@ -85,14 +85,14 @@ public class Mapper {
 
         map.put(Resolution.ExtremelyHigh,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "1080P",
                         Resolution.ExtremelyHigh));
 
         map.put(Resolution.FourK,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "4K",
                         Resolution.FourK));
@@ -102,14 +102,14 @@ public class Mapper {
 
         map.put(Resolution.L_Standard,
                 new Quality(Quality.QUALITY_RES_240,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "240P",
                         Resolution.L_Standard));
 
         map.put(Resolution.H_High,
                 new Quality(Quality.QUALITY_RES_540,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "540P",
                         Resolution.H_High));
@@ -117,7 +117,7 @@ public class Mapper {
 
         map.put(Resolution.TwoK,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "2K",
                         Resolution.H_High));
@@ -125,70 +125,70 @@ public class Mapper {
 
         map.put(Resolution.ExtremelyHigh_50F,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_50,
                         "1080P 50FPS",
                         Resolution.ExtremelyHigh_50F));
 
         map.put(Resolution.TwoK_50F,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_50,
                         "2K 50FPS",
                         Resolution.TwoK_50F));
 
         map.put(Resolution.FourK_50F,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_50,
                         "4K 50FPS",
                         Resolution.FourK_50F));
 
         map.put(Resolution.ExtremelyHigh_60F,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_60,
                         "1080P 60FPS",
                         Resolution.ExtremelyHigh_60F));
 
         map.put(Resolution.TwoK_60F,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_60,
                         "2K 60FPS",
                         Resolution.TwoK_60F));
 
         map.put(Resolution.FourK_60F,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_60,
                         "4K 60FPS",
                         Resolution.FourK_60F));
 
         map.put(Resolution.ExtremelyHigh_120F,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_120,
                         "1080P 120FPS",
                         Resolution.ExtremelyHigh_120F));
 
         map.put(Resolution.TwoK_120F,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_120,
                         "2K 120FPS",
                         Resolution.TwoK_120F));
 
         map.put(Resolution.FourK_120F,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "4K 120FPS",
                         Resolution.FourK_120F));
 
         map.put(Resolution.L_Standard_HDR,
                 new Quality(Quality.QUALITY_RES_240,
-                        Quality.QUALITY_COLOR_RANGE_HDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "240P HDR",
                         Resolution.L_Standard_HDR));
@@ -196,28 +196,28 @@ public class Mapper {
 
         map.put(Resolution.Standard_HDR,
                 new Quality(Quality.QUALITY_RES_360,
-                        Quality.QUALITY_COLOR_RANGE_HDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "360P HDR",
                         Resolution.Standard_HDR));
 
         map.put(Resolution.High_HDR,
                 new Quality(Quality.QUALITY_RES_480,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "480P HDR",
                         Resolution.High_HDR));
 
         map.put(Resolution.H_High_HDR,
                 new Quality(Quality.QUALITY_RES_540,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "540P HDR",
                         Resolution.H_High_HDR));
 
         map.put(Resolution.SuperHigh_HDR,
                 new Quality(Quality.QUALITY_RES_720,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "720P HDR",
                         Resolution.SuperHigh_HDR));
@@ -225,21 +225,21 @@ public class Mapper {
 
         map.put(Resolution.ExtremelyHigh_HDR,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "1080P HDR",
                         Resolution.ExtremelyHigh_HDR));
 
         map.put(Resolution.TwoK_HDR,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "2K HDR",
                         Resolution.TwoK_HDR));
 
         map.put(Resolution.FourK_HDR,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_COLOR_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "4K HDR",
                         Resolution.FourK_HDR));
