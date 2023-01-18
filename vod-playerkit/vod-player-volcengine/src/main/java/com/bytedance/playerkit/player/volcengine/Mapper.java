@@ -203,21 +203,21 @@ public class Mapper {
 
         map.put(Resolution.High_HDR,
                 new Quality(Quality.QUALITY_RES_480,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "480P HDR",
                         Resolution.High_HDR));
 
         map.put(Resolution.H_High_HDR,
                 new Quality(Quality.QUALITY_RES_540,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "540P HDR",
                         Resolution.H_High_HDR));
 
         map.put(Resolution.SuperHigh_HDR,
                 new Quality(Quality.QUALITY_RES_720,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "720P HDR",
                         Resolution.SuperHigh_HDR));
@@ -225,21 +225,21 @@ public class Mapper {
 
         map.put(Resolution.ExtremelyHigh_HDR,
                 new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "1080P HDR",
                         Resolution.ExtremelyHigh_HDR));
 
         map.put(Resolution.TwoK_HDR,
                 new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "2K HDR",
                         Resolution.TwoK_HDR));
 
         map.put(Resolution.FourK_HDR,
                 new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
+                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
                         Quality.QUALITY_FPS_DEFAULT,
                         "4K HDR",
                         Resolution.FourK_HDR));
