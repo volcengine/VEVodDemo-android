@@ -20,12 +20,10 @@ package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo;
 
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.VideoView;
-import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ShortVideoStrategy {
@@ -41,11 +39,7 @@ public class ShortVideoStrategy {
 
         if (videoItems == null) return;
 
-        List<MediaSource> sources = new ArrayList<>();
-        for (VideoItem videoItem : videoItems) {
-            sources.add(VideoItem.toMediaSource(videoItem, false));
-        }
-        VolcPlayerStatic.setMediaSources(sources);
+        VolcPlayerStatic.setMediaSources(VideoItem.toMediaSources(videoItems, false));
     }
 
     public static void appendItems(List<VideoItem> videoItems) {
@@ -53,11 +47,7 @@ public class ShortVideoStrategy {
 
         if (videoItems == null) return;
 
-        List<MediaSource> sources = new ArrayList<>();
-        for (VideoItem videoItem : videoItems) {
-            sources.add(VideoItem.toMediaSource(videoItem, false));
-        }
-        VolcPlayerStatic.addMediaSources(sources);
+        VolcPlayerStatic.addMediaSources(VideoItem.toMediaSources(videoItems, false));
     }
 
     public static boolean renderFrame(VideoView videoView) {

@@ -148,11 +148,10 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         layerHost.addLayer(new PauseLayer());
         layerHost.addLayer(new ShortVideoProgressBarLayer());
         layerHost.addLayer(new PlayErrorLayer());
-
+        layerHost.addLayer(new PlayerConfigLayer());
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
             layerHost.addLayer(new LogLayer());
         }
-        layerHost.addLayer(new PlayerConfigLayer());
 
         layerHost.attachToVideoView(videoView);
         videoView.setBackgroundColor(parent.getResources().getColor(android.R.color.black));

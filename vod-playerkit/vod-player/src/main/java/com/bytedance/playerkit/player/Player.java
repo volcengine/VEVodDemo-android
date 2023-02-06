@@ -577,10 +577,15 @@ public interface Player {
     long getCurrentPosition();
 
     /**
-     * @return Buffer percent of player memory cache queue.
+     * @return Buffered percent in player memory cache queue.
      */
     @IntRange(from = 0, to = 100)
     int getBufferedPercentage();
+
+    /**
+     * @return Buffered duration in memory cache queue since {@link #getCurrentPosition()}.
+     */
+    long getBufferedDuration();
 
     /**
      * @return Width of video frame in px

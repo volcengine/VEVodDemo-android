@@ -23,7 +23,6 @@ import android.os.Looper;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -34,8 +33,6 @@ import com.bytedance.playerkit.player.source.Track;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 public interface PlayerAdapter {
@@ -169,6 +166,10 @@ public interface PlayerAdapter {
     long getCurrentPosition();
 
     int getBufferedPercentage();
+
+    long getBufferedDuration();
+
+    long getBufferedDuration(@Track.TrackType int trackType);
 
     int getVideoWidth();
 

@@ -38,6 +38,10 @@ import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.FullScreenLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
@@ -58,14 +62,10 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SpeedSelectDialogLa
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.TimeProgressDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.VolumeBrightnessDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
-import com.bytedance.volc.vod.scenekit.utils.UIUtils;
-import com.bytedance.volc.vod.scenekit.utils.ViewUtils;
-import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.R;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.layer.FeedVideoCoverShadowLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.layer.FeedVideoVVLayer;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
+import com.bytedance.volc.vod.scenekit.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;

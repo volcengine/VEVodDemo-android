@@ -740,6 +740,27 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     @Override
+    public long getBufferedDuration() {
+        long videoBufferedDuration = getBufferedDuration(TRACK_TYPE_VIDEO);
+        long audioBufferedDuration = getBufferedDuration(TRACK_TYPE_AUDIO);
+        return Math.min(videoBufferedDuration, audioBufferedDuration);
+    }
+
+    @Override
+    public long getBufferedDuration(@Track.TrackType int trackType) {
+        switch (trackType) {
+            case TRACK_TYPE_AUDIO:
+                return mPlayer.getLongOption(TTVideoEngine.PLAYER_OPTION_GET_AUDIO_CACHE_DURATION);
+            case TRACK_TYPE_VIDEO:
+                return mPlayer.getLongOption(TTVideoEngine.PLAYER_OPTION_GET_VIDEO_CACHE_DURATION);
+            case Track.TRACK_TYPE_UNKNOWN:
+                return 0L;
+            default:
+                throw new IllegalArgumentException("Unsupported trackType " + trackType);
+        }
+    }
+
+    @Override
     public int getVideoWidth() {
         if (isSupportSmoothTrackSwitching(TRACK_TYPE_VIDEO)) {
             // Opt video TTVideoEngine#getVideoWidth/Height is not change after resolution changed

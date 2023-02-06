@@ -21,11 +21,15 @@ package com.bytedance.playerkit.player.volcengine;
 import android.view.Surface;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.pandora.common.env.Env;
-import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.TTVideoEngineInterface;
 import com.ss.ttvideoengine.debugtool2.DebugTool;
+import com.ss.ttvideoengine.strategy.StrategyManager;
+import com.ss.ttvideoengine.strategy.StrategySettings;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -59,12 +63,19 @@ public class VolcPlayerStatic {
         return VolcPlayer.getDeviceId();
     }
 
-    public static void clearCache(boolean force) {
-        TTVideoEngine.clearAllCaches(true);
-    }
-
     public static String getSDKVersion() {
         return Env.getVersion();
+    }
+
+    @Nullable
+    public static JSONObject getPreloadConfig(int scene) {
+        switch (scene) {
+            case 1: // Short
+                return StrategySettings.getInstance().getPreload(StrategyManager.STRATEGY_SCENE_SMALL_VIDEO);
+            case 2: // Feed
+                return StrategySettings.getInstance().getPreload(StrategyManager.STRATEGY_SCENE_SHORT_VIDEO);
+        }
+        return null;
     }
 
     // 添加展示 debug 信息的布局，debug 信息页面撑满 containerView

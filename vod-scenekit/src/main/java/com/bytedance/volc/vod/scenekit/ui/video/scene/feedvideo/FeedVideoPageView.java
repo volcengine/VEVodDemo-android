@@ -27,6 +27,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -35,14 +36,14 @@ import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.PlayerEvent;
-import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.strategy.VideoPreload;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoAdapter.OnItemViewListener;
 
@@ -51,10 +52,12 @@ import java.util.List;
 
 public class FeedVideoPageView extends FrameLayout {
     private final RecyclerView mRecyclerView;
-    private final FeedVideoAdapter mShortVideoAdapter;
+    private final FeedVideoAdapter mFeedVideoAdapter;
     private Lifecycle mLifeCycle;
     private DetailPageNavigator mNavigator;
     private VideoView mCurrentVideoView;
+
+    private VideoPreload mPreload;
     private boolean mInterceptStartPlaybackOnResume;
 
     public interface DetailPageNavigator {
@@ -103,7 +106,7 @@ public class FeedVideoPageView extends FrameLayout {
                 startSmoothScroll(linearSmoothScroller);
             }
         };
-        mShortVideoAdapter = new FeedVideoAdapter(mAdapterListener) {
+        mFeedVideoAdapter = new FeedVideoAdapter(mAdapterListener) {
             @Override
             public void onViewDetachedFromWindow(@NonNull ViewHolder holder) {
                 if (!isFullScreen()) {
@@ -126,8 +129,29 @@ public class FeedVideoPageView extends FrameLayout {
 
         mRecyclerView = new RecyclerView(context);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setAdapter(mShortVideoAdapter);
+        mRecyclerView.setAdapter(mFeedVideoAdapter);
         addView(mRecyclerView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+        final VideoPreload.Config config = new VideoPreload.Config(PlayScene.SCENE_FEED);
+        config.depend = new VideoPreload.Config.Depend() {
+            @Override
+            @WorkerThread
+            public VideoPreload.Direction getScrollDirection() {
+                return VideoPreload.Direction.DOWN;
+            }
+
+            @Override
+            @WorkerThread
+            @Nullable
+            public MediaSource getPlayingSource() {
+                final VideoView current = mCurrentVideoView;
+                if (current != null) {
+                    return current.getDataSource();
+                }
+                return null;
+            }
+        };
+        mPreload = new VideoPreload(config);
     }
 
     public RecyclerView recyclerView() {
@@ -167,19 +191,15 @@ public class FeedVideoPageView extends FrameLayout {
                     if (mCurrentVideoView != null && videoView != null) {
                         if (mCurrentVideoView != videoView) {
                             mCurrentVideoView.stopPlayback();
-                            stopPreload();
                         }
                     }
                     mCurrentVideoView = videoView;
                     break;
                 }
-                case PlayerEvent.Info.VIDEO_RENDERING_START:
-                    final int position = viewHolder.getAbsoluteAdapterPosition();
-                    starPreload(position);
-                    break;
-                case PlaybackEvent.Action.STOP_PLAYBACK:
-                    break;
+            }
 
+            if (VideoSettings.booleanValue(VideoSettings.FEED_VIDEO_ENABLE_PRELOAD)) {
+                mPreload.onEvent(event);
             }
         }
     };
@@ -220,11 +240,13 @@ public class FeedVideoPageView extends FrameLayout {
     }
 
     public void setItems(List<VideoItem> videoItems) {
-        mShortVideoAdapter.setItems(videoItems);
+        mFeedVideoAdapter.setItems(videoItems);
+        mPreload.setItems(VideoItem.toMediaSources(videoItems, true));
     }
 
     public void appendItems(List<VideoItem> videoItems) {
-        mShortVideoAdapter.appendItems(videoItems);
+        mFeedVideoAdapter.appendItems(videoItems);
+        mPreload.appendItems(VideoItem.toMediaSources(videoItems, true));
     }
 
     public void play() {
@@ -255,30 +277,11 @@ public class FeedVideoPageView extends FrameLayout {
     public void stop() {
         if (mCurrentVideoView != null) {
             mCurrentVideoView.stopPlayback();
+            mCurrentVideoView = null;
         }
-        mCurrentVideoView = null;
-    }
-
-    private void starPreload(int position) {
-        if (!VideoSettings.booleanValue(VideoSettings.FEED_VIDEO_ENABLE_PRELOAD)) return;
-
-        int next = position + 1;
-        // preload next 5 videos
-        int target = Math.min(mShortVideoAdapter.getItemCount(), next + 5);
-        while (next < target) {
-            VideoItem videoItem = mShortVideoAdapter.getItem(next);
-            if (videoItem != null) {
-                CacheLoader.Default.get().preload(VideoItem.toMediaSource(videoItem, false),
-                        null);
-            }
-            next++;
+        if (mPreload != null) {
+            mPreload.stop("PageDestroy");
         }
-    }
-
-    private void stopPreload() {
-        if (!VideoSettings.booleanValue(VideoSettings.FEED_VIDEO_ENABLE_PRELOAD)) return;
-
-        CacheLoader.Default.get().stopAllTask();
     }
 
     public boolean isFullScreen() {
