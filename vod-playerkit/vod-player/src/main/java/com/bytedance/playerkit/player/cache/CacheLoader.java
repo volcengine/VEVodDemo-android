@@ -56,9 +56,31 @@ public interface CacheLoader {
 
     File getCacheDir();
 
-    long getCacheSize(@NonNull MediaSource source, @Track.TrackType int type);
+    @NonNull
+    CacheInfo getCacheInfo(String cacheKey);
+
+    long getCachedSize(String cacheKey);
+
+    class CacheInfo {
+        public final String cacheKey;
+        // The size of media.
+        public final long sizeInBytes;
+        // Non-stop cache size from scratch.
+        public final long cachedSizeInBytes;
+        // Local file path.
+        public final String cachePath;
+
+        public CacheInfo(String cacheKey, long sizeInBytes, long cachedSizeInBytes, String cachePath) {
+            this.cacheKey = cacheKey;
+            this.sizeInBytes = sizeInBytes;
+            this.cachedSizeInBytes = cachedSizeInBytes;
+            this.cachePath = cachePath;
+        }
+    }
 
     interface Task {
+
+        String EXTRA_PRELOAD_SIZE_IN_BYTES = "extra_preload_size_in_bytes";
 
         interface Factory {
             Task create();
@@ -136,6 +158,8 @@ public interface CacheLoader {
         void setTrackSelector(TrackSelector trackSelector);
 
         void setListener(Listener listener);
+
+        void addDepListener(Listener listener);
 
         Track getSelectedTrack(@Track.TrackType int type);
 

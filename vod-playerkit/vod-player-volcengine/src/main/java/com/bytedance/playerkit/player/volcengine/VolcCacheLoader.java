@@ -67,8 +67,19 @@ class VolcCacheLoader implements CacheLoader {
 
     @Override
     public void preload(@NonNull MediaSource source, Task.Listener listener) {
-        L.v(this, "preload", MediaSource.dump(source));
+        synchronized (mTasks) {
+            for (Task task : mTasks) {
+                if (TextUtils.equals(source.getMediaId(), task.getDataSource().getMediaId())) {
+                    L.v(this, "preload", MediaSource.dump(source), "reusing task", task);
+                    if (listener != null) {
+                        task.addDepListener(listener);
+                    }
+                    return;
+                }
+            }
+        }
         Task task = mTaskFactory.create();
+        L.v(this, "preload", MediaSource.dump(source), "new task", task);
         task.setDataSource(source);
         task.setTrackSelector(mTrackSelector);
         task.setCacheKeyFactory(mCacheKeyFactory);
@@ -154,6 +165,7 @@ class VolcCacheLoader implements CacheLoader {
     @Override
     public void clearCache() {
         L.v(this, "clearCache");
+        stopAllTask();
         TTVideoEngine.clearAllCaches(true);
     }
 
@@ -161,20 +173,19 @@ class VolcCacheLoader implements CacheLoader {
     public File getCacheDir() {
         return VolcPlayerInit.cacheDir(mContext);
     }
+    @NonNull
+    @Override
+    public CacheInfo getCacheInfo(String cacheKey) {
+        final DataLoaderHelper.DataLoaderCacheInfo info = TTVideoEngine.getCacheInfo(cacheKey);
+        if (info != null) {
+            return new CacheInfo(cacheKey, info.mMediaSize, info.mCacheSizeFromZero, info.mLocalFilePath);
+        }
+        return new CacheInfo(cacheKey, 0, 0, null);
+    }
 
     @Override
-    public long getCacheSize(@NonNull MediaSource source, @Track.TrackType int type) {
-        List<Track> tracks = source.getTracks(type);
-        if (tracks != null && !tracks.isEmpty()) {
-            final Track track = mTrackSelector.selectTrack(TrackSelector.TYPE_PRELOAD, type, tracks, source);
-            if (track != null) {
-                String cacheKey = mCacheKeyFactory.generateCacheKey(source, track);
-                if (!TextUtils.isEmpty(cacheKey)) {
-                    return TTVideoEngine.getCacheFileSize(cacheKey);
-                }
-            }
-        }
-        return -1;
+    public long getCachedSize(String cacheKey) {
+        return TTVideoEngine.quickGetCacheFileSize(cacheKey);
     }
 
     void onTaskEnd(Task task) {

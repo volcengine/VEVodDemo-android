@@ -773,6 +773,13 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
+    public long getBufferedDuration() {
+        if (checkIsRelease("getBufferedDuration")) return 0;
+
+        return mPlayer.getBufferedDuration();
+    }
+
+    @Override
     public int getVideoWidth() {
         if (checkIsRelease("getVideoWidth")) return 0;
 

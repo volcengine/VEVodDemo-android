@@ -46,6 +46,7 @@ import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
 import com.ss.ttvideoengine.utils.Error;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -75,9 +76,13 @@ class VolcCacheTask implements CacheLoader.Task {
     private MediaSource mSource;
     private TrackSelector mTrackSelector;
     private Listener mListener;
+
+    private final List<Listener> mDepListeners = new ArrayList<>();
     private CacheKeyFactory mCacheKeyFactory;
 
     private int mState;
+
+    private Error mError;
 
     VolcCacheTask(Context context) {
         mContext = context;
@@ -96,8 +101,8 @@ class VolcCacheTask implements CacheLoader.Task {
 
     @Override
     public void setDataSource(@NonNull MediaSource source) {
+        L.v(this, "setDataSource", MediaSource.dump(source));
         this.mSource = source;
-        L.v(this, "setDataSource", MediaSource.dump(mSource), MediaSource.dump(source));
     }
 
     @Override
@@ -118,6 +123,30 @@ class VolcCacheTask implements CacheLoader.Task {
     @Override
     public void setListener(Listener listener) {
         this.mListener = listener;
+    }
+
+    @Override
+    public void addDepListener(Listener listener) {
+        this.mDepListeners.add(listener);
+        synchronized (this) {
+            switch (mState) {
+                case STATE_STARTED:
+                    notifyStartEvent();
+                    break;
+                case STATE_END_FINISHED:
+                    notifyStartEvent();
+                    notifyEndFinishEvent();
+                    break;
+                case STATE_END_ERROR:
+                    notifyStartEvent();
+                    notifyEndError(mError);
+                    break;
+                case STATE_END_STOPPED:
+                    notifyStartEvent();
+                    notifyEndStopped();
+                    break;
+            }
+        }
     }
 
     private void selectTrack(@Track.TrackType int type, @Nullable Track track) {
@@ -156,9 +185,7 @@ class VolcCacheTask implements CacheLoader.Task {
 
         setState(STATE_STARTED);
 
-        if (mListener != null) {
-            mListener.onStart(this);
-        }
+        notifyStartEvent();
         final int sourceType = source.getSourceType();
         switch (sourceType) {
             case MediaSource.SOURCE_TYPE_ID:
@@ -169,6 +196,7 @@ class VolcCacheTask implements CacheLoader.Task {
                 break;
         }
     }
+
 
     @Override
     public void stop() {
@@ -226,9 +254,10 @@ class VolcCacheTask implements CacheLoader.Task {
 
     private void preloadVid(MediaSource source) {
         final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(source, null);
-        final PreloaderVidItem preloadItem = new PreloaderVidItem(vidSource, DEFAULT_PRELOAD_SIZE);
-        L.v(VolcCacheTask.this, "preloadVid", source.getMediaId(), "start", preloadItem.mPreloadSize);
+        final long preloadSize = resolvePreloadSize(source, null);
+        final PreloaderVidItem preloadItem = new PreloaderVidItem(vidSource, preloadSize);
 
+        L.v(VolcCacheTask.this, "preloadVid", source.getMediaId(), "start", preloadSize);
         preloadItem.setCallBackListener(new IPreLoaderItemCallBackListener() {
             @Override
             public void preloadItemInfo(PreLoaderItemCallBackInfo info) {
@@ -242,7 +271,7 @@ class VolcCacheTask implements CacheLoader.Task {
                         Track target = resolvePreloadTrack(source);
                         if (target != null) {
                             preloadItem.mResolution = Mapper.track2Resolution(target);
-                            long preloadSize = resolvePreloadSize(target);
+                            long preloadSize = resolvePreloadSize(source, target);
                             preloadItem.mPreloadSize = preloadSize;
 
                             L.v(VolcCacheTask.this, "preloadVid",
@@ -257,74 +286,42 @@ class VolcCacheTask implements CacheLoader.Task {
                     case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_SUCCEED: {
                         DataLoaderHelper.DataLoaderTaskProgressInfo cacheInfo = info.preloadDataInfo;
                         if (cacheInfo != null) {
-                            String cacheKey = cacheInfo.mKey;
-                            String vid = cacheInfo.mVideoId;
-                            String cachePath = cacheInfo.mLocalFilePath;
-                            long mediaSize = cacheInfo.mMediaSize;
-                            long cachedSize = cacheInfo.mCacheSizeFromZero;
-
-                            Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                            Track selected = VolcCacheTask.this.getSelectedTrack(Track.TRACK_TYPE_VIDEO);
                             L.v(VolcCacheTask.this, "preloadVid",
                                     source.getMediaId(),
                                     "success",
                                     "selected", Track.dump(selected),
-                                    "cacheKey", cacheKey,
+                                    "cacheKey", cacheInfo.mKey,
                                     "preloadSize", preloadItem.mPreloadSize,
-                                    "mediaSize", mediaSize,
-                                    "cachedSize", cachedSize,
-                                    "path", cachePath);
+                                    "mediaSize", cacheInfo.mMediaSize,
+                                    "cachedSize", cacheInfo.mCacheSizeFromZero,
+                                    "path", cacheInfo.mLocalFilePath);
 
-                            setState(STATE_END_FINISHED);
-                            if (mListener != null) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mListener.onFinished(VolcCacheTask.this);
-                                    }
-                                });
-                            }
+                            VolcCacheTask.this.setState(STATE_END_FINISHED);
+                            VolcCacheTask.this.notifyEndFinishEvent();
                         }
                         break;
                     }
                     case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_FAIL: {
-                        Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                        Track selected = VolcCacheTask.this.getSelectedTrack(Track.TRACK_TYPE_VIDEO);
                         L.v(VolcCacheTask.this, "preloadVid",
                                 source.getMediaId(),
                                 "error",
                                 "selected", Track.dump(selected));
 
-                        setState(STATE_END_ERROR);
-                        if (mListener != null) {
-                            Error error = info.preloadError;
-                            CacheException exception;
-                            if (error != null) {
-                                exception = new CacheException(error.code, error.toString());
-                            } else {
-                                exception = new CacheException(0, "unknown");
-                            }
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mListener.onError(VolcCacheTask.this, exception);
-                                }
-                            });
-                        }
+                        VolcCacheTask.this.setState(STATE_END_ERROR);
+                        VolcCacheTask.this.notifyEndError(info.preloadError);
                         break;
                     }
                     case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_CANCEL: {
-                        Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                        Track selected = VolcCacheTask.this.getSelectedTrack(Track.TRACK_TYPE_VIDEO);
                         L.v(VolcCacheTask.this, "preloadVid",
                                 source.getMediaId(),
                                 "cancel",
                                 "selected", Track.dump(selected));
-                        if (mListener != null) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mListener.onStopped(VolcCacheTask.this);
-                                }
-                            });
-                        }
+
+                        VolcCacheTask.this.setState(STATE_END_STOPPED);
+                        VolcCacheTask.this.notifyEndStopped();
                         break;
                     }
                     default: {
@@ -341,7 +338,7 @@ class VolcCacheTask implements CacheLoader.Task {
         if (target == null) return;
 
         DirectUrlSource directUrlSource = Mapper.mediaSource2DirectUrlSource(source, target, mCacheKeyFactory);
-        final long preloadSize = resolvePreloadSize(target);
+        final long preloadSize = resolvePreloadSize(source, target);
 
         final PreloaderURLItem preloadItem = new PreloaderURLItem(directUrlSource, preloadSize);
 
@@ -390,9 +387,8 @@ class VolcCacheTask implements CacheLoader.Task {
                                     "path", cachePath);
 
                             setState(STATE_END_FINISHED);
-                            if (mListener != null) {
-                                mListener.onFinished(VolcCacheTask.this);
-                            }
+
+                            notifyEndFinishEvent();
                         }
                         break;
                     }
@@ -404,16 +400,7 @@ class VolcCacheTask implements CacheLoader.Task {
                                 "selected", Track.dump(selected));
 
                         setState(STATE_END_ERROR);
-                        if (mListener != null) {
-                            Error error = info.preloadError;
-                            CacheException exception;
-                            if (error != null) {
-                                exception = new CacheException(error.code, error.toString());
-                            } else {
-                                exception = new CacheException(0, "unknown");
-                            }
-                            mListener.onError(VolcCacheTask.this, exception);
-                        }
+                        notifyEndError(info.preloadError);
                         break;
                     }
                     case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_CANCEL: {
@@ -423,9 +410,8 @@ class VolcCacheTask implements CacheLoader.Task {
                                 "cancel",
                                 "selected", Track.dump(selected));
 
-                        if (mListener != null) {
-                            mListener.onStopped(VolcCacheTask.this);
-                        }
+                        setState(STATE_END_STOPPED);
+                        notifyEndStopped();
                         break;
                     }
                     default: {
@@ -438,14 +424,79 @@ class VolcCacheTask implements CacheLoader.Task {
         DataLoaderHelper.getDataLoader().addTask(preloadItem);
     }
 
-    private static long resolvePreloadSize(Track target) {
-        final long preloadSize;
-        if (target.getPreloadSize() <= 0) {
-            preloadSize = DEFAULT_PRELOAD_SIZE;
+
+    private void notifyStartEvent() {
+        notify(() -> {
+            if (mListener != null) {
+                mListener.onStart(VolcCacheTask.this);
+            }
+            for (Listener listener : mDepListeners) {
+                listener.onStart(VolcCacheTask.this);
+            }
+        });
+    }
+
+    private void notifyEndFinishEvent() {
+        notify(() -> {
+            if (mListener != null) {
+                mListener.onFinished(VolcCacheTask.this);
+            }
+
+            for (Listener listener : mDepListeners) {
+                listener.onFinished(VolcCacheTask.this);
+            }
+        });
+    }
+
+    private void notifyEndError(Error error) {
+        mError = error;
+        notify(() -> {
+
+            final CacheException e = error != null ? new CacheException(error.code, error.toString())
+                    : new CacheException(0, "error is null!");
+
+            if (mListener != null) {
+                mListener.onError(VolcCacheTask.this, e);
+            }
+
+            for (Listener listener : mDepListeners) {
+                listener.onError(VolcCacheTask.this, e);
+            }
+        });
+    }
+
+
+    private void notifyEndStopped() {
+        notify(() -> {
+            if (mListener != null) {
+                mListener.onStopped(VolcCacheTask.this);
+            }
+
+            for (Listener listener : mDepListeners) {
+                listener.onStopped(VolcCacheTask.this);
+            }
+        });
+    }
+
+    public void notify(Runnable runnable) {
+        if (Looper.myLooper() == mHandler.getLooper()) {
+            runnable.run();
         } else {
-            preloadSize = target.getPreloadSize();
+            mHandler.post(runnable);
         }
-        return preloadSize;
+    }
+
+    private static long resolvePreloadSize(@Nullable MediaSource source, @Nullable Track target) {
+        long preloadSize = target != null ? target.getPreloadSize() : 0;
+        if (preloadSize > 0) {
+            return preloadSize;
+        }
+        Long l = source != null ? source.getExtra(CacheLoader.Task.EXTRA_PRELOAD_SIZE_IN_BYTES, Long.class) : null;
+        preloadSize = l != null ? l : 0;
+        if (preloadSize > 0) {
+            return preloadSize;
+        }
+        return DEFAULT_PRELOAD_SIZE;
     }
 
     @Nullable

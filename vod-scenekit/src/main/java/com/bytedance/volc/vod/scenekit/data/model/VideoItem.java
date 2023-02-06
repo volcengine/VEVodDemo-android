@@ -31,6 +31,9 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class VideoItem implements Parcelable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
@@ -146,6 +149,8 @@ public class VideoItem implements Parcelable {
 
     private int sourceType;
 
+    private MediaSource mediaSource;
+
     public String getVid() {
         return vid;
     }
@@ -183,7 +188,10 @@ public class VideoItem implements Parcelable {
     }
 
     @NonNull
-    public static MediaSource toMediaSource(VideoItem videoItem, boolean sycProgress) {
+    public static MediaSource toMediaSource(VideoItem videoItem, boolean syncProgress) {
+        if (videoItem.mediaSource != null) {
+            return videoItem.mediaSource;
+        }
         final MediaSource mediaSource;
         if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
             mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
@@ -197,10 +205,21 @@ public class VideoItem implements Parcelable {
         mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
         mediaSource.putExtra(TitleBarLayer.EXTRA_TITLE, videoItem.title);
         mediaSource.putExtra(VolcConfig.EXTRA_VOLC_CONFIG, createVolcConfig());
-        if (sycProgress) {
+        if (syncProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
         }
+        videoItem.mediaSource = mediaSource;
         return mediaSource;
+    }
+
+    public static List<MediaSource> toMediaSources(List<VideoItem> videoItems, boolean syncProgress) {
+        List<MediaSource> sources = new ArrayList<>();
+        if (videoItems != null) {
+            for (VideoItem videoItem : videoItems) {
+                sources.add(VideoItem.toMediaSource(videoItem, syncProgress));
+            }
+        }
+        return sources;
     }
 
     @NonNull
