@@ -18,6 +18,8 @@
 
 package com.bytedance.playerkit.utils.event;
 
+import android.os.SystemClock;
+
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
 
@@ -26,6 +28,8 @@ public class Event {
     private final int code;
     private Object owner;
     private Dispatcher dispatcher;
+
+    private long dispatchTime;
 
     protected Event(int code) {
         this.code = code;
@@ -54,13 +58,19 @@ public class Event {
     }
 
     public final void dispatch() {
+        this.dispatchTime = SystemClock.uptimeMillis();
         this.dispatcher.dispatchEvent(this);
+    }
+
+    public final long dispatchTime() {
+        return this.dispatchTime;
     }
 
     @CallSuper
     public void recycle() {
         owner = null;
         dispatcher = null;
+        dispatchTime = 0;
     }
 
     public boolean isRecycled() {
