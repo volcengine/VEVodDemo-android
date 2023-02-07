@@ -39,22 +39,56 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.event.InfoCacheUpdate;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
-import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
+import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LogLayer extends BaseLayer {
 
-    private final List<Long> cacheHintBytes = new ArrayList<>();
+    private LogInfo mLogInfo;
+
+    private static class LogInfo {
+        private final List<Long> cacheHintBytes = new ArrayList<>();
+        private long startPlaybackFT;
+        private long prepareFT;
+        private long videoRenderStartFT;
+
+        private static String cacheHint(LogInfo logInfo) {
+            if (logInfo == null) return "";
+            String s = "";
+            for (Long bytes : logInfo.cacheHintBytes) {
+                if (!TextUtils.isEmpty(s)) {
+                    s += ", ";
+                }
+                s = s + bytes;
+            }
+            return s;
+        }
+
+        public static long firstFrame(LogInfo logInfo, boolean player) {
+            if (logInfo == null) return -1;
+            if (player) {
+                if (logInfo.videoRenderStartFT > logInfo.prepareFT) {
+                    return logInfo.videoRenderStartFT - logInfo.prepareFT;
+                }
+            } else {
+                if (logInfo.videoRenderStartFT > logInfo.startPlaybackFT) {
+                    return logInfo.videoRenderStartFT - logInfo.startPlaybackFT;
+                }
+            }
+            return -1;
+        }
+    }
 
     public LogLayer() {
         setIgnoreLock(true);
@@ -72,7 +106,7 @@ public class LogLayer extends BaseLayer {
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.gravity = Gravity.CENTER;
         textView.setLayoutParams(lp);
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         textView.setPadding(20, 20, 20, 20);
         textView.setTextColor(Color.RED);
         return textView;
@@ -153,11 +187,19 @@ public class LogLayer extends BaseLayer {
                     .append(mapVolume(player.getVolume()))
                     .append("\n");
             info.append("CacheHint: ")
-                    .append(cacheHint())
+                    .append(LogInfo.cacheHint(mLogInfo))
+                    .append("\n");
+            info.append("FirstFramePlayer: ")
+                    .append(LogInfo.firstFrame(mLogInfo, true))
+                    .append("\n");
+            info.append("FirstFramePlayer+UI: ")
+                    .append(LogInfo.firstFrame(mLogInfo, false))
                     .append("\n");
         }
         final TextView textView = Asserts.checkNotNull(getView());
-        textView.setText(info);
+        if (!TextUtils.equals(info, textView.getText())) {
+            textView.setText(info);
+        }
     }
 
     private String mediaSourceState() {
@@ -199,16 +241,6 @@ public class LogLayer extends BaseLayer {
         return "";
     }
 
-    private String cacheHint() {
-        String s = "";
-        for (Long bytes : cacheHintBytes) {
-            if (!TextUtils.isEmpty(s)) {
-                s += ", ";
-            }
-            s = s + bytes;
-        }
-        return s;
-    }
 
     private String videoViewState() {
         VideoView videoView = videoView();
@@ -241,12 +273,32 @@ public class LogLayer extends BaseLayer {
         @Override
         public void onEvent(Event event) {
             switch (event.code()) {
-                case PlayerEvent.Info.CACHE_UPDATE:
-                    cacheHintBytes.add(event.cast(InfoCacheUpdate.class).cachedBytes);
+                case PlaybackEvent.Action.START_PLAYBACK:
+                    if (mLogInfo == null) {
+                        mLogInfo = new LogInfo();
+                        mLogInfo.startPlaybackFT = event.dispatchTime();
+                    }
+                    break;
+                case PlaybackEvent.Action.STOP_PLAYBACK:
+                case PlayerEvent.Action.RELEASE:
+                    if (mLogInfo != null) {
+                        mLogInfo = null;
+                    }
                     break;
                 case PlayerEvent.Action.PREPARE:
-                case PlayerEvent.State.RELEASED:
-                    cacheHintBytes.clear();
+                    if (mLogInfo != null && mLogInfo.prepareFT <= 0) {
+                        mLogInfo.prepareFT = event.dispatchTime();
+                    }
+                    break;
+                case PlayerEvent.Info.VIDEO_RENDERING_START:
+                    if (mLogInfo != null && mLogInfo.videoRenderStartFT <= 0) {
+                        mLogInfo.videoRenderStartFT = event.dispatchTime();
+                    }
+                    break;
+                case PlayerEvent.Info.CACHE_UPDATE:
+                    if (mLogInfo != null) {
+                        mLogInfo.cacheHintBytes.add(event.cast(InfoCacheUpdate.class).cachedBytes);
+                    }
                     break;
             }
             showOpt();
