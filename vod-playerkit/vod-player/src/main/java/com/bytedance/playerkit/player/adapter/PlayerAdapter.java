@@ -143,6 +143,10 @@ public interface PlayerAdapter {
 
     void setStartTime(long startTime);
 
+    void setStartWhenPrepared(boolean startWhenPrepared);
+
+    boolean isStartWhenPrepared();
+
     long getStartTime();
 
     void prepareAsync() throws IllegalStateException;
