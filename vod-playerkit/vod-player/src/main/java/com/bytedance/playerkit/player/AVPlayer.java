@@ -103,7 +103,6 @@ public class AVPlayer extends ExtraObject implements Player {
     private int mState;
 
     private long mStartTime;
-    private boolean mStartWhenPrepared;
 
     private boolean mIsBuffering;
     private int mBufferIndex = -1;
@@ -453,7 +452,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
         Asserts.checkState(getState(), Player.STATE_IDLE, Player.STATE_STOPPED);
 
-        L.d(this, "prepare", source, mStartWhenPrepared);
+        L.d(this, "prepare", source, isStartWhenPrepared());
 
         mDispatcher.obtain(ActionPrepare.class, this).init(source).dispatch();
 
@@ -501,10 +500,10 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Override
     public void setStartWhenPrepared(boolean startWhenPrepared) {
+        final boolean mStartWhenPrepared = isStartWhenPrepared();
         if (mStartWhenPrepared != startWhenPrepared) {
             L.d(this, "setStartWhenPrepared", mStartWhenPrepared, startWhenPrepared);
-            mStartWhenPrepared = startWhenPrepared;
-
+            mPlayer.setStartWhenPrepared(startWhenPrepared);
             if (isPrepared() && startWhenPrepared) {
                 start();
             }
@@ -513,7 +512,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Override
     public boolean isStartWhenPrepared() {
-        return mStartWhenPrepared;
+        return mPlayer.isStartWhenPrepared();
     }
 
     @Nullable
@@ -695,7 +694,6 @@ public class AVPlayer extends ExtraObject implements Player {
     private void resetInner() {
         mSurface = null;
         mMediaSource = null;
-        mStartWhenPrepared = false;
         mStartTime = 0;
         mBufferPercentage = 0;
         mIsBuffering = false;

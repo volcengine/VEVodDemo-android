@@ -81,6 +81,7 @@ class VolcPlayer implements PlayerAdapter {
     private Surface mSurface;
     private SurfaceHolder mSurfaceHolder;
 
+    private boolean mStartWhenPrepared = true;
     private long mStartTime;
     private MediaSource mMediaSource;
     private StrategySource mStrategySource;
@@ -266,6 +267,7 @@ class VolcPlayer implements PlayerAdapter {
             player = create(mContext, mediaSource);
         } else {
             mPreRenderPlayer = true;
+            mStartWhenPrepared = false;
         }
         bind(player);
         setState(Player.STATE_IDLE);
@@ -615,7 +617,7 @@ class VolcPlayer implements PlayerAdapter {
                                VolcConfig config) {
         mStrategySource = source;
         setupSource(mContext, mPlayer, source, headers, config);
-        mPlayer.prepare();
+        mPlayer.play();
     }
 
     private static void setupSource(Context context,
@@ -641,7 +643,15 @@ class VolcPlayer implements PlayerAdapter {
             return;
         }
 
-        mPlayer.play();
+        if (mState == Player.STATE_PREPARED) {
+            if (!mStartWhenPrepared || mPreRenderPlayer) {
+                L.d(this, "start");
+                mPlayer.play();
+            }
+        } else {
+            L.d(this, "start");
+            mPlayer.play();
+        }
         setState(Player.STATE_STARTED);
     }
 
@@ -681,6 +691,19 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     @Override
+    public void setStartWhenPrepared(boolean startWhenPrepared) {
+        if (mStartWhenPrepared != startWhenPrepared) {
+            mStartWhenPrepared = startWhenPrepared;
+            mPlayer.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, startWhenPrepared ? 1 : 0);
+        }
+    }
+
+    @Override
+    public boolean isStartWhenPrepared() {
+        return mStartWhenPrepared;
+    }
+
+    @Override
     public long getStartTime() {
         return mStartTime;
     }
@@ -713,6 +736,7 @@ class VolcPlayer implements PlayerAdapter {
         mPlaybackParams.setSpeed(1f);
         mListener = null;
         mPlayerException = null;
+        mStartWhenPrepared = true;
         EngineParams.remove(mPlayer);
     }
 
@@ -982,6 +1006,8 @@ class VolcPlayer implements PlayerAdapter {
 
             MediaSource source = player.mMediaSource;
             if (source == null) return;
+
+            if (player.mState != Player.STATE_PREPARING) return;
 
             player.setState(Player.STATE_PREPARED);
 
