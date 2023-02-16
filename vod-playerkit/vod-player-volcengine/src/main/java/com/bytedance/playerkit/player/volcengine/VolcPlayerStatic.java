@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.utils.L;
 import com.pandora.common.env.Env;
 import com.ss.ttvideoengine.debugtool2.DebugTool;
 import com.ss.ttvideoengine.strategy.StrategyManager;
@@ -35,15 +36,25 @@ import java.util.List;
 
 public class VolcPlayerStatic {
 
-    private static boolean ShortVideoStrategyEnabled = false;
+    private static int CurrentScene = VolcC.SCENE_UNKNOWN;
+    private static boolean SceneStrategyEnabled = false;
 
-    public static void setShortVideoStrategyEnabled(boolean enabled) {
-        if (ShortVideoStrategyEnabled == enabled) return;
-        ShortVideoStrategyEnabled = enabled;
-        if (enabled) {
-            VolcPlayer.setShortVideoStrategyEnabled();
-        } else {
-            VolcPlayer.clearStrategy();
+    public synchronized static void setSceneStrategyEnabled(int volcScene, boolean enabled) {
+        L.d(VolcPlayerStatic.class, "setSceneStrategyEnabled", VolcC.mapScene(volcScene), enabled);
+        if (CurrentScene != volcScene) {
+            if (SceneStrategyEnabled) {
+                VolcPlayer.clearSceneStrategy();
+                SceneStrategyEnabled = false;
+            }
+        }
+        CurrentScene = volcScene;
+        if (SceneStrategyEnabled != enabled) {
+            SceneStrategyEnabled = enabled;
+            if (enabled) {
+                VolcPlayer.setSceneStrategyEnabled(volcScene);
+            } else {
+                VolcPlayer.clearSceneStrategy();
+            }
         }
     }
 
@@ -70,9 +81,9 @@ public class VolcPlayerStatic {
     @Nullable
     public static JSONObject getPreloadConfig(int scene) {
         switch (scene) {
-            case 1: // Short
+            case VolcC.SCENE_SHORT_VIDEO: // Short
                 return StrategySettings.getInstance().getPreload(StrategyManager.STRATEGY_SCENE_SMALL_VIDEO);
-            case 2: // Feed
+            case VolcC.SCENE_FEED_VIDEO: // Feed
                 return StrategySettings.getInstance().getPreload(StrategyManager.STRATEGY_SCENE_SHORT_VIDEO);
         }
         return null;

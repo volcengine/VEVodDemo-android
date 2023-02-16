@@ -109,6 +109,14 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
         }
     }
 
+    public VideoItem getItem(int position) {
+        return mItems.get(position);
+    }
+
+    public List<VideoItem> getItems() {
+        return mItems;
+    }
+
     public void setLoadingMore(boolean loadingMore) {
         mIsLoadingMore = loadingMore;
     }
@@ -133,10 +141,6 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
     @Override
     public int getItemCount() {
         return mItems.size();
-    }
-
-    public VideoItem getItem(int position) {
-        return mItems.get(position);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements

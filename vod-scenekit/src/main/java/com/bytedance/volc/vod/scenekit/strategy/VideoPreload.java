@@ -44,6 +44,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Using {@link com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoStrategy}
+ * and {@link  com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoStrategy} is
+ * recommended. If you want to write your own Preload Strategy, you can using this class.
+ */
 public class VideoPreload implements Dispatcher.EventListener {
     private static HandlerThread sHandlerThread;
     private final Handler mH;
