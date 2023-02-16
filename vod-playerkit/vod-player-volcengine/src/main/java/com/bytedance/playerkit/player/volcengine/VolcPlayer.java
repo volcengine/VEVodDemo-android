@@ -236,7 +236,7 @@ class VolcPlayer implements PlayerAdapter {
                 if (mediaSource == null) return null; // error
 
                 Context context = VolcPlayerInit.getContext();
-                VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+                VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
                 final TTVideoEngine player = create(context, mediaSource);
                 bind(player, mediaSource);
@@ -286,7 +286,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void refreshSurface() {
-        if (Mapper.getVolcConfig(mMediaSource).enableTextureRender) {
+        if (VolcConfig.get(mMediaSource).enableTextureRender) {
             if (isInPlaybackState()) {
                 mPlayer.forceDraw();
             }
@@ -350,12 +350,12 @@ class VolcPlayer implements PlayerAdapter {
             } else if (contentType == MediaSource.MEDIA_PROTOCOL_HLS) {
                 IVideoModel videoModel = mPlayer.getIVideoModel();
                 if (videoModel != null && videoModel.isSupportHLSSeamlessSwitch()) {
-                    return Mapper.getVolcConfig(mMediaSource).enableHlsSeamlessSwitch;
+                    return VolcConfig.get(mMediaSource).enableHlsSeamlessSwitch;
                 }
             } else if (contentType == MediaSource.MEDIA_PROTOCOL_DEFAULT) {
                 IVideoModel videoModel = mPlayer.getIVideoModel();
                 if (videoModel != null && videoModel.isSupportBash()) {
-                    return Mapper.getVolcConfig(mMediaSource).enableMP4SeamlessSwitch;
+                    return VolcConfig.get(mMediaSource).enableMP4SeamlessSwitch;
                 }
             }
         }
@@ -581,7 +581,7 @@ class VolcPlayer implements PlayerAdapter {
         if (sourceType == MediaSource.SOURCE_TYPE_ID) {
             StrategySource strategySource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource, null);
             Map<String, String> headers = mediaSource.getHeaders();
-            VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+            VolcConfig volcConfig = VolcConfig.get(mediaSource);
             preparePlayer(strategySource, headers, volcConfig);
         } else if (sourceType == MediaSource.SOURCE_TYPE_URL) {
             selectPlayTrack(mediaSource);
@@ -597,7 +597,7 @@ class VolcPlayer implements PlayerAdapter {
                 VolcPlayerInit.getCacheKeyFactory());
 
         Map<String, String> headers = track.getHeaders() == null ? mediaSource.getHeaders() : track.getHeaders();
-        VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+        VolcConfig volcConfig = VolcConfig.get(mediaSource);
         preparePlayer(strategySource, headers, volcConfig);
     }
 
@@ -781,7 +781,7 @@ class VolcPlayer implements PlayerAdapter {
     public void setVolume(float leftVolume, float rightVolume) {
         float left;
         float right;
-        if (Mapper.getVolcConfig(mMediaSource).enableAudioTrackVolume) {
+        if (VolcConfig.get(mMediaSource).enableAudioTrackVolume) {
             left = leftVolume;
             right = rightVolume;
         } else {
@@ -796,7 +796,7 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public float[] getVolume() {
-        if (!Mapper.getVolcConfig(mMediaSource).enableAudioTrackVolume) {
+        if (!VolcConfig.get(mMediaSource).enableAudioTrackVolume) {
             float maxVolume = mPlayer.getMaxVolume();
             float volume = mPlayer.getVolume();
             if (volume >= 0 && volume <= maxVolume) {
