@@ -18,7 +18,10 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import androidx.annotation.NonNull;
+
 import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.ss.ttvideoengine.source.Source;
 
@@ -28,6 +31,17 @@ import java.io.Serializable;
 public class VolcConfig implements Serializable {
     public static final VolcConfig DEFAULT = new VolcConfig();
     public static final String EXTRA_VOLC_CONFIG = "extra_volc_config";
+
+    @NonNull
+    public static VolcConfig get(MediaSource mediaSource) {
+        if (mediaSource == null) return VolcConfig.DEFAULT;
+
+        VolcConfig volcConfig = mediaSource.getExtra(VolcConfig.EXTRA_VOLC_CONFIG, VolcConfig.class);
+        if (volcConfig == null) {
+            return VolcConfig.DEFAULT;
+        }
+        return volcConfig;
+    }
 
     public static final int CODEC_STRATEGY_DISABLE = 0;
     public static final int CODEC_STRATEGY_COST_SAVING_FIRST = Source.KEY_COST_SAVING_FIRST;
@@ -48,4 +62,5 @@ public class VolcConfig implements Serializable {
     public boolean enableSeekEnd = true;
     public boolean enableSuperResolutionAbility = true;
     public boolean enableSuperResolution = false;
+
 }

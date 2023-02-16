@@ -572,7 +572,7 @@ public class Mapper {
 
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track != null) {
-            VolcConfig volcConfig = getVolcConfig(mediaSource);
+            VolcConfig volcConfig = VolcConfig.get(mediaSource);
             DirectUrlSource.Builder builder =  new DirectUrlSource.Builder()
                     .setVid(mediaSource.getMediaId())
                     .addItem(new DirectUrlSource.UrlItem.Builder()
@@ -595,7 +595,7 @@ public class Mapper {
             resolution = quality2Resolution(quality);
         }
 
-        final VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
                 .setVid(mediaSource.getMediaId())
@@ -626,16 +626,5 @@ public class Mapper {
             }
         }
         return strategySources;
-    }
-
-    @NonNull
-    public static VolcConfig getVolcConfig(MediaSource mediaSource) {
-        if (mediaSource == null) return VolcConfig.DEFAULT;
-
-        VolcConfig volcConfig = mediaSource.getExtra(VolcConfig.EXTRA_VOLC_CONFIG, VolcConfig.class);
-        if (volcConfig == null) {
-            return VolcConfig.DEFAULT;
-        }
-        return volcConfig;
     }
 }

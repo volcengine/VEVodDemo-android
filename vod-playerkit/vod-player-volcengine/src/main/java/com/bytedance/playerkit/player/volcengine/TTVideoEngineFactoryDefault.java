@@ -39,7 +39,7 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
-        VolcConfig volcConfig = Mapper.getVolcConfig(mediaSource);
+        VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         final TTVideoEngine player;
         if (volcConfig.enableEngineLooper) {
