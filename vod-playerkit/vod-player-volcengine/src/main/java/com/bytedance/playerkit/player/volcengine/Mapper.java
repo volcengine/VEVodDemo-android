@@ -42,6 +42,7 @@ import com.ss.ttvideoengine.model.VideoRef;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.Source;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 
 import java.io.IOException;
@@ -573,7 +574,7 @@ public class Mapper {
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track != null) {
             VolcConfig volcConfig = VolcConfig.get(mediaSource);
-            DirectUrlSource.Builder builder =  new DirectUrlSource.Builder()
+            DirectUrlSource.Builder builder = new DirectUrlSource.Builder()
                     .setVid(mediaSource.getMediaId())
                     .addItem(new DirectUrlSource.UrlItem.Builder()
                             .setUrl(track.getUrl())
@@ -626,5 +627,15 @@ public class Mapper {
             }
         }
         return strategySources;
+    }
+    public static int mapVolcScene2EngineScene(int volcScene) {
+        switch (volcScene) {
+            case VolcC.SCENE_SHORT_VIDEO:
+                return StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
+            case VolcC.SCENE_FEED_VIDEO:
+                return StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
+            default:
+                throw new IllegalArgumentException("unsupported scene " + volcScene);
+        }
     }
 }

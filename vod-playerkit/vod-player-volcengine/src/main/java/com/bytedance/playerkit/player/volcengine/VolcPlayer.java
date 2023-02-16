@@ -22,7 +22,9 @@ import static com.bytedance.playerkit.player.Player.STATE_STOPPED;
 import static com.bytedance.playerkit.player.Player.mapState;
 import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_AUDIO;
 import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
+import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_COMMON;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
@@ -188,12 +190,19 @@ class VolcPlayer implements PlayerAdapter {
         }
     }
 
-    public static void setShortVideoStrategyEnabled() {
-        TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
-        TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER, STRATEGY_SCENE_SMALL_VIDEO);
+    public static void setSceneStrategyEnabled(int volcScene) {
+        final int engineScene = Mapper.mapVolcScene2EngineScene(volcScene);
+        switch (engineScene) {
+            case STRATEGY_SCENE_SMALL_VIDEO:
+                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
+                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER, STRATEGY_SCENE_SMALL_VIDEO);
+                break;
+            case STRATEGY_SCENE_SHORT_VIDEO:
+                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SHORT_VIDEO);
+                break;
+        }
     }
-
-    public static void clearStrategy() {
+    public static void clearSceneStrategy() {
         sMediaSources.clear();
         TTVideoEngine.clearAllStrategy();
     }

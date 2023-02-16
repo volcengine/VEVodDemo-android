@@ -119,6 +119,8 @@ public class L {
         } else if (o.getClass().isAnonymousClass()) {
             String s = o.toString();
             return s.substring(s.lastIndexOf('.'));
+        } else if(o instanceof Class<?>) {
+            return ((Class<?>)o).getSimpleName();
         } else {
             return o.getClass().getSimpleName() + '@' + Integer.toHexString(o.hashCode());
         }
