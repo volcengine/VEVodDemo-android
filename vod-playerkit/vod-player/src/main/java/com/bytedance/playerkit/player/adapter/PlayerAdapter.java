@@ -221,6 +221,8 @@ public interface PlayerAdapter {
 
         void onBufferingUpdate(@NonNull PlayerAdapter mp, int percent);
 
+        void onProgressUpdate(@NonNull PlayerAdapter mp, long position);
+
         void onInfo(@NonNull PlayerAdapter mp, int what, int extra);
 
         void onCacheHint(PlayerAdapter mp, long cacheSize);
