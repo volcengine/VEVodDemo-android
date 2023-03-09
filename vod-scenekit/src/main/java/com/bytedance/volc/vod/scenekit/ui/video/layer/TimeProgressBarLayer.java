@@ -93,11 +93,16 @@ public class TimeProgressBarLayer extends AnimateLayer {
 
             @Override
             public void onUserSeekStop(long startPosition, long seekToPosition) {
-                Player player = player();
+                final Player player = player();
                 if (player == null) return;
 
                 if (player.isInPlaybackState()) {
-                    player.seekTo(seekToPosition);
+                    if (player.isCompleted()) {
+                        player.start();
+                        player.seekTo(seekToPosition);
+                    } else {
+                        player.seekTo(seekToPosition);
+                    }
                 }
 
                 showControllerLayers();
