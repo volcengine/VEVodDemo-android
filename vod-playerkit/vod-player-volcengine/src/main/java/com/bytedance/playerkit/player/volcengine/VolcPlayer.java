@@ -1216,6 +1216,16 @@ class VolcPlayer implements PlayerAdapter {
 
             listener.onInfo(player, Info.MEDIA_INFO_AUDIO_RENDERING_START, 0);
         }
+
+        @Override
+        public void onCurrentPlaybackTimeUpdate(TTVideoEngine engine, int currentPlaybackTime) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            Listener listener = player.mListener;
+            if (listener == null) return;
+
+            listener.onProgressUpdate(player, currentPlaybackTime);
+        }
     }
 
     private static String resolvePlayerDecoderType(TTVideoEngine engine) {
