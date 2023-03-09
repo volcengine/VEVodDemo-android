@@ -65,13 +65,16 @@ public class SimpleProgressBarLayer extends AnimateLayer {
 
             @Override
             public void onUserSeekStop(long startPosition, long seekToPosition) {
-                PlaybackController controller = SimpleProgressBarLayer.this.controller();
-                if (controller == null) return;
-                Player player = controller.player();
+                final Player player = player();
                 if (player == null) return;
 
                 if (player.isInPlaybackState()) {
-                    player.seekTo(seekToPosition);
+                    if (player.isCompleted()) {
+                        player.start();
+                        player.seekTo(seekToPosition);
+                    } else {
+                        player.seekTo(seekToPosition);
+                    }
                 }
             }
         });
