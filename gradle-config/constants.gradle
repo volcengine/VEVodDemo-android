@@ -41,7 +41,7 @@ project.ext {
     okhttp = "4.9.3"
 
     bytedance = [
-            ttsdkVersion : "1.36.1.8",
+            ttsdkVersion : "1.36.2.8",
             applogVersion: "6.9.5"
     ]
 }
