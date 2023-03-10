@@ -18,34 +18,48 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene.feedvideo;
 
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_DETAIL;
+
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 
+import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.api2.RemoteApi2;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
+import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 
 import java.util.List;
 
 
-public class FeedVideoFragment extends BaseFragment {
+public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView.DetailPageNavigator {
 
     private RemoteApi mRemoteApi;
     private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private FeedVideoSceneView mSceneView;
-    private FeedVideoSceneView.FeedVideoSceneEventListener mListener;
+
+    private DetailVideoFragment.DetailVideoSceneEventListener mListener;
 
     public FeedVideoFragment() {
         // Required empty public constructor
@@ -86,7 +100,7 @@ public class FeedVideoFragment extends BaseFragment {
         mSceneView.pageView().setLifeCycle(getLifecycle());
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
-        mSceneView.setEventListener(mListener);
+        mSceneView.setDetailPageNavigator(this);
         refresh();
     }
 
@@ -151,7 +165,57 @@ public class FeedVideoFragment extends BaseFragment {
         }
     }
 
-    public void setFeedSceneEventListener(FeedVideoSceneView.FeedVideoSceneEventListener listener) {
+    public void setDetailSceneEventListener(DetailVideoFragment.DetailVideoSceneEventListener listener) {
         mListener = listener;
     }
+
+    @Override
+    public void enterDetail(FeedVideoViewHolder holder) {
+        final String pageType = VideoSettings.stringValue(VideoSettings.DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY);
+        if (TextUtils.equals(pageType, "Activity")) {
+            final VideoView videoView = holder.getSharedVideoView();
+            if (videoView == null) return;
+
+            final MediaSource source = videoView.getDataSource();
+            if (source == null) return;
+
+            final PlaybackController controller = videoView.controller();
+
+            boolean continuesPlayback = false;
+            if (controller != null) {
+                continuesPlayback = controller.player() != null;
+                controller.unbindPlayer();
+            }
+            final Bundle bundle = DetailVideoFragment.createBundle(source, continuesPlayback);
+            VideoActivity.intentInto(getActivity(), SCENE_DETAIL, bundle);
+        } else {
+            final FragmentActivity activity = requireActivity();
+            final DetailVideoFragment detail = DetailVideoFragment.newInstance();
+            detail.setFeedVideoViewHolder(holder);
+            detail.getLifecycle().addObserver(mDetailLifeCycle);
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .addToBackStack(null)
+                    .add(android.R.id.content, detail, DetailVideoFragment.class.getName())
+                    .commit();
+        }
+    }
+
+    final LifecycleEventObserver mDetailLifeCycle = new LifecycleEventObserver() {
+        @Override
+        public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+            switch (event) {
+                case ON_CREATE:
+                    if (mListener != null) {
+                        mListener.onEnterDetail();
+                    }
+                    break;
+                case ON_DESTROY:
+                    if (mListener != null) {
+                        mListener.onExitDetail();
+                    }
+                    break;
+            }
+        }
+    };
 }

@@ -31,11 +31,12 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class VideoItem implements Parcelable {
+public class VideoItem implements Parcelable, Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
     public static final int SOURCE_TYPE_VID = 0;

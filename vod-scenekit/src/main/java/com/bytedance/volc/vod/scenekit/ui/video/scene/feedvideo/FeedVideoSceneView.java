@@ -24,18 +24,13 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bytedance.volc.vod.scenekit.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.LoadMoreAble;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.RefreshAble;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.impl.RecycleViewLoadMoreHelper;
 
-public class FeedVideoSceneView extends FrameLayout implements FeedVideoPageView.DetailPageNavigator, RefreshAble, LoadMoreAble {
+public class FeedVideoSceneView extends FrameLayout implements RefreshAble, LoadMoreAble {
     private final FeedVideoPageView mPageView;
     private final SwipeRefreshLayout mRefreshLayout;
 
@@ -43,14 +38,6 @@ public class FeedVideoSceneView extends FrameLayout implements FeedVideoPageView
 
     private RefreshAble.OnRefreshListener mRefreshListener;
     private LoadMoreAble.OnLoadMoreListener mLoadMoreListener;
-
-    private FeedVideoSceneEventListener mListener;
-
-    public interface FeedVideoSceneEventListener {
-        void onEnterDetail();
-
-        void onExitDetail();
-    }
 
     public FeedVideoSceneView(@NonNull Context context) {
         this(context, null);
@@ -74,7 +61,6 @@ public class FeedVideoSceneView extends FrameLayout implements FeedVideoPageView
         mRefreshLayout.addView(mPageView, new SwipeRefreshLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         addView(mRefreshLayout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-        mPageView.setDetailPageNavigator(this);
         mLoadMoreHelper = new RecycleViewLoadMoreHelper(mPageView.recyclerView());
         mLoadMoreHelper.setOnLoadMoreListener(() -> {
             if (mLoadMoreListener != null) {
@@ -83,8 +69,8 @@ public class FeedVideoSceneView extends FrameLayout implements FeedVideoPageView
         });
     }
 
-    public void setEventListener(FeedVideoSceneEventListener listener) {
-        this.mListener = listener;
+    public void setDetailPageNavigator(FeedVideoPageView.DetailPageNavigator navigator) {
+        mPageView.setDetailPageNavigator(navigator);
     }
 
     @Override
@@ -159,51 +145,4 @@ public class FeedVideoSceneView extends FrameLayout implements FeedVideoPageView
     public boolean onBackPressed() {
         return mPageView.onBackPressed();
     }
-
-    @Override
-    public boolean isDetail() {
-        DetailVideoFragment detailVideoFragment = (DetailVideoFragment) ((FragmentActivity) getContext())
-                .getSupportFragmentManager()
-                .findFragmentByTag(DetailVideoFragment.class.getSimpleName());
-        return detailVideoFragment != null;
-    }
-
-    @Override
-    public void enterDetail(FeedVideoViewHolder holder) {
-        FragmentActivity activity = (FragmentActivity) getContext();
-        DetailVideoFragment detail = DetailVideoFragment.newInstance();
-        detail.setFeedVideoViewHolder(holder);
-        detail.getLifecycle().addObserver(mDetailLifeCycle);
-        activity.getSupportFragmentManager()
-                .beginTransaction()
-                .addToBackStack(null)
-                .add(android.R.id.content, detail, DetailVideoFragment.class.getName())
-                .commit();
-    }
-
-    @Override
-    public void exitDetail() {
-        if (isDetail()) {
-            FragmentActivity activity = (FragmentActivity) getContext();
-            activity.getSupportFragmentManager().popBackStack();
-        }
-    }
-
-    final LifecycleEventObserver mDetailLifeCycle = new LifecycleEventObserver() {
-        @Override
-        public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
-            switch (event) {
-                case ON_CREATE:
-                    if (mListener != null) {
-                        mListener.onEnterDetail();
-                    }
-                    break;
-                case ON_DESTROY:
-                    if (mListener != null) {
-                        mListener.onExitDetail();
-                    }
-                    break;
-            }
-        }
-    };
 }

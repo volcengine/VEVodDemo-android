@@ -50,6 +50,9 @@ public class VideoSettings {
     public static final String CATEGORY_SHORT_VIDEO = "短视频";
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
+
+    public static final String CATEGORY_DETAIL_VIDEO = "视频详情页";
+
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
     public static final String CATEGORY_DEBUG = "调试选项";
 
@@ -61,6 +64,8 @@ public class VideoSettings {
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
 
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
+
+    public static final String DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY = "detail_video_scene_fragment_or_activity";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
@@ -144,6 +149,7 @@ public class VideoSettings {
         createShortVideoSettings(settings);
         createFeedVideoSettings(settings);
         createLongVideoSettings(settings);
+        createDetailVideoSettings(settings);
         createCommonSettings(settings);
         return settings;
     }
@@ -245,6 +251,20 @@ public class VideoSettings {
                         String.class,
                         "long-video",
                         null)));
+    }
+
+    private static void createDetailVideoSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_DETAIL_VIDEO));
+        settings.add(SettingItem.createOptionItem(CATEGORY_DETAIL_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_DETAIL_VIDEO,
+                        DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY,
+                        "视频详情页使用 Fragment/Activity",
+                        Option.STRATEGY_IMMEDIATELY,
+                        String.class,
+                        "Fragment",
+                        Arrays.asList("Fragment", "Activity"))));
     }
 
     private static void createCommonSettings(List<SettingItem> settings) {
