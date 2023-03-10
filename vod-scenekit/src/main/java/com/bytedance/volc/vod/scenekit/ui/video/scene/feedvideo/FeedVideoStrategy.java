@@ -38,7 +38,7 @@ public class FeedVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.setMediaSources(VideoItem.toMediaSources(videoItems, false));
+        VolcPlayerStatic.setMediaSources(VideoItem.toMediaSources(videoItems, true));
     }
 
     public static void appendItems(List<VideoItem> videoItems) {
@@ -46,6 +46,6 @@ public class FeedVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.addMediaSources(VideoItem.toMediaSources(videoItems, false));
+        VolcPlayerStatic.addMediaSources(VideoItem.toMediaSources(videoItems, true));
     }
 }
