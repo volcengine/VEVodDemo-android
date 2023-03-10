@@ -38,11 +38,10 @@ import androidx.fragment.app.FragmentManager;
 
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.detail.DetailVideoFragment;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
+import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
+import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.feedvideo.FeedVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoFragment;
@@ -106,7 +105,7 @@ public class VideoActivity extends BaseActivity {
             fm.beginTransaction().attach(fragment).commit();
         }
 
-        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)){
+        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)) {
             VolcPlayerStatic.setDebugToolContainerView(findViewById(R.id.debugTool));
         }
     }
@@ -121,16 +120,22 @@ public class VideoActivity extends BaseActivity {
 
     private Fragment createFragment(int scene, Bundle bundle) {
         switch (scene) {
-            case SCENE_SHORT:
+            case SCENE_SHORT: {
                 return ShortVideoFragment.newInstance();
-            case SCENE_FEED:
+            }
+            case SCENE_FEED: {
                 FeedVideoFragment fragment = FeedVideoFragment.newInstance();
-                fragment.setFeedSceneEventListener(mFeedVideoSceneEventListener);
+                fragment.setDetailSceneEventListener(mDetailVideoSceneEventListener);
                 return fragment;
-            case SCENE_LONG:
-                return LongVideoFragment.newInstance();
-            case SCENE_DETAIL:
+            }
+            case SCENE_LONG: {
+                LongVideoFragment fragment = LongVideoFragment.newInstance();
+                fragment.setDetailSceneEventListener(mDetailVideoSceneEventListener);
+                return fragment;
+            }
+            case SCENE_DETAIL: {
                 return DetailVideoFragment.newInstance(bundle);
+            }
         }
         throw new IllegalArgumentException("unsupported " + scene);
     }
@@ -149,8 +154,8 @@ public class VideoActivity extends BaseActivity {
         throw new IllegalArgumentException("unsupported " + scene);
     }
 
-    private final FeedVideoSceneView.FeedVideoSceneEventListener
-            mFeedVideoSceneEventListener = new FeedVideoSceneView.FeedVideoSceneEventListener() {
+    private final DetailVideoFragment.DetailVideoSceneEventListener
+            mDetailVideoSceneEventListener = new DetailVideoFragment.DetailVideoSceneEventListener() {
         @Override
         public void onEnterDetail() {
             UIUtils.setSystemBarTheme(

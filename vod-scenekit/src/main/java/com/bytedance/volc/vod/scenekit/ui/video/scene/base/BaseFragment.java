@@ -50,6 +50,7 @@ public class BaseFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         L.d(this, "onCreate");
         super.onCreate(savedInstanceState);
+        mUserExiting = false;
         initBackPressedHandler();
     }
 
@@ -132,7 +133,6 @@ public class BaseFragment extends Fragment {
     }
 
     protected void initBackPressedHandler() {
-        mUserExiting = false;
         requireActivity().getOnBackPressedDispatcher()
                 .addCallback(this, new OnBackPressedCallback(true) {
                     @Override
@@ -140,7 +140,6 @@ public class BaseFragment extends Fragment {
                         L.d(BaseFragment.this, "back try");
                         if (!onBackPressed()) {
                             L.d(BaseFragment.this, "back");
-                            mUserExiting = true;
                             setEnabled(false);
                             requireActivity().onBackPressed();
                         } else {
@@ -152,6 +151,10 @@ public class BaseFragment extends Fragment {
 
     public boolean onBackPressed() {
         return false;
+    }
+
+    protected void setUserExiting(boolean userExiting) {
+        this.mUserExiting = userExiting;
     }
 
     protected boolean isUserExiting() {

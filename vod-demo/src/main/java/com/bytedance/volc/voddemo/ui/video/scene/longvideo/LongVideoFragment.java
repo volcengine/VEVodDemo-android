@@ -22,6 +22,7 @@ import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapt
 import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapter.OnItemClickListener;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,30 +33,33 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.LoadMoreAble;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.impl.RecycleViewLoadMoreHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.api2.RemoteApi2;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
+import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 
 import java.util.List;
 
 
 public class LongVideoFragment extends BaseFragment {
-    private static final boolean ENTER_DETAIL_ACTIVITY = true;
 
     private RemoteApi mRemoteApi;
     private String mAccount;
@@ -67,13 +71,20 @@ public class LongVideoFragment extends BaseFragment {
     private RecycleViewLoadMoreHelper mLoadMoreHelper;
     private LongVideoDataTrans mDataTrans;
 
-    public static Fragment newInstance() {
+    private DetailVideoFragment.DetailVideoSceneEventListener mListener;
+
+    public static LongVideoFragment newInstance() {
         return new LongVideoFragment();
+    }
+
+    public void setDetailSceneEventListener(DetailVideoFragment.DetailVideoSceneEventListener listener) {
+        mListener = listener;
     }
 
     @Override
     public boolean onBackPressed() {
-        if (ENTER_DETAIL_ACTIVITY) {
+        final String pageType = VideoSettings.stringValue(VideoSettings.DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY);
+        if (TextUtils.equals(pageType, "Activity")) {
             return super.onBackPressed();
         } else {
             DetailVideoFragment detailVideoFragment = (DetailVideoFragment) requireActivity()
@@ -110,13 +121,17 @@ public class LongVideoFragment extends BaseFragment {
     }
 
     private void enterDetail(VideoItem item) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(DetailVideoFragment.EXTRA_VIDEO_ITEM, item);
-        if (ENTER_DETAIL_ACTIVITY) {
+        final MediaSource source = VideoItem.toMediaSource(item, true);
+        final Bundle bundle = DetailVideoFragment.createBundle(source, false);
+
+        final String pageType = VideoSettings.stringValue(VideoSettings.DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY);
+
+        if (TextUtils.equals(pageType, "Activity")) {
             VideoActivity.intentInto(requireActivity(), PlayScene.SCENE_DETAIL, bundle);
         } else {
             FragmentActivity activity = requireActivity();
             DetailVideoFragment detail = DetailVideoFragment.newInstance(bundle);
+            detail.getLifecycle().addObserver(mDetailLifeCycle);
             activity.getSupportFragmentManager()
                     .beginTransaction()
                     .setCustomAnimations(R.anim.vevod_slide_in_right, R.anim.vevod_slide_out_right,
@@ -127,15 +142,23 @@ public class LongVideoFragment extends BaseFragment {
         }
     }
 
-    public boolean isDetail() {
-        if (ENTER_DETAIL_ACTIVITY) {
-            return false;
+    final LifecycleEventObserver mDetailLifeCycle = new LifecycleEventObserver() {
+        @Override
+        public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+            switch (event) {
+                case ON_CREATE:
+                    if (mListener != null) {
+                        mListener.onEnterDetail();
+                    }
+                    break;
+                case ON_DESTROY:
+                    if (mListener != null) {
+                        mListener.onExitDetail();
+                    }
+                    break;
+            }
         }
-        DetailVideoFragment detailVideoFragment = (DetailVideoFragment) requireActivity()
-                .getSupportFragmentManager()
-                .findFragmentByTag(DetailVideoFragment.class.getName());
-        return detailVideoFragment != null;
-    }
+    };
 
     @Override
     protected void initBackPressedHandler() {

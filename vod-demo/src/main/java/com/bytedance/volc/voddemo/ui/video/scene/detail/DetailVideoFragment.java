@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 bytedance
+ * Copyright (C) 2023 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2021/12/28
+ * Create Date : 2023/3/11
  */
 
-package com.bytedance.volc.vod.scenekit.ui.video.scene.detail;
+package com.bytedance.volc.voddemo.ui.video.scene.detail;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -38,9 +38,8 @@ import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
-import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.FullScreenLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
@@ -64,12 +63,17 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.utils.ViewUtils;
+import com.bytedance.volc.voddemo.impl.R;
 
 
 public class DetailVideoFragment extends BaseFragment {
-    public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
-    private VideoItem mVideoItem;
+    public static final String EXTRA_MEDIA_SOURCE = "extra_media_source";
+    public static final String EXTRA_CONTINUES_PLAYBACK = "extra_continues_playback";
+
+    private MediaSource mMediaSource;
+
+    private boolean mContinuesPlayback;
 
     private VideoView mVideoView;
 
@@ -77,20 +81,24 @@ public class DetailVideoFragment extends BaseFragment {
     private View mTransitionView;
     private boolean mInterceptStartPlaybackOnResume;
 
+    public interface DetailVideoSceneEventListener {
+        void onEnterDetail();
+
+        void onExitDetail();
+    }
+
     public DetailVideoFragment() {
     }
 
     public static DetailVideoFragment newInstance() {
-        return newInstance((VideoItem) null);
+        return newInstance(null);
     }
 
-    public static DetailVideoFragment newInstance(VideoItem videoItem) {
-        Bundle bundle = null;
-        if (videoItem != null) {
-            bundle = new Bundle();
-            bundle.putParcelable(EXTRA_VIDEO_ITEM, videoItem);
-        }
-        return newInstance(bundle);
+    public static Bundle createBundle(MediaSource mediaSource, boolean continuesPlay) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(EXTRA_MEDIA_SOURCE, mediaSource);
+        bundle.putBoolean(EXTRA_CONTINUES_PLAYBACK, continuesPlay);
+        return bundle;
     }
 
     public static DetailVideoFragment newInstance(@Nullable Bundle bundle) {
@@ -124,6 +132,15 @@ public class DetailVideoFragment extends BaseFragment {
             mVideoView = null;
             return animateExit();
         }
+        if (mContinuesPlayback) {
+            if (mVideoView != null) {
+                final PlaybackController controller = mVideoView.controller();
+                if (controller != null) {
+                    controller.unbindPlayer();
+                }
+                mVideoView = null;
+            }
+        }
         return super.onBackPressed();
     }
 
@@ -148,7 +165,8 @@ public class DetailVideoFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            mVideoItem = bundle.getParcelable(EXTRA_VIDEO_ITEM);
+            mMediaSource = (MediaSource) bundle.getSerializable(EXTRA_MEDIA_SOURCE);
+            mContinuesPlayback = bundle.getBoolean(EXTRA_CONTINUES_PLAYBACK);
         }
     }
 
@@ -168,12 +186,13 @@ public class DetailVideoFragment extends BaseFragment {
             mSharedVideoView = mFeedVideoViewHolder.getSharedVideoView();
             ViewUtils.removeFromParent(mSharedVideoView);
             startEnterTransition();
-            takeOverSharedVideoView();
+
+            // take Over SharedVideoView
+            mFeedVideoViewHolder.detachSharedVideoView(mSharedVideoView);
+            mVideoView = mSharedVideoView;
         } else {
             mVideoView = createVideoView(requireActivity());
-            if (mVideoItem != null) {
-                mVideoView.bindDataSource(VideoItem.toMediaSource(mVideoItem, true));
-            }
+            mVideoView.bindDataSource(mMediaSource);
         }
 
         FrameLayout container = view.findViewById(R.id.videoViewContainer);
@@ -271,11 +290,6 @@ public class DetailVideoFragment extends BaseFragment {
         mFeedVideoViewHolder.attachSharedVideoView(mSharedVideoView);
         mSharedVideoView = null;
         mFeedVideoViewHolder = null;
-    }
-
-    private void takeOverSharedVideoView() {
-        mFeedVideoViewHolder.detachSharedVideoView(mSharedVideoView);
-        mVideoView = mSharedVideoView;
     }
 
     private void startEnterTransition() {

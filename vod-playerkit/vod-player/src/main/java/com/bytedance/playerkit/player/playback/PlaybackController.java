@@ -265,6 +265,14 @@ public class PlaybackController {
         unbindVideoView();
     }
 
+    @MainThread
+    public void unbindPlayer() {
+        L.d(this, "unbindPlayer");
+        Asserts.checkMainThread();
+        mStartOnReadyCommand = null;
+        unbindPlayer(false);
+    }
+
     private void bindPlayer(Player newPlayer) {
         if (mPlayer == null && newPlayer != null && !newPlayer.isReleased()) {
             L.d(this, "bindPlayer", mPlayer, newPlayer);

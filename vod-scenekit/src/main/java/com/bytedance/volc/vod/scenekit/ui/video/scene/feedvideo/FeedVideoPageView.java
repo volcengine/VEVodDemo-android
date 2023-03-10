@@ -67,11 +67,7 @@ public class FeedVideoPageView extends FrameLayout {
             Rect calVideoViewTransitionRect();
         }
 
-        boolean isDetail();
-
         void enterDetail(FeedVideoViewHolder holder);
-
-        void exitDetail();
     }
 
     public FeedVideoPageView(@NonNull Context context) {
@@ -267,16 +263,6 @@ public class FeedVideoPageView extends FrameLayout {
                 return true;
             }
         }
-        if (mNavigator != null && mNavigator.isDetail()) {
-            // handled in detail
-            return true;
-        }
         return false;
-    }
-
-    private void exitDetail() {
-        if (mNavigator != null && mNavigator.isDetail()) {
-            mNavigator.exitDetail();
-        }
     }
 }

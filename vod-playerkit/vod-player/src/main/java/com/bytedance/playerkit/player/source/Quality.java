@@ -27,7 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
-public class Quality {
+public class Quality implements Serializable {
     /**
      * Quality dynamic range type. One of
      * {@link #QUALITY_DYNAMIC_RANGE_SDR},
