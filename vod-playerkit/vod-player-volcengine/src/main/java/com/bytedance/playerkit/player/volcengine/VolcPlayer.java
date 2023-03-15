@@ -24,7 +24,6 @@ import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_AUDIO;
 import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
-import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_COMMON;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
@@ -203,6 +202,7 @@ class VolcPlayer implements PlayerAdapter {
                 break;
         }
     }
+
     public static void clearSceneStrategy() {
         sMediaSources.clear();
         TTVideoEngine.clearAllStrategy();
@@ -860,6 +860,16 @@ class VolcPlayer implements PlayerAdapter {
             mVolume[1] = volume;
         }
         return mVolume;
+    }
+
+    @Override
+    public void setMuted(boolean muted) {
+        mPlayer.setIsMute(muted);
+    }
+
+    @Override
+    public boolean isMuted() {
+        return mPlayer.isMute();
     }
 
     @Override

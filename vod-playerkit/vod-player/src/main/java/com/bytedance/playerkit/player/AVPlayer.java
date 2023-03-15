@@ -450,6 +450,20 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
+    public void setMuted(boolean muted) {
+        if (checkIsRelease("setMute")) return;
+
+        mPlayer.setMuted(muted);
+    }
+
+    @Override
+    public boolean isMuted() {
+        if (checkIsRelease("isMuted")) return false;
+
+        return mPlayer.isMuted();
+    }
+
+    @Override
     public void prepare(@NonNull MediaSource source) throws IllegalStateException {
         if (checkIsRelease("prepare")) return;
 
