@@ -187,6 +187,10 @@ public interface PlayerAdapter {
 
     float[] getVolume();
 
+    void setMuted(boolean muted);
+
+    boolean isMuted();
+
     void setSpeed(final float speed);
 
     float getSpeed();

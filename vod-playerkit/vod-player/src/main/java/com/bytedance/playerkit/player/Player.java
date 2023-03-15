@@ -369,6 +369,20 @@ public interface Player {
     float[] getVolume();
 
     /**
+     * Sets the mute state on this player.
+     *
+     * @param muted muted state. true for muted. Default value is false.
+     */
+    void setMuted(boolean muted);
+
+    /**
+     * Gets whither the player is muted or not.
+     *
+     * @return true muted, false not muted. Default value is false.
+     */
+    boolean isMuted();
+
+    /**
      * Prepares the player with {@link MediaSource} for playback, asynchronously.
      *
      * <p>{@link ActionPrepare} will be emitted immediately after this method is invoked.
