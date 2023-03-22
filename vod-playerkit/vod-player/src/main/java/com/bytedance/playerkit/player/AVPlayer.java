@@ -366,6 +366,10 @@ public class AVPlayer extends ExtraObject implements Player {
             if (player == null) return;
 
             L.d(player, "onTrackChanged", mapTrackType(trackType), Track.dump(pre), Track.dump(current));
+
+            if (player.isCompleted() && !player.isSupportSmoothTrackSwitching(trackType)) {
+                player.start();
+            }
             player.mDispatcher.obtain(InfoTrackChanged.class, player).init(trackType, pre, current).dispatch();
         }
     }

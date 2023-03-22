@@ -454,6 +454,9 @@ class VolcPlayer implements PlayerAdapter {
                         if (mPlaybackTimeWhenChangeAVTrack > 0) {
                             player.setStartTime((int) mPlaybackTimeWhenChangeAVTrack);
                         }
+
+                        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, mPausedWhenChangeAVTrack ? 0 : 1);
+
                         preparePlayer(source, track);
                         break;
                     }
@@ -1035,13 +1038,6 @@ class VolcPlayer implements PlayerAdapter {
             if (pending != null) {
                 player.setCurrentTrack(trackType, pending);
                 listener.onTrackChanged(player, trackType, current, pending);
-
-                if (sourceType == MediaSource.SOURCE_TYPE_URL) {
-                    if (player.mPlaybackTimeWhenChangeAVTrack > 0) {
-                        player.seekTo(player.mPlaybackTimeWhenChangeAVTrack);
-                        player.mPlaybackTimeWhenChangeAVTrack = 0;
-                    }
-                }
             }
 
             if (player.isSupportSmoothTrackSwitching(trackType)) {
