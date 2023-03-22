@@ -117,7 +117,7 @@ public class SimpleVideoActivity extends AppCompatActivity {
         layerHost.attachToVideoView(videoView);
 
         // 4. config VideoView
-        videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW);
+        videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
         videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT);
 
         // 5. create PlaybackController and bind VideoView
