@@ -42,29 +42,45 @@ import java.util.UUID;
 
 /**
  * Official media source interface of PlayerKit SDK.
+ * <p>
+ * You can create simple MediaSource by using util method.
+ * <pre>{@code
+ *   // Quick method for create url media source.
+ *   String videoId = "your video id";
+ *   String videoUrl = "http://www.yourdomain.com/yourvideo.mp4";
+ *   String videoCacheKey = "cache key of yourvideo.mp4 file";
+ *   MediaSource urlSource = MediaSource.createUrlSource(videoId, videoUrl, videoCacheKey);
  *
+ *   // Quick method for create id media source.
+ *   String videoId = "your video id";
+ *   String playAuthToken = "your play auth token";
+ *   MediaSource idSource = MediaSource.createIdSource(videoId, playAuthToken);
+ * }</pre>
+ *
+ * <p>
+ * Or create {@link MediaSource} directly for multi-quality use case.
  * <pre>{@code
  *   // Create a url type media source
  *   MediaSource createUrlMediaSource() {
  *     MediaSource mediaSource = new MediaSource(UUID.randomUUID().toString(), MediaSource.SOURCE_TYPE_URL);
  *     Track track0 = new Track();
  *     track0.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track0.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4"); // 480x270
- *     track0.setQuality(new Quality(Quality.QUALITY_RES_240, "240P"));
+ *     track0.setUrl("http://example.com/video_360p.mp4");
+ *     track0.setQuality(new Quality(Quality.QUALITY_RES_360, "360P"));
  *
  *     Track track1 = new Track();
  *     track1.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track1.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_640_3MG.mp4"); // 640x360
- *     track1.setQuality(new Quality(Quality.QUALITY_RES_360, "360P"));
+ *     track1.setUrl("http://example.com/video_480p.mp4");
+ *     track1.setQuality(new Quality(Quality.QUALITY_RES_480, "480P"));
  *
  *     Track track2 = new Track();
  *     track2.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track2.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1280_10MG.mp4"); // 1280x720
+ *     track2.setUrl("http://example.com/video_720p.mp4");
  *     track2.setQuality(new Quality(Quality.QUALITY_RES_720, "720P"));
  *
  *     Track track3 = new Track();
  *     track3.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track3.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1920_18MG.mp4"); // 1920x1080
+ *     track3.setUrl("https://example.com/video_1080p.mp4");
  *     track3.setQuality(new Quality(Quality.QUALITY_RES_1080, "1080P"));
  *
  *     // You can switch quality of current playback by calling {@link Player#selectTrack(int, Track)}.
@@ -79,20 +95,6 @@ import java.util.UUID;
  *     mediaSource.setPlayAuthToken("your play auth token of media id");
  *     return source;
  *   }
- * }</pre>
- * <p>
- * Or Using quick method to create simple MediaSource.
- * <pre>{@code
- *   // Quick method for create url media source.
- *   String videoId = "your video id";
- *   String videoUrl = "http://www.yourdomain.com/yourvideo.mp4";
- *   String videoCacheKey = "cache key of yourvideo.mp4 file";
- *   MediaSource urlSource = MediaSource.createUrlSource(videoId, videoUrl, videoCacheKey);
- *
- *   // Quick method for create id media source.
- *   String videoId = "your video id";
- *   String playAuthToken = "your play auth token";
- *   MediaSource idSource = MediaSource.createIdSource(videoId, playAuthToken);
  * }</pre>
  *
  * @see Player#prepare(MediaSource)
