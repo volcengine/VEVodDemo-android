@@ -32,7 +32,7 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
+import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
 import com.bytedance.volc.vod.settingskit.SettingsFragment;
 import com.bytedance.volc.voddemo.impl.R;
 

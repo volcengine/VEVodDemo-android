@@ -35,7 +35,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.settings.SettingsActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
