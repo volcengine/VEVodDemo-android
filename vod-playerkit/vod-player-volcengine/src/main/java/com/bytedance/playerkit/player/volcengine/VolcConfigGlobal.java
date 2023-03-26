@@ -21,7 +21,8 @@ package com.bytedance.playerkit.player.volcengine;
 public class VolcConfigGlobal {
     public static final boolean ENABLE_HLS_CACHE_MODULE = true;
     public static final boolean ENABLE_USE_ORIGINAL_URL = true;
-    public static final boolean ENABLE_BUFFER_START_MSG_OPT = false;
+    public static final boolean ENABLE_BUFFER_START_MSG_OPT = true;
     public static final boolean ENABLE_SCENE_STRATEGY_INIT = true;
     public static final boolean ENABLE_SPEED_TEST_STRATEGY_INIT = true;
+    public static final boolean ENABLE_PCDN = false; // Not ready for now.
 }

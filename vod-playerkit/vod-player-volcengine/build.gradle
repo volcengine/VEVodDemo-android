@@ -70,6 +70,10 @@ dependencies {
             // + abr sdk
             implementation "com.bytedanceapi:ttsdk-ttabr:${project.ext.bytedance.ttsdkVersion}"
         }
+        if (project.ext.bytedance.ttsdkPlayerExtensions.contains("pcdn")) {
+            // pcdn
+            implementation "com.bytedanceapi:ttsdk-ttpcdn:${project.ext.bytedance.ttsdkVersion}"
+        }
     }
     implementation "com.bytedanceapi:ttvideoengine-debugtool:0.3.0.1"
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"

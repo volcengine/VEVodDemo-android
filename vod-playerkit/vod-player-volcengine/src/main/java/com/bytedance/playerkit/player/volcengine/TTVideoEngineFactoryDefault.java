@@ -106,6 +106,15 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
 
+        if (volcConfig.enablePCDN &&
+                VolcConfigGlobal.ENABLE_PCDN &&
+                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_PCDN)) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_P2P_CDN_TYPE, 2);
+        }
+
+        // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUXER_RW_LOCK, 1);
+        // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_INTERRUPT, 1);
+
         if (!TextUtils.isEmpty(volcConfig.tag)) {
             player.setTag(volcConfig.tag);
         }

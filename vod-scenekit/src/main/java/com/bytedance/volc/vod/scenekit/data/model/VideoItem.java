@@ -281,6 +281,7 @@ public class VideoItem implements Parcelable, Serializable {
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
+        volcConfig.enablePCDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PCDN);
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;
         return volcConfig;

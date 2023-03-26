@@ -23,6 +23,7 @@
     <string name="vevod_feed_video_with_desc">中视频（横屏）</string>
     <string name="vevod_long_video">长视频</string>
 
+    <string name="vevod_input_source">输入播放源</string>
     <string name="vevod_short_video">短视频</string>
     <string name="vevod_feed_video">中视频</string>
 

@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.ui.settings.SettingsActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 
@@ -72,9 +73,10 @@ public class MainFragment extends BaseFragment {
                 PlayScene.SCENE_FEED));
         mItems.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_LONG));
-
+        mItems.add(new Item(R.string.vevod_input_source, R.drawable.ic_launcher_foreground, Item.TYPE_INPUT_SOURCE,
+                PlayScene.SCENE_UNKNOWN));
         mItems.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
-                -1));
+                PlayScene.SCENE_UNKNOWN));
     }
 
     @Nullable
@@ -123,6 +125,9 @@ public class MainFragment extends BaseFragment {
                         case Item.TYPE_PLAY_SCENE:
                             VideoActivity.intentInto(getActivity(), item.playScene);
                             break;
+                        case Item.TYPE_INPUT_SOURCE:
+                            SampleSourceActivity.intentInto(getActivity());
+                            break;
                         case Item.TYPE_SETTINGS:
                             SettingsActivity.intentInto(getActivity());
                             break;
@@ -139,7 +144,8 @@ public class MainFragment extends BaseFragment {
 
     static class Item {
         static final int TYPE_PLAY_SCENE = 0;
-        static final int TYPE_SETTINGS = 1;
+        static final int TYPE_INPUT_SOURCE = 1;
+        static final int TYPE_SETTINGS = 2;
 
         @StringRes
         int title;

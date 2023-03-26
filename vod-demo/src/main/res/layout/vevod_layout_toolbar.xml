@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (C) 2021 bytedance
+  ~ Copyright (C) 2023 bytedance
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,27 +13,19 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   ~
-  ~ Create Date : 2021/12/28
+  ~ Create Date : 2023/3/27
   -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.bytedance.volc.voddemo.ui.video.scene.VideoActivity">
-
-    <FrameLayout
-        android:id="@+id/container"
-        android:background="@android:color/white"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <FrameLayout
-        android:id="@+id/debugTool"
-        android:layout_gravity="left"
-        android:layout_width="300dp"
-        android:layout_height="match_parent" />
-
-    <include layout="@layout/vevod_layout_toolbar"/>
-</FrameLayout>
+    android:layout_height="?attr/actionBarSize"
+    android:background="@color/vevod_color_primary"
+    android:elevation="1dp"
+    android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    app:titleTextColor="@android:color/black"
+    tools:title="Test Title" />

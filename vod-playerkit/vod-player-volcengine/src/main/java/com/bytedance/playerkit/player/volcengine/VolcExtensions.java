@@ -21,6 +21,7 @@ package com.bytedance.playerkit.player.volcengine;
 public class VolcExtensions {
     public static final String PLAYER_EXTENSION_SUPER_RESOLUTION = "super_resolution";
     public static final String PLAYER_EXTENSION_ABR = "abr";
+    public static final String PLAYER_EXTENSION_PCDN = "pcdn";
 
     public static boolean isIntegrate(String extension) {
         return BuildConfig.TTSDK_PLAYER_EXTENSIONS.contains(extension);
