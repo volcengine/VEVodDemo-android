@@ -44,5 +44,20 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard"
             android:screenOrientation="portrait"
             android:theme="@style/VEVodAppTheme" />
+
+        <activity
+            android:name="com.bytedance.volc.voddemo.ui.sample.SampleFeedVideoActivity"
+            android:hardwareAccelerated="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard"
+            android:screenOrientation="portrait"
+            android:theme="@style/VEVodAppTheme" />
+
+        <activity
+            android:name="com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity"
+            android:hardwareAccelerated="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard"
+            android:screenOrientation="portrait"
+            android:theme="@style/VEVodAppTheme" />
+
     </application>
 </manifest>

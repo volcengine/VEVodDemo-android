@@ -24,6 +24,7 @@
     <string name="vevod_short_video_with_desc">Short Video</string>
     <string name="vevod_long_video">Long Video</string>
     <string name="vevod_feed_video_with_desc">Feed Video</string>
+    <string name="vevod_input_source">Input Source</string>
 
     <string name="vevod_short_video">Short Video</string>
     <string name="vevod_feed_video">Feed Video</string>

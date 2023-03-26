@@ -76,6 +76,8 @@ public class VideoSettings {
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
     public static final String COMMON_SOURCE_TYPE = "common_source_type";
+    public static final String COMMON_ENABLE_PCDN = "common_enable_pcdn";
+
     public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
     public static final String COMMON_SOURCE_VIDEO_FORMAT_TYPE = "common_source_video_format_type";
     public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
@@ -359,6 +361,17 @@ public class VideoSettings {
                         CATEGORY_COMMON_VIDEO,
                         COMMON_SUPER_RESOLUTION,
                         "开启超分",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_ENABLE_PCDN,
+                        "开启 PCDN",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.FALSE,
