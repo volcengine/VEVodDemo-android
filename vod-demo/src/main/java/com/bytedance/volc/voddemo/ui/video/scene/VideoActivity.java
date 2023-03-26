@@ -38,8 +38,8 @@ import androidx.fragment.app.FragmentManager;
 
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseActivity;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
+import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;

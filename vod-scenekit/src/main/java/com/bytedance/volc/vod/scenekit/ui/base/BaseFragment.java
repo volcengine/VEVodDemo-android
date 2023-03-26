@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 bytedance
+ * Copyright (C) 2023 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2021/12/28
+ * Create Date : 2023/3/27
  */
 
-package com.bytedance.volc.vod.scenekit.ui.video.scene.base;
+package com.bytedance.volc.vod.scenekit.ui.base;
 
 import android.content.Context;
 import android.os.Bundle;
