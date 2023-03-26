@@ -59,19 +59,19 @@ import com.bytedance.volc.voddemo.impl.R;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class SimpleVideoActivity extends AppCompatActivity {
+public class SampleVideoActivity extends AppCompatActivity {
 
     private VideoView videoView;
 
     public static void intentInto(Activity activity) {
-        Intent intent = new Intent(activity, SimpleVideoActivity.class);
+        Intent intent = new Intent(activity, SampleVideoActivity.class);
         activity.startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.vevod_simple_video_activity);
+        setContentView(R.layout.vevod_sample_video_activity);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
