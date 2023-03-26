@@ -144,22 +144,22 @@ public class App extends Application {
 </FrameLayout>
 ```
 
-> SimpleVideoActivity.java
+> SampleVideoActivity.java
 
 ```java
-public class SimpleVideoActivity extends AppCompatActivity {
+public class SampleVideoActivity extends AppCompatActivity {
 
     private VideoView videoView;
 
     public static void intentInto(Activity activity) {
-        Intent intent = new Intent(activity, SimpleVideoActivity.class);
+        Intent intent = new Intent(activity, SampleVideoActivity.class);
         activity.startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.simple_video_activity);
+        setContentView(R.layout.sample_video_activity);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {

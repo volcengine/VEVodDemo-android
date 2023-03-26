@@ -37,6 +37,6 @@ public class VodDemoApi {
 
     public static void intentInto(Activity activity, boolean showActionBar) {
         MainActivity.intentInto(activity, showActionBar);
-        //SimpleVideoActivity.intentInto(activity);
+        //SampleVideoActivity.intentInto(activity);
     }
 }
