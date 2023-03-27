@@ -757,7 +757,7 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public long getDuration() {
         if (isInPlaybackState()) {
-            return mPlayer.getDuration();
+            return Math.max(0, mPlayer.getDuration());
         }
         return 0L;
     }
@@ -765,7 +765,7 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public long getCurrentPosition() {
         if (isInPlaybackState()) {
-            return mPlayer.getCurrentPlaybackTime();
+            return Math.max(0, mPlayer.getCurrentPlaybackTime());
         }
         return 0L;
     }
