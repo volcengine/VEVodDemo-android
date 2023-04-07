@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
@@ -73,10 +74,10 @@ public class VideoSettings {
     public static final String COMMON_CODEC_STRATEGY = "common_codec_strategy";
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
+    public static final String COMMON_SOURCE_TYPE = "common_source_type";
     public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
     public static final String COMMON_SOURCE_VIDEO_FORMAT_TYPE = "common_source_video_format_type";
     public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
-
 
     private static Options sOptions;
 
@@ -99,6 +100,12 @@ public class VideoSettings {
         public static final int FORMAT_TYPE_MP4 = Track.FORMAT_MP4;
         public static final int FORMAT_TYPE_DASH = Track.FORMAT_DASH;
         public static final int FORMAT_TYPE_HLS = Track.FORMAT_HLS;
+    }
+
+    public static class SourceType {
+        public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
+        public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
+        public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
     }
 
     public static void init(Context context) {
@@ -343,6 +350,33 @@ public class VideoSettings {
                         Boolean.class,
                         Boolean.TRUE,
                         null)));
+
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_SOURCE_TYPE,
+                        "源类型",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        SourceType.SOURCE_TYPE_VID,
+                        Arrays.asList(SourceType.SOURCE_TYPE_VID, SourceType.SOURCE_TYPE_URL, SourceType.SOURCE_TYPE_MODEL)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case SourceType.SOURCE_TYPE_VID:
+                                return "VideoID";
+                            case SourceType.SOURCE_TYPE_URL:
+                                return "DirectURL";
+                            case SourceType.SOURCE_TYPE_MODEL:
+                                return "VideoModel";
+                        }
+                        return null;
+                    }
+                }));
+
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(

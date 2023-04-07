@@ -18,10 +18,48 @@
 package com.bytedance.volc.voddemo.data.remote;
 
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 
 public interface RemoteApi {
+
+    class HandlerCallback<T> implements Callback<T> {
+
+        private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
+
+        private final Callback<T> callback;
+        private final Handler handler;
+
+        public HandlerCallback(Callback<T> callback) {
+            this(callback, MAIN_HANDLER);
+        }
+
+        public HandlerCallback(RemoteApi.Callback<T> callback, Handler handler) {
+            this.callback = callback;
+            this.handler = handler;
+        }
+
+        @Override
+        public void onSuccess(T t) {
+            handler.post(() -> {
+                if (callback != null) {
+                    callback.onSuccess(t);
+                }
+            });
+        }
+
+        @Override
+        public void onError(Exception e) {
+            handler.post(() -> {
+                if (callback != null) {
+                    callback.onError(e);
+                }
+            });
+        }
+    }
 
     interface Callback<T> {
         void onSuccess(T t);
@@ -29,9 +67,9 @@ public interface RemoteApi {
         void onError(Exception e);
     }
 
-    void getFeedStreamWithPlayAuthToken(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback);
+    interface GetFeedStream {
+        void getFeedStream(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback);
 
-    void getVideoDetailWithPlayAuthToken(String vid, Callback<VideoItem> callback);
-
-    void cancel();
+        void cancel();
+    }
 }

@@ -473,7 +473,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
         Asserts.checkState(getState(), Player.STATE_IDLE, Player.STATE_STOPPED);
 
-        L.d(this, "prepare", source, isStartWhenPrepared());
+        L.d(this, "prepare", MediaSource.dump(source), isStartWhenPrepared());
 
         mDispatcher.obtain(ActionPrepare.class, this).init(source).dispatch();
 
@@ -1001,7 +1001,7 @@ public class AVPlayer extends ExtraObject implements Player {
     @Override
     public String dump() {
         String playerInfo = mPlayer == null ? null : mPlayer.dump();
-        return "[" + L.obj2String(this) + " state:" + mapState(mState) + " " + playerInfo + "]";
+        return String.format("%s state:%s %s", L.obj2String(this), mapState(mState), playerInfo);
     }
 
     private void recordProgress() {

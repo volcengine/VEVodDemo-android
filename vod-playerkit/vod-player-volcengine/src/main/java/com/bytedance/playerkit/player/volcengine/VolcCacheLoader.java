@@ -26,7 +26,6 @@ import androidx.annotation.NonNull;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.utils.DataLoaderListenerAdapter;
 import com.bytedance.playerkit.utils.L;
@@ -142,8 +141,8 @@ class VolcCacheLoader implements CacheLoader {
             while (iterator.hasNext()) {
                 Task task = iterator.next();
                 if (TextUtils.equals(mediaId, task.getDataSource().getMediaId())) {
-                    task.stop();
                     iterator.remove();
+                    task.stop();
                 }
             }
         }
@@ -156,8 +155,8 @@ class VolcCacheLoader implements CacheLoader {
             Iterator<Task> iterator = mTasks.iterator();
             while (iterator.hasNext()) {
                 Task task = iterator.next();
-                task.stop();
                 iterator.remove();
+                task.stop();
             }
         }
     }
@@ -173,6 +172,7 @@ class VolcCacheLoader implements CacheLoader {
     public File getCacheDir() {
         return VolcPlayerInit.cacheDir(mContext);
     }
+
     @NonNull
     @Override
     public CacheInfo getCacheInfo(String cacheKey) {

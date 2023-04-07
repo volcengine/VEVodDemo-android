@@ -20,18 +20,16 @@ package com.bytedance.volc.voddemo.data.remote.api2;
 
 import static com.bytedance.volc.voddemo.data.remote.api2.ApiManager.api2;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.annotation.NonNull;
 
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+import com.bytedance.volc.voddemo.data.remote.RemoteApi.Callback;
+import com.bytedance.volc.voddemo.data.remote.RemoteApi.HandlerCallback;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamResponse;
-import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailRequest;
-import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailResponse;
 import com.bytedance.volc.voddemo.data.remote.api2.model.VideoDetail;
 
 import java.io.IOException;
@@ -42,14 +40,14 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class RemoteApi2 implements RemoteApi {
+public class GetFeedStreamApi implements RemoteApi.GetFeedStream {
 
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
-    private final Handler mHandler = new Handler(Looper.getMainLooper());
+
 
     @Override
-    public void getFeedStreamWithPlayAuthToken(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback) {
-        final Main<Page<VideoItem>> mainCallback = new Main<>(callback, mHandler);
+    public void getFeedStream(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback) {
+        final HandlerCallback<Page<VideoItem>> mainCallback = new HandlerCallback<>(callback);
         final GetFeedStreamRequest request = new GetFeedStreamRequest(
                 account,
                 pageIndex * pageSize,
@@ -63,7 +61,7 @@ public class RemoteApi2 implements RemoteApi {
                 Params.Value.cdnType(),
                 Params.Value.unionInfo()
         );
-        Call<GetFeedStreamResponse> call = api2().getFeedStreamWithPlayAuthToken(request);
+        Call<GetFeedStreamResponse> call = createGetFeedStreamCall(request);
         call.enqueue(new retrofit2.Callback<GetFeedStreamResponse>() {
             @Override
             public void onResponse(@NonNull Call<GetFeedStreamResponse> call, @NonNull Response<GetFeedStreamResponse> response) {
@@ -103,53 +101,17 @@ public class RemoteApi2 implements RemoteApi {
         mCalls.add(call);
     }
 
-    @Override
-    public void getVideoDetailWithPlayAuthToken(String vid, Callback<VideoItem> callback) {
-        final Main<VideoItem> mainCallback = new Main<>(callback, mHandler);
-        final GetVideoDetailRequest request = new GetVideoDetailRequest(
-                vid,
-                Params.Value.format(),
-                Params.Value.codec(),
-                Params.Value.definition(),
-                Params.Value.fileType(),
-                true,
-                Params.Value.enableBarrageMask(),
-                Params.Value.cdnType());
-        Call<GetVideoDetailResponse> call = api2().getVideoDetailWithPlayAuthToken(request);
-        call.enqueue(new retrofit2.Callback<GetVideoDetailResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<GetVideoDetailResponse> call, @NonNull Response<GetVideoDetailResponse> response) {
-                mCalls.remove(call);
-                if (response.isSuccessful()) {
-                    GetVideoDetailResponse result = response.body();
-
-                    if (result == null) {
-                        mainCallback.onError(new IOException("result = null + " + response));
-                        return;
-                    }
-                    if (result.responseMetadata != null && result.responseMetadata.error != null) {
-                        mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
-                        return;
-                    }
-                    VideoDetail detail = result.result;
-                    if (detail == null) {
-                        mainCallback.onError(new IOException("details = null + " + response));
-                        return;
-                    }
-                    VideoItem item = VideoDetail.toVideoItem(detail);
-                    mainCallback.onSuccess(item);
-                } else {
-                    mainCallback.onError(new IOException(response.toString()));
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<GetVideoDetailResponse> call, @NonNull Throwable t) {
-                mCalls.remove(call);
-                mainCallback.onError(new IOException(t));
-            }
-        });
-        mCalls.add(call);
+    protected Call<GetFeedStreamResponse> createGetFeedStreamCall(GetFeedStreamRequest request) {
+        final int sourceType = VideoSettings.intValue(VideoSettings.COMMON_SOURCE_TYPE);
+        switch (sourceType) {
+            case VideoSettings.SourceType.SOURCE_TYPE_VID:
+                return api2().getFeedStreamWithPlayAuthToken(request);
+            case VideoSettings.SourceType.SOURCE_TYPE_URL:
+            case VideoSettings.SourceType.SOURCE_TYPE_MODEL:
+                return api2().getFeedVideoStreamWithVideoModel(request);
+            default:
+                throw new NullPointerException();
+        }
     }
 
     @Override
@@ -158,34 +120,5 @@ public class RemoteApi2 implements RemoteApi {
             call.cancel();
         }
         mCalls.clear();
-    }
-
-    static class Main<T> implements Callback<T> {
-
-        private final Callback<T> callback;
-        private final Handler handler;
-
-        Main(Callback<T> callback, Handler handler) {
-            this.callback = callback;
-            this.handler = handler;
-        }
-
-        @Override
-        public void onSuccess(T t) {
-            handler.post(() -> {
-                if (callback != null) {
-                    callback.onSuccess(t);
-                }
-            });
-        }
-
-        @Override
-        public void onError(Exception e) {
-            handler.post(() -> {
-                if (callback != null) {
-                    callback.onError(e);
-                }
-            });
-        }
     }
 }

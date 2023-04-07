@@ -46,7 +46,12 @@ public interface ExecutorFactory {
 
         @Override
         public ThreadPoolExecutor create(int nThreads) {
-            return new ThreadPoolExecutor(0, nThreads, 1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
+            return new ThreadPoolExecutor(nThreads,
+                    nThreads,
+                    0L,
+                    TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>(),
+                    threadFactory);
         }
     };
 

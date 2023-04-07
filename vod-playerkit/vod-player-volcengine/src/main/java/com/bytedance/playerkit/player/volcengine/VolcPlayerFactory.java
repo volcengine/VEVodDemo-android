@@ -26,20 +26,13 @@ import androidx.annotation.NonNull;
 import com.bytedance.playerkit.player.AVPlayer;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.adapter.PlayerAdapter;
-import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.playerkit.player.source.TrackSelector;
 
 class VolcPlayerFactory implements Player.Factory {
-
     private final Context mContext;
-    private final CacheKeyFactory mCacheKeyFactory;
-    private final TrackSelector mTrackSelector;
 
     VolcPlayerFactory(Context context) {
         this.mContext = context.getApplicationContext();
-        this.mCacheKeyFactory = VolcPlayerInit.getCacheKeyFactory();
-        this.mTrackSelector = VolcPlayerInit.getTrackSelector();
     }
 
     @Override
