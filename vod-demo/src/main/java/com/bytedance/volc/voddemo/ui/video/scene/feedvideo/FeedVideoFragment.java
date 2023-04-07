@@ -45,7 +45,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.api2.RemoteApi2;
+import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
@@ -55,7 +55,7 @@ import java.util.List;
 
 public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView.DetailPageNavigator {
 
-    private RemoteApi mRemoteApi;
+    private RemoteApi.GetFeedStream mRemoteApi;
     private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private FeedVideoSceneView mSceneView;
@@ -81,7 +81,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new RemoteApi2();
+        mRemoteApi = new GetFeedStreamApi();
         mAccount = VideoSettings.stringValue(VideoSettings.FEED_VIDEO_SCENE_ACCOUNT_ID);
     }
 
@@ -114,7 +114,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStreamWithPlayAuthToken(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
             @Override
             public void onSuccess(Page<VideoItem> page) {
                 L.d(this, "refresh", "success");
@@ -142,7 +142,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
             if (mSceneView.isLoadingMore()) return;
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStreamWithPlayAuthToken(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
                 @Override
                 public void onSuccess(Page<VideoItem> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());

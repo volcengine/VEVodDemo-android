@@ -164,9 +164,8 @@ public class LogLayer extends BaseLayer {
         Player player = player();
         if (player != null && !player.isReleased()) {
             info.append("Time: ")
-                    .append("[")
                     .append(player.getSpeed())
-                    .append("X] ")
+                    .append("X ")
                     .append(TimeUtils.time2String(player.getDuration()))
                     .append(" - ")
                     .append(TimeUtils.time2String(player.getCurrentPosition()))

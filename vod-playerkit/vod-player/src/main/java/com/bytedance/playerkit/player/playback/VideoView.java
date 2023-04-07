@@ -610,7 +610,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
      * @param source {@link MediaSource} instance
      */
     public void bindDataSource(@NonNull MediaSource source) {
-        L.d(this, "bindDataSource", mSource, source);
+        L.d(this, "bindDataSource", MediaSource.dump(mSource), MediaSource.dump(source));
         mSource = source;
         if (mListeners != null) {
             for (VideoViewListener listener : mListeners) {
@@ -624,6 +624,6 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
     }
 
     public String dump() {
-        return String.format("[%s %s %s]", L.obj2String(this), L.obj2String(getSurface()), map(getDisplayMode()));
+        return String.format("%s %s %s", L.obj2String(this), L.obj2String(getSurface()), map(getDisplayMode()));
     }
 }

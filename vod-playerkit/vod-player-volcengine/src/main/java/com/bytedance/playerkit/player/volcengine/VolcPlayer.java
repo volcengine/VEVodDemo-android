@@ -217,25 +217,27 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private static void bind(TTVideoEngine player, MediaSource mediaSource) {
-        player.setVideoInfoListener(new TTVideoEngineListenerAdapter() {
-            @Override
-            public boolean onFetchedVideoInfo(VideoModel videoModel) {
-                Mapper.updateMediaSource(mediaSource, videoModel);
-                @Track.TrackType
-                int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ? TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
-                List<Track> tracks = mediaSource.getTracks(trackType);
-                if (tracks != null) {
-                    Track track = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PRELOAD, trackType, tracks, mediaSource);
-                    if (track != null) {
-                        Resolution resolution = Mapper.quality2Resolution(track.getQuality());
-                        if (resolution != null) {
-                            player.configResolution(resolution);
+        if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_ID) {
+            player.setVideoInfoListener(new TTVideoEngineListenerAdapter() {
+                @Override
+                public boolean onFetchedVideoInfo(VideoModel videoModel) {
+                    Mapper.updateMediaSource(mediaSource, videoModel);
+                    @Track.TrackType
+                    int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ? TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
+                    List<Track> tracks = mediaSource.getTracks(trackType);
+                    if (tracks != null) {
+                        Track track = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PRELOAD, trackType, tracks, mediaSource);
+                        if (track != null) {
+                            Resolution resolution = Mapper.quality2Resolution(track.getQuality());
+                            if (resolution != null) {
+                                player.configResolution(resolution);
+                            }
                         }
                     }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+        }
     }
 
     static {
@@ -354,10 +356,14 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public boolean isSupportSmoothTrackSwitching(@Track.TrackType int trackType) {
-        if (mPlayer != null && mMediaSource != null) {
-            int contentType = mMediaSource.getMediaProtocol();
+        final MediaSource source = mMediaSource;
+        if (mPlayer != null && source != null) {
+            int contentType = source.getMediaProtocol();
             if (contentType == MediaSource.MEDIA_PROTOCOL_DASH) {
-                return true;
+                IVideoModel videoModel = mPlayer.getIVideoModel();
+                if (videoModel != null && videoModel.isSupportBash()) {
+                    return VolcConfig.get(mMediaSource).enableDash;
+                }
             } else if (contentType == MediaSource.MEDIA_PROTOCOL_HLS) {
                 IVideoModel videoModel = mPlayer.getIVideoModel();
                 if (videoModel != null && videoModel.isSupportHLSSeamlessSwitch()) {
@@ -396,20 +402,30 @@ class VolcPlayer implements PlayerAdapter {
             if (selected == null) {
                 // Select Track when playback start
                 final int sourceType = source.getSourceType();
-                if (sourceType == MediaSource.SOURCE_TYPE_ID) {
-                    /**
-                     * invoked in {@link ListenerAdapter#onFetchedVideoInfo(VideoModel)}
-                     * -> {@link #selectPlayTrack(MediaSource, int)}
-                     */
-                    Resolution resolution = Mapper.track2Resolution(track);
-                    if (resolution == null) return;
-                    mPlayer.configResolution(resolution);
-                } else {
-                    /**
-                     * invoked in {@link #preparePlayer(MediaSource)}
-                     * -> {@link #selectPlayTrack(MediaSource, int)}
-                     */
-                    preparePlayer(source, track);
+                switch (sourceType) {
+                    case MediaSource.SOURCE_TYPE_ID: {
+                        /**
+                         * invoked in {@link ListenerAdapter#onFetchedVideoInfo(VideoModel)}
+                         * -> {@link #selectPlayTrack(MediaSource, int)}
+                         */
+                        mPlayer.configResolution(Mapper.track2Resolution(track));
+                        break;
+                    }
+                    case MediaSource.SOURCE_TYPE_URL: {
+                        /**
+                         * invoked in {@link #prepareAsync(MediaSource)}
+                         * -> {@link #selectPlayTrack(MediaSource)}
+                         */
+                        prepareDirectUrl(source, track);
+                        break;
+                    }
+                    case MediaSource.SOURCE_TYPE_MODEL:
+                        /**
+                         * invoked in {@link #prepareAsync(MediaSource)}
+                         * -> {@link #selectPlayTrack(MediaSource)}
+                         */
+                        prepareVideoModel(source, track);
+                        break;
                 }
             } else {
                 // Select Track during playback
@@ -422,7 +438,8 @@ class VolcPlayer implements PlayerAdapter {
 
                 final int sourceType = source.getSourceType();
                 switch (sourceType) {
-                    case MediaSource.SOURCE_TYPE_ID: {
+                    case MediaSource.SOURCE_TYPE_ID:
+                    case MediaSource.SOURCE_TYPE_MODEL: {
                         Resolution resolution = Mapper.track2Resolution(track);
                         if (resolution == null) return;
 
@@ -430,7 +447,7 @@ class VolcPlayer implements PlayerAdapter {
                             setState(Player.STATE_PREPARING);
                         }
 
-                        // for vid TTVideoEngine will take care of startTime sync after
+                        // for VID/VideoModel TTVideoEngine will take care of startTime sync after
                         // resolution change
 
                         // mPlayer.setStartTime((int) mPlaybackTimeWhenChangeAVTrack);
@@ -438,26 +455,36 @@ class VolcPlayer implements PlayerAdapter {
                         break;
                     }
                     case MediaSource.SOURCE_TYPE_URL: {
-                        // TODO smooth switching
-                        if (mState != Player.STATE_IDLE) {
-                            stop();
+                        if (Mapper.isDirectUrlSeamlessSwitchEnabled(source) && mPlayer.getIVideoModel() != null) {
+                            Resolution resolution = Mapper.track2Resolution(track);
+                            if (resolution == null) return;
+
+                            // for video model TTVideoEngine will take care of startTime sync after
+                            // resolution change
+
+                            // mPlayer.setStartTime((int) mPlaybackTimeWhenChangeAVTrack);
+                            mPlayer.configResolution(resolution);
+                        } else {
+                            if (mState != Player.STATE_IDLE) {
+                                stop();
+                            }
+
+                            TTVideoEngine player = mPlayer;
+
+                            bind(player);
+
+                            player.setSurface(mSurface);
+
+                            setState(Player.STATE_PREPARING);
+
+                            if (mPlaybackTimeWhenChangeAVTrack > 0) {
+                                player.setStartTime((int) mPlaybackTimeWhenChangeAVTrack);
+                            }
+
+                            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, mPausedWhenChangeAVTrack ? 0 : 1);
+
+                            prepareDirectUrl(source, track);
                         }
-
-                        TTVideoEngine player = mPlayer;
-
-                        bind(player);
-
-                        player.setSurface(mSurface);
-
-                        setState(Player.STATE_PREPARING);
-
-                        if (mPlaybackTimeWhenChangeAVTrack > 0) {
-                            player.setStartTime((int) mPlaybackTimeWhenChangeAVTrack);
-                        }
-
-                        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, mPausedWhenChangeAVTrack ? 0 : 1);
-
-                        preparePlayer(source, track);
                         break;
                     }
                 }
@@ -522,7 +549,7 @@ class VolcPlayer implements PlayerAdapter {
         @MediaSource.SourceType final int sourceType = mediaSource.getSourceType();
         @Track.TrackType int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO
                 ? TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
-        if (sourceType == MediaSource.SOURCE_TYPE_ID) {
+        if (sourceType == MediaSource.SOURCE_TYPE_ID || sourceType == MediaSource.SOURCE_TYPE_MODEL) {
             IVideoModel videoModel = mPlayer.getIVideoModel();
             if (videoModel != null) {
                 Mapper.updateMediaSource(mediaSource, videoModel);
@@ -541,7 +568,8 @@ class VolcPlayer implements PlayerAdapter {
             if (trackType == TRACK_TYPE_VIDEO) {
                 Track track = null;
                 switch (sourceType) {
-                    case MediaSource.SOURCE_TYPE_ID: {
+                    case MediaSource.SOURCE_TYPE_ID:
+                    case MediaSource.SOURCE_TYPE_MODEL: {
                         Resolution resolution = mPlayer.getCurrentResolution();
                         if (resolution != null) {
                             track = Mapper.findTrackWithResolution(tracks, resolution);
@@ -549,9 +577,16 @@ class VolcPlayer implements PlayerAdapter {
                         break;
                     }
                     case MediaSource.SOURCE_TYPE_URL: {
-                        DirectUrlSource directUrlSource = (DirectUrlSource) mPlayer.getStrategySource();
-                        if (directUrlSource != null) {
-                            track = Mapper.findTrackWithDirectUrlSource(mediaSource, tracks, directUrlSource, VolcPlayerInit.getCacheKeyFactory());
+                        if (mPlayer.getIVideoModel() != null) {
+                            Resolution resolution = mPlayer.getCurrentResolution();
+                            if (resolution != null) {
+                                track = Mapper.findTrackWithResolution(tracks, resolution);
+                            }
+                        } else {
+                            DirectUrlSource directUrlSource = (DirectUrlSource) mPlayer.getStrategySource();
+                            if (directUrlSource != null) {
+                                track = Mapper.findTrackWithDirectUrlSource(mediaSource, tracks, directUrlSource, VolcPlayerInit.getCacheKeyFactory());
+                            }
                         }
                         break;
                     }
@@ -592,26 +627,57 @@ class VolcPlayer implements PlayerAdapter {
 
     private void prepareAsync(MediaSource mediaSource) {
         @MediaSource.SourceType final int sourceType = mediaSource.getSourceType();
-        if (sourceType == MediaSource.SOURCE_TYPE_ID) {
-            StrategySource strategySource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource, null);
-            Map<String, String> headers = mediaSource.getHeaders();
-            VolcConfig volcConfig = VolcConfig.get(mediaSource);
-            preparePlayer(strategySource, headers, volcConfig);
-        } else if (sourceType == MediaSource.SOURCE_TYPE_URL) {
-            selectPlayTrack(mediaSource);
-        } else {
-            throw new IllegalArgumentException("unsupported sourceType " + sourceType);
+        switch (sourceType) {
+            case MediaSource.SOURCE_TYPE_ID:
+                prepareVid(mediaSource);
+                break;
+            case MediaSource.SOURCE_TYPE_MODEL:
+                Mapper.updateVideoModelMediaSource(mediaSource);
+                selectPlayTrack(mediaSource);
+                break;
+            case MediaSource.SOURCE_TYPE_URL:
+                selectPlayTrack(mediaSource);
+                break;
+            default:
+                throw new IllegalArgumentException("unsupported sourceType " + sourceType);
         }
     }
 
-    private void preparePlayer(MediaSource mediaSource, Track track) {
-        StrategySource strategySource = Mapper.mediaSource2DirectUrlSource(
-                mediaSource,
-                track,
-                VolcPlayerInit.getCacheKeyFactory());
+    private void prepareVid(MediaSource mediaSource) {
+        StrategySource strategySource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource, null);
+        Map<String, String> headers = mediaSource.getHeaders();
+        VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        preparePlayer(strategySource, headers, volcConfig);
+    }
 
+    private void prepareDirectUrl(MediaSource mediaSource, Track track) {
         Map<String, String> headers = track.getHeaders() == null ? mediaSource.getHeaders() : track.getHeaders();
         VolcConfig volcConfig = VolcConfig.get(mediaSource);
+
+        final StrategySource strategySource;
+        if (Mapper.isDirectUrlSeamlessSwitchEnabled(mediaSource)) {
+            strategySource = Mapper.mediaSource2VideoModelSource(
+                    mediaSource,
+                    track,
+                    VolcPlayerInit.getCacheKeyFactory()
+            );
+        } else {
+            strategySource = Mapper.mediaSource2DirectUrlSource(
+                    mediaSource,
+                    track,
+                    VolcPlayerInit.getCacheKeyFactory());
+        }
+        preparePlayer(strategySource, headers, volcConfig);
+    }
+
+    private void prepareVideoModel(MediaSource mediaSource, Track track) {
+        Map<String, String> headers = track.getHeaders() == null ? mediaSource.getHeaders() : track.getHeaders();
+        VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        StrategySource strategySource = Mapper.mediaSource2VideoModelSource(
+                mediaSource,
+                track,
+                VolcPlayerInit.getCacheKeyFactory()
+        );
         preparePlayer(strategySource, headers, volcConfig);
     }
 
@@ -628,7 +694,6 @@ class VolcPlayer implements PlayerAdapter {
                                     StrategySource source,
                                     Map<String, String> headers,
                                     VolcConfig config) {
-
         player.setStrategySource(source);
         setHeaders(player, headers);
 
@@ -800,7 +865,7 @@ class VolcPlayer implements PlayerAdapter {
     public int getVideoWidth() {
         if (isSupportSmoothTrackSwitching(TRACK_TYPE_VIDEO)) {
             // Opt video TTVideoEngine#getVideoWidth/Height is not change after resolution changed
-            // when using seemless video switching
+            // when using seamless video switching
             final EngineParams params = EngineParams.get(mPlayer);
             if (params.mVideoWidth > 0) {
                 return params.mVideoWidth;
@@ -813,7 +878,7 @@ class VolcPlayer implements PlayerAdapter {
     public int getVideoHeight() {
         if (isSupportSmoothTrackSwitching(TRACK_TYPE_VIDEO)) {
             // Opt video TTVideoEngine#getVideoWidth/Height is not change after resolution changed
-            // when using seemless video switching
+            // when using seamless video switching
             final EngineParams params = EngineParams.get(mPlayer);
             if (params.mVideoHeight > 0) {
                 return params.mVideoHeight;
@@ -1044,8 +1109,10 @@ class VolcPlayer implements PlayerAdapter {
                 listener.onPrepared(player);
             } else {
                 if (current == null) {
+                    // 首次启播 prepare 完成
                     listener.onPrepared(player);
                 } else {
+                    // 切换清晰度 prepare 完成
                     if (player.mPausedWhenChangeAVTrack) {
                         player.mPausedWhenChangeAVTrack = false;
                         player.setState(Player.STATE_PAUSED);

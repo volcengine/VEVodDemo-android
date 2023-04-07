@@ -110,7 +110,6 @@ public class Track implements Serializable {
     }
 
     private String mediaId;
-
     private int index;
     @TrackType
     private int trackType = TRACK_TYPE_UNKNOWN;
@@ -135,7 +134,15 @@ public class Track implements Serializable {
     private int videoHeight;
     private int rotate;
     private long duration;
-    private int fps;
+
+    /**
+     * sidx range(DASH only)
+     */
+    private String indexRange;
+    /**
+     * header info range(Dash only)
+     */
+    private String initRange;
 
     private Quality quality;
     private Map<String, String> headers;
@@ -287,6 +294,22 @@ public class Track implements Serializable {
         this.duration = duration;
     }
 
+    public String getIndexRange() {
+        return indexRange;
+    }
+
+    public void setIndexRange(String indexRange) {
+        this.indexRange = indexRange;
+    }
+
+    public String getInitRange() {
+        return initRange;
+    }
+
+    public void setInitRange(String initRange) {
+        this.initRange = initRange;
+    }
+
     @Nullable
     public Quality getQuality() {
         return quality;
@@ -307,14 +330,14 @@ public class Track implements Serializable {
 
     public String dump() {
         if (quality != null) {
-            return String.format(Locale.getDefault(), "[%s %s %dP %dFPS %s]",
+            return String.format(Locale.getDefault(), "%s %s %dP %dFPS %s",
                     L.obj2String(this),
                     mapEncoderType(encoderType),
                     quality.getQualityRes(),
                     quality.getQualityFps(),
                     Quality.mapQualityDynamicRange(quality.getQualityDynamicRange()));
         } else {
-            return String.format(Locale.getDefault(), "[%s]", L.obj2String(this));
+            return String.format(Locale.getDefault(), "%s", L.obj2String(this));
         }
     }
 

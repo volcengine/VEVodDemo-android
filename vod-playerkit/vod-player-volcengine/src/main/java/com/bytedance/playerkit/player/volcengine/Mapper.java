@@ -23,7 +23,6 @@ import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
@@ -42,8 +41,10 @@ import com.ss.ttvideoengine.model.VideoRef;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.Source;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
+import com.ss.ttvideoengine.utils.TTHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -272,14 +273,37 @@ public class Mapper {
         if (resolution == null) return null;
         for (Track track : tracks) {
             Quality quality = track.getQuality();
-            if (quality != null && quality.getQualityTag() == resolution) {
-                return track;
+            if (quality != null) {
+                if (quality.getQualityTag() != null) {
+                    if (quality.getQualityTag() == resolution) {
+                        return track;
+                    }
+                } else {
+                    Quality target = Mapper.resolution2Quality(resolution);
+                    if (quality.equals(target)) {
+                        return track;
+                    }
+                }
             }
         }
         return null;
     }
 
-    static Quality resolution2Quality(Resolution resolution) {
+    public static Quality definition2Quality(@Track.TrackType int trackType, String definition) {
+        Resolution resolution = null;
+        switch (trackType) {
+            case TRACK_TYPE_AUDIO:
+                resolution = TTHelper.defaultAudioResolutionMap().get(definition);
+                break;
+            case TRACK_TYPE_VIDEO:
+                resolution = TTHelper.defaultVideoResolutionMap().get(definition);
+                break;
+        }
+        if (resolution == null) return null;
+        return resolution2Quality(resolution);
+    }
+
+    public static Quality resolution2Quality(Resolution resolution) {
         Quality quality = map.get(resolution);
         if (quality == null) return null;
 
@@ -356,8 +380,26 @@ public class Mapper {
         return new BareVideoModel.Builder()
                 .vid(source.getMediaId())
                 .setVideoInfos(videoInfos)
+                .adaptive(source.isSupportABR())
                 .duration(source.getDuration())
+                .dynamicType(segmentType2DynamicType(source.getSegmentType()))
                 .build();
+    }
+
+    public static int dynamicType2SegmentType(String dynamicType) {
+        switch (dynamicType) {
+            case TTVideoEngine.DYNAMIC_TYPE_SEGMENTBASE:
+                return MediaSource.SEGMENT_TYPE_SEGMENT_BASE;
+        }
+        return -1;
+    }
+
+    public static String segmentType2DynamicType(@MediaSource.SegmentType int segmentType) {
+        switch (segmentType) {
+            case MediaSource.SEGMENT_TYPE_SEGMENT_BASE:
+                return TTVideoEngine.DYNAMIC_TYPE_SEGMENTBASE;
+        }
+        return null;
     }
 
     public static int mapScalingMode(int mode) {
@@ -376,8 +418,19 @@ public class Mapper {
         return scalingMode;
     }
 
+    public static void updateVideoModelMediaSource(MediaSource mediaSource) {
+        if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_MODEL
+                && mediaSource.getTracks() == null) {
+            IVideoModel videoModel = VolcVideoModelCache.acquire(mediaSource.getModelJson());
+            updateMediaSource(mediaSource, videoModel);
+        }
+    }
+
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
+        if (videoModel == null) return;
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
+        mediaSource.setSegmentType(dynamicType2SegmentType(videoModel.getDynamicType()));
+        mediaSource.setSupportABR(videoModel.getVideoRefBool(VideoRef.VALUE_VIDEO_REF_ENABLE_ADAPTIVE));
         mediaSource.setTracks(videoInfoList2TrackList(videoModel));
 
         long duration = videoModel.getVideoRefInt(VideoRef.VALUE_VIDEO_REF_VIDEO_DURATION) * 1000L;
@@ -461,7 +514,7 @@ public class Mapper {
         return Track.FORMAT_MP4;
     }
 
-    public static String trackFormat2VideoModelFormat(@Track.Format int format) {
+    private static String trackFormat2VideoModelFormat(@Track.Format int format) {
         switch (format) {
             case Track.FORMAT_DASH:
                 return TTVideoEngine.FORMAT_TYPE_DASH;
@@ -473,7 +526,7 @@ public class Mapper {
         throw new IllegalArgumentException("unsupported format " + format);
     }
 
-    public static int videoModelEncodeType2TrackEncodeType(String encodeType) {
+    private static int videoModelEncodeType2TrackEncodeType(String encodeType) {
         if (encodeType != null) {
             switch (encodeType) {
                 case Source.EncodeType.H264:
@@ -488,7 +541,7 @@ public class Mapper {
     }
 
     @Nullable
-    public static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
+    private static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
         switch (encoderType) {
             case Track.ENCODER_TYPE_H264:
                 return Source.EncodeType.H264;
@@ -556,7 +609,11 @@ public class Mapper {
                 if (selector != null && tracks != null) {
                     track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
                 }
-                return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
+                if (isDirectUrlSeamlessSwitchEnabled(mediaSource)) {
+                    return mediaSource2VideoModelSource(mediaSource, track, cacheKeyFactory);
+                } else {
+                    return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
+                }
             }
             case MediaSource.SOURCE_TYPE_ID: {
                 Track track = null;
@@ -566,9 +623,44 @@ public class Mapper {
                 if (track != null) {
                     return mediaSource2VidPlayAuthTokenSource(mediaSource, track.getQuality());
                 }
+                break;
+            }
+            case MediaSource.SOURCE_TYPE_MODEL: {
+                updateVideoModelMediaSource(mediaSource);
+                Track track = null;
+                List<Track> tracks = mediaSource.getTracks(trackType);
+                if (selector != null && tracks != null) {
+                    track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
+                }
+                return mediaSource2VideoModelSource(mediaSource, track, cacheKeyFactory);
             }
         }
         return null;
+    }
+
+    public static VideoModelSource mediaSource2VideoModelSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
+        IVideoModel videoModel;
+        if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_MODEL) {
+            videoModel = VolcVideoModelCache.acquire(mediaSource.getModelJson());
+        } else {
+            videoModel = Mapper.mediaSource2VideoModel(mediaSource, cacheKeyFactory);
+        }
+        Resolution resolution = Mapper.track2Resolution(track);
+        return new VideoModelSource.Builder()
+                .setVid(mediaSource.getMediaId())
+                .setVideoModel(videoModel)
+                .setResolution(resolution)
+                .build();
+    }
+
+    public static boolean isDirectUrlSeamlessSwitchEnabled(MediaSource mediaSource) {
+        final VolcConfig config = VolcConfig.get(mediaSource);
+        final int protocol = mediaSource.getMediaProtocol();
+        boolean isProtocolSeamlessSwitchingEnabled =
+                (protocol == MediaSource.MEDIA_PROTOCOL_DEFAULT && config.enableMP4SeamlessSwitch) ||
+                        (protocol == MediaSource.MEDIA_PROTOCOL_HLS && config.enableHlsSeamlessSwitch) ||
+                        (protocol == MediaSource.MEDIA_PROTOCOL_DASH && config.enableDash);
+        return isProtocolSeamlessSwitchingEnabled && mediaSource.isSupportABR();
     }
 
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
@@ -628,6 +720,7 @@ public class Mapper {
         }
         return strategySources;
     }
+
     public static int mapVolcScene2EngineScene(int volcScene) {
         switch (volcScene) {
             case VolcC.SCENE_SHORT_VIDEO:

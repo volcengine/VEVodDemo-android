@@ -34,7 +34,7 @@ import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.api2.RemoteApi2;
+import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.impl.R;
 
 import java.util.List;
@@ -42,7 +42,7 @@ import java.util.List;
 
 public class ShortVideoFragment extends BaseFragment {
 
-    private RemoteApi mRemoteApi;
+    private RemoteApi.GetFeedStream mRemoteApi;
     private String mAccount;
 
     private final Book<VideoItem> mBook = new Book<>(10);
@@ -60,7 +60,7 @@ public class ShortVideoFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new RemoteApi2();
+        mRemoteApi = new GetFeedStreamApi();
         mAccount = VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID);
     }
 
@@ -92,7 +92,7 @@ public class ShortVideoFragment extends BaseFragment {
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStreamWithPlayAuthToken(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
             @Override
             public void onSuccess(Page<VideoItem> page) {
                 L.d(this, "refresh", "success");
@@ -117,7 +117,7 @@ public class ShortVideoFragment extends BaseFragment {
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStreamWithPlayAuthToken(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
                 @Override
                 public void onSuccess(Page<VideoItem> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());

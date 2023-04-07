@@ -22,15 +22,18 @@ import static com.bytedance.playerkit.player.volcengine.VolcConfig.EXTRA_VOLC_CO
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
+import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class VideoItem implements Parcelable, Serializable {
 
     public static final int SOURCE_TYPE_VID = 0;
     public static final int SOURCE_TYPE_URL = 1;
+    public static final int SOURCE_TYPE_MODEL = 2;
 
     private VideoItem() {
     }
@@ -50,6 +54,7 @@ public class VideoItem implements Parcelable, Serializable {
         vid = in.readString();
         playAuthToken = in.readString();
         videoModel = in.readString();
+        mediaSource = (MediaSource) in.readSerializable();
         duration = in.readLong();
         title = in.readString();
         cover = in.readString();
@@ -63,6 +68,7 @@ public class VideoItem implements Parcelable, Serializable {
         dest.writeString(vid);
         dest.writeString(playAuthToken);
         dest.writeString(videoModel);
+        dest.writeSerializable(mediaSource);
         dest.writeLong(duration);
         dest.writeString(title);
         dest.writeString(cover);
@@ -116,7 +122,7 @@ public class VideoItem implements Parcelable, Serializable {
     }
 
     public static VideoItem createUrlItem(
-            @Nullable String vid,
+            @NonNull String vid,
             @NonNull String url,
             @Nullable String urlCacheKey,
             long duration,
@@ -133,11 +139,45 @@ public class VideoItem implements Parcelable, Serializable {
         return videoItem;
     }
 
+    public static VideoItem createMultiStreamUrlItem(
+            @Nullable String vid,
+            @NonNull MediaSource mediaSource,
+            long duration,
+            @Nullable String cover,
+            @Nullable String title) {
+        VideoItem videoItem = new VideoItem();
+        videoItem.sourceType = SOURCE_TYPE_URL;
+        videoItem.vid = vid;
+        videoItem.mediaSource = mediaSource;
+        videoItem.duration = duration;
+        videoItem.cover = cover;
+        videoItem.title = title;
+        return videoItem;
+    }
+
+    public static VideoItem createVideoModelItem(
+            @NonNull String vid,
+            @NonNull String videoModel,
+            long duration,
+            @Nullable String cover,
+            @Nullable String title) {
+        VideoItem videoItem = new VideoItem();
+        videoItem.sourceType = SOURCE_TYPE_MODEL;
+        videoItem.vid = vid;
+        videoItem.videoModel = videoModel;
+        videoItem.duration = duration;
+        videoItem.cover = cover;
+        videoItem.title = title;
+        return videoItem;
+    }
+
     private String vid;
 
     private String playAuthToken;
 
     private String videoModel;
+
+    private MediaSource mediaSource;
 
     private long duration;
 
@@ -151,7 +191,6 @@ public class VideoItem implements Parcelable, Serializable {
 
     private int sourceType;
 
-    private MediaSource mediaSource;
 
     private String tag;
 
@@ -199,14 +238,24 @@ public class VideoItem implements Parcelable, Serializable {
             return videoItem.mediaSource;
         }
         final MediaSource mediaSource;
-        if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
-            mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
-        } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
-            mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+        // TODO
+        if (videoItem.mediaSource != null) {
+            mediaSource = videoItem.mediaSource;
         } else {
-            throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
+            if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
+                mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
+            } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
+                mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+            } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
+                mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
+                Mapper.updateVideoModelMediaSource(mediaSource);
+            } else {
+                throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
+            }
         }
-        mediaSource.setCoverUrl(videoItem.cover);
+        if (!TextUtils.isEmpty(videoItem.cover)) {
+            mediaSource.setCoverUrl(videoItem.cover);
+        }
         mediaSource.setDuration(videoItem.duration);
         mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
         mediaSource.putExtra(EXTRA_VOLC_CONFIG, createVolcConfig(videoItem));

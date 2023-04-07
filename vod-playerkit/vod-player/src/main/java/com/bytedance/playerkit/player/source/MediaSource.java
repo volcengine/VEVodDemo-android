@@ -100,6 +100,7 @@ import java.util.UUID;
  * @see Player#prepare(MediaSource)
  */
 public class MediaSource extends ExtraObject implements Serializable {
+
     /**
      * Source type. One of:
      * <ul>
@@ -109,7 +110,7 @@ public class MediaSource extends ExtraObject implements Serializable {
      */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({SOURCE_TYPE_URL, SOURCE_TYPE_ID})
+    @IntDef({SOURCE_TYPE_URL, SOURCE_TYPE_ID, SOURCE_TYPE_MODEL})
     public @interface SourceType {
     }
 
@@ -127,6 +128,14 @@ public class MediaSource extends ExtraObject implements Serializable {
      * @see #getSourceType()
      */
     public static final int SOURCE_TYPE_ID = 1;
+
+    /**
+     * Model source type
+     *
+     * @see #MediaSource(String, int)
+     * @see #getSourceType()
+     */
+    public static final int SOURCE_TYPE_MODEL = 2;
 
     /**
      * Media protocol type. One of:
@@ -175,12 +184,26 @@ public class MediaSource extends ExtraObject implements Serializable {
      */
     public static final int MEDIA_TYPE_AUDIO = 1;
 
+
+    /**
+     * Segment type of {@code MediaSource}. Only work with {@link  #mediaProtocol}
+     * is {@link  #MEDIA_PROTOCOL_DASH}.
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({SEGMENT_TYPE_SEGMENT_BASE})
+    public @interface SegmentType {
+    }
+
+    public static final int SEGMENT_TYPE_SEGMENT_BASE = 1;
+
     public static String mapSourceType(@SourceType int sourceType) {
         switch (sourceType) {
             case SOURCE_TYPE_URL:
                 return "url";
             case SOURCE_TYPE_ID:
                 return "id";
+            case SOURCE_TYPE_MODEL:
+                return "model";
         }
         throw new IllegalArgumentException("unsupported sourceType! " + sourceType);
     }
@@ -242,6 +265,8 @@ public class MediaSource extends ExtraObject implements Serializable {
     private int mediaProtocol;
     @MediaType
     private int mediaType;
+    @SegmentType
+    private int segmentType;
     /**
      * As key of storing the progress of playback.
      */
@@ -251,6 +276,11 @@ public class MediaSource extends ExtraObject implements Serializable {
      * Auth token of {@link #mediaId}. Only works with {@link #SOURCE_TYPE_ID}
      */
     private String playAuthToken;
+
+    /**
+     * Json string of VideoModel. Only works with {@link #SOURCE_TYPE_MODEL}
+     */
+    private String modelJson;
 
     /**
      * Additional headers of video url http request
@@ -269,6 +299,11 @@ public class MediaSource extends ExtraObject implements Serializable {
      * Display aspect ratio of video in float (width/height).
      */
     private float displayAspectRatio;
+
+    /**
+     * Indicate is video/audio streams in {@link #tracks} support ABR
+     */
+    private boolean supportABR;
 
     /**
      * A list of url track of video/audio stream in different quality.
@@ -304,6 +339,19 @@ public class MediaSource extends ExtraObject implements Serializable {
     public static MediaSource createIdSource(@NonNull String mediaId, @NonNull String playAuthToken) {
         MediaSource mediaSource = new MediaSource(mediaId, SOURCE_TYPE_ID);
         mediaSource.setPlayAuthToken(playAuthToken);
+        return mediaSource;
+    }
+
+    /**
+     * Utility method for quick create video model source.
+     *
+     * @param mediaId   Media id of video/audio. Null is not allowed.
+     * @param modelJson VideoModel json
+     * @return Instance of id MediaSource.
+     */
+    public static MediaSource createModelSource(@NonNull String mediaId, String modelJson) {
+        MediaSource mediaSource = new MediaSource(mediaId, SOURCE_TYPE_MODEL);
+        mediaSource.setModelJson(modelJson);
         return mediaSource;
     }
 
@@ -345,6 +393,7 @@ public class MediaSource extends ExtraObject implements Serializable {
      * <ul>
      *     <li>{@link #SOURCE_TYPE_URL}</li>
      *     <li>{@link #SOURCE_TYPE_ID}</li>
+     *     <li>{@link #SOURCE_TYPE_MODEL}</li>
      * </ul>
      */
     @SourceType
@@ -416,6 +465,31 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     /**
+     * Get Segment type
+     *
+     * @return segmentType. One of:
+     * <ul>
+     *     <li>{@link #SEGMENT_TYPE_SEGMENT_BASE}</li>
+     * </ul>
+     */
+    @SegmentType
+    public int getSegmentType() {
+        return segmentType;
+    }
+
+    /**
+     * Set Segment type
+     *
+     * @param segmentType One of:
+     *                    <ul>
+     *                         <li>{@link #SEGMENT_TYPE_SEGMENT_BASE}</li>
+     *                     </ul>
+     */
+    public void setSegmentType(@SegmentType int segmentType) {
+        this.segmentType = segmentType;
+    }
+
+    /**
      * @return syncProgressId. Key of storing/syncing playback progress.
      */
     public String getSyncProgressId() {
@@ -445,6 +519,24 @@ public class MediaSource extends ExtraObject implements Serializable {
      */
     public void setPlayAuthToken(String playAuthToken) {
         this.playAuthToken = playAuthToken;
+    }
+
+    /**
+     * Get VideoModel json string.
+     *
+     * @return VideoModel json string
+     */
+    public String getModelJson() {
+        return this.modelJson;
+    }
+
+    /**
+     * Set VideoModel json string. Only works with {@link #SOURCE_TYPE_MODEL}
+     *
+     * @param modelJson VideoModel json string
+     */
+    public void setModelJson(String modelJson) {
+        this.modelJson = modelJson;
     }
 
     /**
@@ -514,6 +606,24 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     /**
+     * Get Is video/audio streams in {@link #tracks} support ABR
+     *
+     * @return {@link  #supportABR}
+     */
+    public boolean isSupportABR() {
+        return supportABR;
+    }
+
+    /**
+     * Set Is video/audio streams in {@link #tracks} support ABR
+     *
+     * @param supportABR true for support
+     */
+    public void setSupportABR(boolean supportABR) {
+        this.supportABR = supportABR;
+    }
+
+    /**
      * @return list of {@link Track}
      */
     public List<Track> getTracks() {
@@ -521,18 +631,25 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     /**
-     * Set list of track. List will be sorted by {@link Track#getBitrate()}.
+     * Set list of track. List will be sorted with default comparator by {@link Track#getBitrate()}.
      *
      * @param tracks list of {@link Track}
      */
     public void setTracks(List<Track> tracks) {
+        setTracks(tracks, (o1, o2) -> Integer.compare(o1.getBitrate(), o2.getBitrate()));
+    }
+
+    /**
+     * Set list of track. List will be sorted by {@code comparator}.
+     *
+     * @param tracks     list of {@link Track}
+     * @param comparator list sorter
+     */
+    public void setTracks(List<Track> tracks, @Nullable Comparator<Track> comparator) {
         final List<Track> list = new ArrayList<>(tracks);
-        Collections.sort(list, new Comparator<Track>() {
-            @Override
-            public int compare(Track o1, Track o2) {
-                return Integer.compare(o1.getBitrate(), o2.getBitrate());
-            }
-        });
+        if (comparator != null) {
+            Collections.sort(list, comparator);
+        }
         this.tracks = list;
     }
 
@@ -575,6 +692,6 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     public String dump() {
-        return String.format("[%s %s %s %s %s]", L.obj2String(this), mapMediaType(mediaType), mapSourceType(sourceType), mapMediaProtocol(mediaProtocol), mediaId);
+        return String.format("%s %s %s %s %s", L.obj2String(this), mapMediaType(mediaType), mapSourceType(sourceType), mapMediaProtocol(mediaProtocol), mediaId);
     }
 }

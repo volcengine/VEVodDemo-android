@@ -22,6 +22,8 @@ import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamResponse;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailResponse;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -31,12 +33,19 @@ import retrofit2.http.POST;
 
 public class ApiManager {
     private static final String BASE_URL = "https://vevod-demo-server.volcvod.com";
+    private final OkHttpClient httpClient;
     private final Api2 api2;
 
     private ApiManager() {
+        httpClient = new OkHttpClient
+                .Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
         api2 = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .client(new OkHttpClient.Builder().build())
+                .client(httpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(Api2.class);
@@ -50,17 +59,18 @@ public class ApiManager {
         return Holder.sInstance.api2;
     }
 
-    public interface Api2 {
-        @POST("/api/general/v1/getFeedStream")
-        Call<GetFeedStreamResponse> getFeedStream(@Body GetFeedStreamRequest request);
+    public static OkHttpClient httpClient() {
+        return Holder.sInstance.httpClient;
+    }
 
+    public interface Api2 {
         @POST("/api/general/v1/getFeedStreamWithPlayAuthToken")
         Call<GetFeedStreamResponse> getFeedStreamWithPlayAuthToken(@Body GetFeedStreamRequest request);
 
-        @POST("/api/general/v1/getVideoDetailWithLocal")
-        Call<GetVideoDetailResponse> getVideoDetailWithLocal(@Body GetVideoDetailRequest request);
-
         @POST("/api/general/v1/getVideoDetailWithPlayAuthToken")
         Call<GetVideoDetailResponse> getVideoDetailWithPlayAuthToken(@Body GetVideoDetailRequest request);
+
+        @POST("/api/general/v1/getFeedStreamWithVideoModel")
+        Call<GetFeedStreamResponse> getFeedVideoStreamWithVideoModel(@Body GetFeedStreamRequest request);
     }
 }

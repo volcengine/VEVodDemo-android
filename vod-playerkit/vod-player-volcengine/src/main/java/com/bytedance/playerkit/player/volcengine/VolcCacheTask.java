@@ -40,9 +40,11 @@ import com.ss.ttvideoengine.IPreLoaderItemCallBackListener;
 import com.ss.ttvideoengine.PreLoaderItemCallBackInfo;
 import com.ss.ttvideoengine.PreloaderURLItem;
 import com.ss.ttvideoengine.PreloaderVidItem;
+import com.ss.ttvideoengine.PreloaderVideoModelItem;
 import com.ss.ttvideoengine.model.VideoModel;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.utils.Error;
 
 import java.io.File;
@@ -194,6 +196,9 @@ class VolcCacheTask implements CacheLoader.Task {
             case MediaSource.SOURCE_TYPE_URL:
                 preloadUrl(source);
                 break;
+            case MediaSource.SOURCE_TYPE_MODEL:
+                preloadModel(source);
+                break;
         }
     }
 
@@ -217,7 +222,10 @@ class VolcCacheTask implements CacheLoader.Task {
                 stopByVid(source.getMediaId());
                 break;
             case MediaSource.SOURCE_TYPE_URL:
-                stopByUrl(source);
+                stopByCacheKey(source);
+                break;
+            case MediaSource.SOURCE_TYPE_MODEL:
+                stopByCacheKey(source);
                 break;
         }
 
@@ -486,6 +494,111 @@ class VolcCacheTask implements CacheLoader.Task {
         }
     }
 
+    private void preloadModel(MediaSource source) {
+        Mapper.updateVideoModelMediaSource(source);
+
+        final Track target = resolvePreloadTrack(source);
+        if (target == null) return;
+
+        VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(source, target, mCacheKeyFactory);
+        final long preloadSize = resolvePreloadSize(target);
+
+        final PreloaderVideoModelItem preloadItem = new PreloaderVideoModelItem(videoModelSource, preloadSize);
+
+        // TODO preloadItem setHeaders
+
+        L.v(VolcCacheTask.this, "preloadModel", source.getMediaId(), "start",
+                "selected", Track.dump(target),
+                "all", Track.dump(source.getTracks()),
+                "preloadSize", preloadSize,
+                "url", target.getUrl());
+
+        preloadItem.setCallBackListener(new IPreLoaderItemCallBackListener() {
+            @Override
+            public void preloadItemInfo(PreLoaderItemCallBackInfo info) {
+                if (info == null) return;
+                final int key = info.getKey();
+                switch (key) {
+                    case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_SUCCEED: {
+                        DataLoaderHelper.DataLoaderTaskProgressInfo cacheInfo = info.preloadDataInfo;
+                        if (cacheInfo != null) {
+                            String cacheKey = cacheInfo.mKey;
+                            String preloadTaskKey = cacheInfo.mKey;
+                            String videoId = cacheInfo.mVideoId;
+                            String cachePath = cacheInfo.mLocalFilePath;
+                            long mediaSize = cacheInfo.mMediaSize;
+                            long cachedSize = cacheInfo.mCacheSizeFromZero;
+
+                            Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                            L.v(VolcCacheTask.this, "preloadModel",
+                                    source.getMediaId(),
+                                    "success",
+                                    "selected", Track.dump(selected),
+                                    "cacheKey", cacheKey,
+                                    "preloadSize", preloadSize,
+                                    "mediaSize", mediaSize,
+                                    "cachedSize", cachedSize,
+                                    "path", cachePath);
+
+                            setState(STATE_END_FINISHED);
+                            if (mListener != null) {
+                                mListener.onFinished(VolcCacheTask.this);
+                            }
+                        }
+                        break;
+                    }
+                    case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_FAIL: {
+                        Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                        L.v(VolcCacheTask.this, "preloadModel",
+                                source.getMediaId(),
+                                "error",
+                                "selected", Track.dump(selected));
+
+                        setState(STATE_END_ERROR);
+                        if (mListener != null) {
+                            Error error = info.preloadError;
+                            CacheException exception;
+                            if (error != null) {
+                                exception = new CacheException(error.code, error.toString());
+                            } else {
+                                exception = new CacheException(0, "unknown");
+                            }
+                            mListener.onError(VolcCacheTask.this, exception);
+                        }
+                        break;
+                    }
+                    case PreLoaderItemCallBackInfo.KEY_IS_PRELOAD_END_CANCEL: {
+                        Track selected = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
+                        L.v(VolcCacheTask.this, "preloadModel",
+                                source.getMediaId(),
+                                "cancel",
+                                "selected", Track.dump(selected));
+
+                        if (mListener != null) {
+                            mListener.onStopped(VolcCacheTask.this);
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+        });
+
+        DataLoaderHelper.getDataLoader().addTask(preloadItem);
+    }
+
+    private static long resolvePreloadSize(Track target) {
+        final long preloadSize;
+        if (target.getPreloadSize() <= 0) {
+            preloadSize = DEFAULT_PRELOAD_SIZE;
+        } else {
+            preloadSize = target.getPreloadSize();
+        }
+        return preloadSize;
+    }
+
     private static long resolvePreloadSize(@Nullable MediaSource source, @Nullable Track target) {
         long preloadSize = target != null ? target.getPreloadSize() : 0;
         if (preloadSize > 0) {
@@ -526,7 +639,7 @@ class VolcCacheTask implements CacheLoader.Task {
         DataLoaderHelper.getDataLoader().cancelTaskByVideoId(id);
     }
 
-    private void stopByUrl(MediaSource source) {
+    private void stopByCacheKey(MediaSource source) {
         final Track track = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
         if (track != null) {
             String cacheKey = mCacheKeyFactory.generateCacheKey(source, track);
