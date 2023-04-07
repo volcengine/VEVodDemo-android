@@ -665,7 +665,7 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public void pause() {
-        Asserts.checkState(getState(), Player.STATE_PREPARED, Player.STATE_STARTED,
+        Asserts.checkState(getState(), Player.STATE_PREPARING, Player.STATE_PREPARED, Player.STATE_STARTED,
                 Player.STATE_PAUSED, Player.STATE_COMPLETED);
 
         if (mState == Player.STATE_PAUSED) return;
