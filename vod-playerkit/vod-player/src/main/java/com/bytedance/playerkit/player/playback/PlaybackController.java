@@ -459,9 +459,7 @@ public class PlaybackController {
         // 2. start play
         switch (playerState) {
             case Player.STATE_IDLE: {
-                if (startWhenPrepared) {
-                    player.setStartWhenPrepared(true);
-                }
+                player.setStartWhenPrepared(startWhenPrepared);
                 player.prepare(viewSource);
                 break;
             }
@@ -477,11 +475,14 @@ public class PlaybackController {
                 break;
             }
             case Player.STATE_STARTED:
+                L.d(this, startWhenPrepared ? "startPlayback" : "preparePlayback",
+                        "already in " + Player.mapState(playerState) + "! nop~");
+                break;
             case Player.STATE_PREPARED:
             case Player.STATE_PAUSED:
             case Player.STATE_COMPLETED: {
                 L.d(this, startWhenPrepared ? "startPlayback" : "preparePlayback",
-                        "already " + Player.mapState(playerState) + "! nop~");
+                        "already in " + Player.mapState(playerState) + ", start.");
                 if (startWhenPrepared) {
                     player.start();
                 }
