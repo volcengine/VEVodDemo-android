@@ -20,6 +20,8 @@ package com.bytedance.playerkit.utils;
 
 import android.os.Looper;
 
+import java.util.Objects;
+
 public class Asserts {
 
     public static void checkMainThread() {
@@ -86,7 +88,7 @@ public class Asserts {
             throw new NullPointerException();
         }
         for (T t : ts) {
-            if (o == t) {
+            if (Objects.equals(o, t)) {
                 return o;
             }
         }
