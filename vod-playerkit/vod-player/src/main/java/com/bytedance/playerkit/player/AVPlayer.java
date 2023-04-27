@@ -760,8 +760,9 @@ public class AVPlayer extends ExtraObject implements Player {
         switch (state) {
             case STATE_IDLE:
             case STATE_PREPARING:
-            case STATE_PREPARED:
                 return mStartTime > 0 ? mStartTime : 0;
+            case STATE_PREPARED:
+                return mPlayer.getCurrentPosition();
             case STATE_ERROR:
                 if (mMediaSource != null) {
                     return ProgressRecorder.getProgress(mMediaSource.getSyncProgressId());
