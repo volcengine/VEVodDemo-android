@@ -31,6 +31,7 @@ import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.api2.RemoteApi2;
@@ -97,6 +98,7 @@ public class ShortVideoFragment extends BaseFragment {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
+                VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                 mSceneView.dismissRefreshing();
                 mSceneView.pageView().setItems(videoItems);
             }
@@ -121,6 +123,7 @@ public class ShortVideoFragment extends BaseFragment {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
+                    VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
                 }

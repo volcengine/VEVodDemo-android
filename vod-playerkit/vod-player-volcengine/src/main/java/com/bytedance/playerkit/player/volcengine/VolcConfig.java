@@ -63,4 +63,7 @@ public class VolcConfig implements Serializable {
     public boolean enableSuperResolutionAbility = true;
     public boolean enableSuperResolution = false;
 
+    public String tag;
+    public String subTag;
+
 }
