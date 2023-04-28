@@ -32,6 +32,7 @@ import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.MoreDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
@@ -138,7 +139,10 @@ public class TitleBarLayer extends AnimateLayer {
         if (videoView != null) {
             MediaSource mediaSource = videoView.getDataSource();
             if (mediaSource != null) {
-                return mediaSource.getExtra(EXTRA_TITLE, String.class);
+                VideoItem videoItem = VideoItem.get(mediaSource);
+                if (videoItem != null) {
+                    return videoItem.getTitle();
+                }
             }
         }
         return null;

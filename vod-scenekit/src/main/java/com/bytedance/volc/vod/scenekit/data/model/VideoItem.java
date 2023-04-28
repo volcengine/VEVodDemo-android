@@ -18,6 +18,8 @@
 
 package com.bytedance.volc.vod.scenekit.data.model;
 
+import static com.bytedance.playerkit.player.volcengine.VolcConfig.EXTRA_VOLC_CONFIG;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -27,7 +29,6 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
@@ -152,6 +153,10 @@ public class VideoItem implements Parcelable, Serializable {
 
     private MediaSource mediaSource;
 
+    private String tag;
+
+    private String subTag;
+
     public String getVid() {
         return vid;
     }
@@ -204,8 +209,7 @@ public class VideoItem implements Parcelable, Serializable {
         mediaSource.setCoverUrl(videoItem.cover);
         mediaSource.setDuration(videoItem.duration);
         mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
-        mediaSource.putExtra(TitleBarLayer.EXTRA_TITLE, videoItem.title);
-        mediaSource.putExtra(VolcConfig.EXTRA_VOLC_CONFIG, createVolcConfig());
+        mediaSource.putExtra(EXTRA_VOLC_CONFIG, createVolcConfig(videoItem));
         if (syncProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
         }
@@ -224,18 +228,32 @@ public class VideoItem implements Parcelable, Serializable {
     }
 
     @NonNull
-    public static VolcConfig createVolcConfig() {
+    public static VolcConfig createVolcConfig(VideoItem videoItem) {
         VolcConfig volcConfig = new VolcConfig();
         volcConfig.codecStrategyType = VideoSettings.intValue(VideoSettings.COMMON_CODEC_STRATEGY);
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
         volcConfig.enableSuperResolution = VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION);
+        volcConfig.tag = videoItem.tag;
+        volcConfig.subTag = videoItem.subTag;
         return volcConfig;
     }
 
     @Nullable
-    public static VideoItem findVideoItem(MediaSource mediaSource) {
+    public static VideoItem get(MediaSource mediaSource) {
         if (mediaSource == null) return null;
         return mediaSource.getExtra(VideoItem.EXTRA_VIDEO_ITEM, VideoItem.class);
+    }
+
+    public static void tag(VideoItem videoItem, String tag, String subTag) {
+        if (videoItem == null) return;
+        videoItem.tag = tag;
+        videoItem.subTag = subTag;
+    }
+
+    public static void tag(List<VideoItem> videoItems, String tag, String subTag) {
+        for (VideoItem videoItem : videoItems) {
+            tag(videoItem, tag, subTag);
+        }
     }
 }

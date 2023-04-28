@@ -41,6 +41,7 @@ import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
@@ -119,6 +120,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
+                VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
                 mSceneView.dismissRefreshing();
                 if (!videoItems.isEmpty()) {
                     mSceneView.pageView().setItems(videoItems);
@@ -146,6 +148,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
+                    VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
                 }

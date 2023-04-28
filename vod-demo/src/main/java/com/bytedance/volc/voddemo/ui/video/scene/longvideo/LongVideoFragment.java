@@ -207,6 +207,7 @@ public class LongVideoFragment extends BaseFragment {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
+                VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
                 dismissRefreshing();
                 mDataTrans.setList(mAdapter, videoItems);
             }
@@ -260,6 +261,7 @@ public class LongVideoFragment extends BaseFragment {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
+                    VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
                     dismissLoadingMore();
                     mDataTrans.append(mAdapter, videoItems);
                 }

@@ -25,6 +25,7 @@ import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_FMP4;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_MP4;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -101,6 +102,13 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         }
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
+
+        if (!TextUtils.isEmpty(volcConfig.tag)) {
+            player.setTag(volcConfig.tag);
+        }
+        if (!TextUtils.isEmpty(volcConfig.subTag)) {
+            player.setSubTag(volcConfig.subTag);
+        }
         return player;
     }
 
