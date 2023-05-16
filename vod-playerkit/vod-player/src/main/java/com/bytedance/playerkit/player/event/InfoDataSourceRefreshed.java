@@ -25,8 +25,8 @@ import com.bytedance.playerkit.utils.event.Event;
 public class InfoDataSourceRefreshed extends Event {
 
     public static final int REFRESHED_TYPE_PLAY_INFO_FETCHED = 1;
-    public static final int REFRESHED_TYPE_SUBTITLE = 2;
-    public static final int REFRESHED_TYPE_MASK = 3;
+    public static final int REFRESHED_TYPE_SUBTITLE_INFO_FETCHED = 2;
+    public static final int REFRESHED_TYPE_MASK_INFO_FETCHED = 3;
 
     public int mRefreshedType;
 

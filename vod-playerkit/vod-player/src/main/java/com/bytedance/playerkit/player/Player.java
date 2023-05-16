@@ -243,11 +243,11 @@ public interface Player {
     static String mapDecoderType(@DecoderType int type) {
         switch (type) {
             case DECODER_TYPE_UNKNOWN:
-                return "unknown";
+                return "Unknown";
             case DECODER_TYPE_SOFTWARE:
-                return "software";
+                return "Software";
             case DECODER_TYPE_HARDWARE:
-                return "hardware";
+                return "Hardware";
             default:
                 throw new IllegalArgumentException("unsupported decoder type:" + type);
         }
@@ -467,6 +467,11 @@ public interface Player {
      */
     @Nullable
     List<Track> getTracks(@TrackType int trackType);
+
+    /**
+     * @param track desired track to play; null if auto
+     */
+    void selectTrack(@Nullable Track track);
 
     /**
      * @param trackType Track type. One of {@link TrackType}

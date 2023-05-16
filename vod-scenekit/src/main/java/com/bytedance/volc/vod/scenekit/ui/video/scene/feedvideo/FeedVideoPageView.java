@@ -210,16 +210,19 @@ public class FeedVideoPageView extends FrameLayout {
     }
 
     public void setItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.setItems(videoItems);
         FeedVideoStrategy.setItems(videoItems);
     }
 
     public void prependItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.prependItems(videoItems);
         FeedVideoStrategy.setItems(mFeedVideoAdapter.getItems());
     }
 
     public void appendItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.appendItems(videoItems);
         FeedVideoStrategy.appendItems(videoItems);
     }

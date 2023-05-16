@@ -24,13 +24,11 @@ import androidx.annotation.NonNull;
 
 import com.ss.ttvideoengine.TTVideoEngine;
 
-public class VolcPlayerEditions {
+public class VolcEditions {
 
     public static final String PLAYER_EDITION_LITE = "lite";
     public static final String PLAYER_EDITION_PREMIUM = "premium";
     public static final String PLAYER_EDITION_STANDARD = "standard";
-
-    public static final String PLAYER_EXTENSION_SUPER_RESOLUTION = "super_resolution";
 
     public static int engineCoreType() {
         final String playerEdition = BuildConfig.TTSDK_PLAYER_EDITION;
@@ -66,10 +64,6 @@ public class VolcPlayerEditions {
 
     public static boolean isSupportSuperResolution() {
         return TextUtils.equals(BuildConfig.TTSDK_PLAYER_EDITION, PLAYER_EDITION_PREMIUM);
-    }
-
-    public static boolean isIntegrateSuperResolutionExtensionSDK() {
-        return BuildConfig.TTSDK_PLAYER_EXTENSIONS.contains(PLAYER_EXTENSION_SUPER_RESOLUTION);
     }
 
     public static boolean isSupportEngineLooper() {

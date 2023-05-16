@@ -42,6 +42,12 @@ public class VolcConfig implements Serializable {
         }
         return volcConfig;
     }
+
+    public static void set(MediaSource mediaSource, VolcConfig volcConfig) {
+        if (mediaSource == null) return;
+        mediaSource.putExtra(EXTRA_VOLC_CONFIG, volcConfig);
+    }
+
     public static final int CODEC_STRATEGY_DISABLE = 0;
     public static final int CODEC_STRATEGY_COST_SAVING_FIRST = Source.KEY_COST_SAVING_FIRST;
     public static final int CODEC_STRATEGY_HARDWARE_DECODE_FIRST = Source.KEY_HARDWARE_DECODE_FIRST;
@@ -50,18 +56,16 @@ public class VolcConfig implements Serializable {
     public int playerDecoderType;
     @Track.EncoderType
     public int sourceEncodeType;
-
     public boolean enableAudioTrackVolume = false;
-    public boolean enableTextureRender = VolcPlayerEditions.isSupportTextureRender();
     public boolean enableHlsSeamlessSwitch = true;
     public boolean enableMP4SeamlessSwitch = true;
     public boolean enableDash = true;
-    public boolean enableEngineLooper = VolcPlayerEditions.isSupportEngineLooper();
+    public boolean enableEngineLooper = VolcEditions.isSupportEngineLooper();
     public boolean enableSeekEnd = true;
-    public boolean enableSuperResolutionAbility = VolcPlayerEditions.isSupportSuperResolution();
-    public boolean enableSuperResolution = false;
+
+    public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
+    public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
 
     public String tag;
     public String subTag;
-
 }

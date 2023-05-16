@@ -187,8 +187,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
         if (source == null) return;
 
         @Track.TrackType
-        final int trackType = source.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ?
-                Track.TRACK_TYPE_AUDIO : Track.TRACK_TYPE_VIDEO;
+        final int trackType = MediaSource.mediaType2TrackType(source);
         final List<Track> tracks = player.getTracks(trackType);
         if (tracks == null) return;
 

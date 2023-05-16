@@ -98,12 +98,12 @@ public interface PlayerAdapter {
         public static final int MEDIA_INFO_NOT_SEEKABLE = MediaPlayer.MEDIA_INFO_NOT_SEEKABLE;
     }
 
-    class SourceLoadInfo {
-        public static final int SOURCE_INFO_PLAY_INFO_FETCHED = 0;
+    class MediaSourceUpdateReason {
+        public static final int MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED = 1;
 
-        public static final int SOURCE_INFO_SUBTITLE_INFO_FETCHED = 1;
+        public static final int MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED = 2;
 
-        public static final int SOURCE_INFO_MASK_INFO_FETCHED = 2;
+        public static final int MEDIA_SOURCE_UPDATE_REASON_MASK_INFO_FETCHED = 3;
     }
 
     interface Factory {
@@ -134,6 +134,8 @@ public interface PlayerAdapter {
     boolean isSupportSmoothTrackSwitching(@Track.TrackType int trackType);
 
     void selectTrack(@Track.TrackType int trackType, @Nullable Track track) throws IllegalStateException;
+
+    Track getSelectedTrack(@Track.TrackType int trackType) throws IllegalStateException;
 
     Track getPendingTrack(@Track.TrackType int trackType) throws IllegalStateException;
 
@@ -209,7 +211,7 @@ public interface PlayerAdapter {
 
     String dump();
 
-    interface Listener extends SourceInfoListener, TrackListener {
+    interface Listener extends MediaSourceListener, TrackListener {
 
         void onPrepared(@NonNull PlayerAdapter mp);
 
@@ -232,12 +234,12 @@ public interface PlayerAdapter {
         void onCacheHint(PlayerAdapter mp, long cacheSize);
     }
 
-    interface SourceInfoListener {
-        void onSourceInfoLoadStart(PlayerAdapter mp, int type, MediaSource source);
+    interface MediaSourceListener {
+        void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource source);
 
-        void onSourceInfoLoadComplete(PlayerAdapter mp, int type, MediaSource source);
+        void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource source);
 
-        void onSourceInfoLoadError(PlayerAdapter mp, int type, PlayerException e);
+        void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e);
     }
 
     interface TrackListener {

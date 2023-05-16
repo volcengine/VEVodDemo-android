@@ -18,8 +18,6 @@
 
 package com.bytedance.volc.vod.scenekit.data.model;
 
-import static com.bytedance.playerkit.player.volcengine.VolcConfig.EXTRA_VOLC_CONFIG;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -33,7 +31,7 @@ import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
+import com.bytedance.volc.vod.scenekit.strategy.VideoSR;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -200,6 +198,8 @@ public class VideoItem implements Parcelable, Serializable {
 
     private String subTag;
 
+    private int playScene;
+
     public String getVid() {
         return vid;
     }
@@ -236,33 +236,31 @@ public class VideoItem implements Parcelable, Serializable {
         return sourceType;
     }
 
+    private static MediaSource createMediaSource(VideoItem videoItem) {
+        if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
+            return MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
+        } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
+            return MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+        } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
+            MediaSource mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
+            Mapper.updateVideoModelMediaSource(mediaSource);
+            return mediaSource;
+        } else {
+            throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
+        }
+    }
+
     @NonNull
     public static MediaSource toMediaSource(VideoItem videoItem, boolean syncProgress) {
-        final MediaSource mediaSource;
-        if (videoItem.mediaSource != null) {
-            mediaSource = videoItem.mediaSource;
-        } else {
-            if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
-                mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
-            } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
-                mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
-            } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
-                mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
-                Mapper.updateVideoModelMediaSource(mediaSource);
-            } else {
-                throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
-            }
+        if (videoItem.mediaSource == null) {
+            videoItem.mediaSource = createMediaSource(videoItem);
         }
-        if (!TextUtils.isEmpty(videoItem.cover)) {
-            mediaSource.setCoverUrl(videoItem.cover);
-        }
-        mediaSource.setDuration(videoItem.duration);
-        mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
-        mediaSource.putExtra(EXTRA_VOLC_CONFIG, createVolcConfig(videoItem));
+        final MediaSource mediaSource = videoItem.mediaSource;
+        VideoItem.set(mediaSource, videoItem);
+        VolcConfig.set(mediaSource, createVolcConfig(videoItem));
         if (syncProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
         }
-        videoItem.mediaSource = mediaSource;
         return mediaSource;
     }
 
@@ -282,10 +280,22 @@ public class VideoItem implements Parcelable, Serializable {
         volcConfig.codecStrategyType = VideoSettings.intValue(VideoSettings.COMMON_CODEC_STRATEGY);
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
-        volcConfig.enableSuperResolution = VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION);
+        volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;
         return volcConfig;
+    }
+
+    public static void set(MediaSource mediaSource, VideoItem videoItem) {
+        if (mediaSource == null) return;
+
+        if (!TextUtils.isEmpty(videoItem.cover)) {
+            mediaSource.setCoverUrl(videoItem.cover);
+        }
+        if (videoItem.duration > 0) {
+            mediaSource.setDuration(videoItem.duration);
+        }
+        mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
     }
 
     @Nullable
@@ -304,5 +314,16 @@ public class VideoItem implements Parcelable, Serializable {
         for (VideoItem videoItem : videoItems) {
             tag(videoItem, tag, subTag);
         }
+    }
+
+    public static void playScene(List<VideoItem> videoItems, int playScene) {
+        for (VideoItem videoItem : videoItems) {
+            playScene(videoItem, playScene);
+        }
+    }
+
+    public static void playScene(VideoItem videoItem, int playScene) {
+        if (videoItem == null) return;
+        videoItem.playScene = playScene;
     }
 }

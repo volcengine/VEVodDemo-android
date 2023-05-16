@@ -18,8 +18,6 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_ENABLE_BMF;
-
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -50,6 +48,14 @@ public class VolcPlayerInit {
     private static Context sContext;
     private static CacheKeyFactory sCacheKeyFactory;
     private static TrackSelector sTrackSelector;
+
+    public static String getDeviceId() {
+        return VolcPlayer.getDeviceId();
+    }
+
+    public static String getSDKVersion() {
+        return Env.getVersion();
+    }
 
     public static void init(final Context context, AppInfo appInfo) {
         init(context, appInfo, CacheKeyFactory.DEFAULT, TrackSelector.DEFAULT);
@@ -110,11 +116,6 @@ public class VolcPlayerInit {
         if (VolcConfigGlobal.ENABLE_USE_ORIGINAL_URL) {
             TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
         }
-        if (VolcConfigGlobal.ENABLE_SUPER_RESOLUTION) {
-            TTVideoEngine.setIntValue(PLAYER_OPTION_ENABLE_BMF, 1); // enable bmf super resolution
-        }
-
-        TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_NEED_SPEED_TEST_BY_TIMEINTERNAL, 1); // speed test
 
         File videoCacheDir = cacheDir(context);
         if (!videoCacheDir.exists()) videoCacheDir.mkdirs();
@@ -135,6 +136,10 @@ public class VolcPlayerInit {
                 // 可不设置，默认值见下表
                 .setVodConfig(vodBuilder.build())
                 .build());
+
+        VolcEngineStrategy.init();
+        VolcNetSpeedStrategy.init();
+        VolcSuperResolutionStrategy.init();
     }
 
 

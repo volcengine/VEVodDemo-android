@@ -23,6 +23,7 @@ import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
@@ -31,6 +32,7 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
+import com.bytedance.playerkit.utils.Asserts;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.model.BareVideoInfo;
@@ -49,210 +51,11 @@ import com.ss.ttvideoengine.utils.TTHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 public class Mapper {
-
-    private static final Map<Resolution, Quality> map = new LinkedHashMap<>();
-    private static final List<Track> mockResolutionTracks = new ArrayList<>();
-
-    static {
-        map.put(Resolution.Standard,
-                new Quality(Quality.QUALITY_RES_360,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "360P",
-                        Resolution.Standard
-                ));
-
-        map.put(Resolution.High,
-                new Quality(Quality.QUALITY_RES_480,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "480P",
-                        Resolution.High
-                ));
-
-        map.put(Resolution.SuperHigh,
-                new Quality(Quality.QUALITY_RES_720,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "720P",
-                        Resolution.SuperHigh
-                ));
-
-        map.put(Resolution.ExtremelyHigh,
-                new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "1080P",
-                        Resolution.ExtremelyHigh));
-
-        map.put(Resolution.FourK,
-                new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "4K",
-                        Resolution.FourK));
-
-        //Resolution.HDR,
-        //Resolution.Auto,
-
-        map.put(Resolution.L_Standard,
-                new Quality(Quality.QUALITY_RES_240,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "240P",
-                        Resolution.L_Standard));
-
-        map.put(Resolution.H_High,
-                new Quality(Quality.QUALITY_RES_540,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "540P",
-                        Resolution.H_High));
-
-
-        map.put(Resolution.TwoK,
-                new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "2K",
-                        Resolution.H_High));
-
-
-        map.put(Resolution.ExtremelyHigh_50F,
-                new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_50,
-                        "1080P 50FPS",
-                        Resolution.ExtremelyHigh_50F));
-
-        map.put(Resolution.TwoK_50F,
-                new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_50,
-                        "2K 50FPS",
-                        Resolution.TwoK_50F));
-
-        map.put(Resolution.FourK_50F,
-                new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_50,
-                        "4K 50FPS",
-                        Resolution.FourK_50F));
-
-        map.put(Resolution.ExtremelyHigh_60F,
-                new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_60,
-                        "1080P 60FPS",
-                        Resolution.ExtremelyHigh_60F));
-
-        map.put(Resolution.TwoK_60F,
-                new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_60,
-                        "2K 60FPS",
-                        Resolution.TwoK_60F));
-
-        map.put(Resolution.FourK_60F,
-                new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_60,
-                        "4K 60FPS",
-                        Resolution.FourK_60F));
-
-        map.put(Resolution.ExtremelyHigh_120F,
-                new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_120,
-                        "1080P 120FPS",
-                        Resolution.ExtremelyHigh_120F));
-
-        map.put(Resolution.TwoK_120F,
-                new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_120,
-                        "2K 120FPS",
-                        Resolution.TwoK_120F));
-
-        map.put(Resolution.FourK_120F,
-                new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_SDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "4K 120FPS",
-                        Resolution.FourK_120F));
-
-        map.put(Resolution.L_Standard_HDR,
-                new Quality(Quality.QUALITY_RES_240,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "240P HDR",
-                        Resolution.L_Standard_HDR));
-
-
-        map.put(Resolution.Standard_HDR,
-                new Quality(Quality.QUALITY_RES_360,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "360P HDR",
-                        Resolution.Standard_HDR));
-
-        map.put(Resolution.High_HDR,
-                new Quality(Quality.QUALITY_RES_480,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "480P HDR",
-                        Resolution.High_HDR));
-
-        map.put(Resolution.H_High_HDR,
-                new Quality(Quality.QUALITY_RES_540,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "540P HDR",
-                        Resolution.H_High_HDR));
-
-        map.put(Resolution.SuperHigh_HDR,
-                new Quality(Quality.QUALITY_RES_720,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "720P HDR",
-                        Resolution.SuperHigh_HDR));
-
-
-        map.put(Resolution.ExtremelyHigh_HDR,
-                new Quality(Quality.QUALITY_RES_1080,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "1080P HDR",
-                        Resolution.ExtremelyHigh_HDR));
-
-        map.put(Resolution.TwoK_HDR,
-                new Quality(Quality.QUALITY_RES_2K,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "2K HDR",
-                        Resolution.TwoK_HDR));
-
-        map.put(Resolution.FourK_HDR,
-                new Quality(Quality.QUALITY_RES_4K,
-                        Quality.QUALITY_DYNAMIC_RANGE_HDR,
-                        Quality.QUALITY_FPS_DEFAULT,
-                        "4K HDR",
-                        Resolution.FourK_HDR));
-
-        for (Map.Entry<Resolution, Quality> entry : map.entrySet()) {
-            Track track = new Track();
-            track.setQuality(entry.getValue());
-            mockResolutionTracks.add(track);
-        }
-    }
-
 
     static Track findTrackWithDirectUrlSource(MediaSource mediaSource, List<Track> tracks, DirectUrlSource source, CacheKeyFactory cacheKeyFactory) {
         if (source == null) return null;
@@ -269,8 +72,9 @@ public class Mapper {
     }
 
     @Nullable
-    static Track findTrackWithResolution(List<Track> tracks, Resolution resolution) {
+    static Track findTrackWithResolution(List<Track> tracks, @Nullable Resolution resolution) {
         if (resolution == null) return null;
+        if (tracks == null || tracks.isEmpty()) return null;
         for (Track track : tracks) {
             Quality quality = track.getQuality();
             if (quality != null) {
@@ -289,6 +93,7 @@ public class Mapper {
         return null;
     }
 
+    @Nullable
     public static Quality definition2Quality(@Track.TrackType int trackType, String definition) {
         Resolution resolution = null;
         switch (trackType) {
@@ -303,8 +108,9 @@ public class Mapper {
         return resolution2Quality(resolution);
     }
 
+    @Nullable
     public static Quality resolution2Quality(Resolution resolution) {
-        Quality quality = map.get(resolution);
+        Quality quality = VolcQuality.resolution2Quality(resolution);
         if (quality == null) return null;
 
         Quality q = new Quality();
@@ -316,23 +122,9 @@ public class Mapper {
         return q;
     }
 
+    @Nullable
     static Resolution track2Resolution(Track track) {
-        return quality2Resolution(track.getQuality());
-    }
-
-    static Resolution quality2Resolution(Quality quality) {
-        if (quality != null) {
-            Resolution resolution = (Resolution) quality.getQualityTag();
-            if (resolution != null) return resolution;
-
-            for (Map.Entry<Resolution, Quality> entry : map.entrySet()) {
-                Quality value = entry.getValue();
-                if (Objects.equals(value, quality)) {
-                    return entry.getKey();
-                }
-            }
-        }
-        return Resolution.High;
+        return VolcQuality.quality2Resolution(track.getQuality());
     }
 
     public static IVideoModel mediaSource2VideoModel(MediaSource source, CacheKeyFactory cacheKeyFactory) {
@@ -340,10 +132,15 @@ public class Mapper {
         List<Track> videoTracks = source.getTracks(TRACK_TYPE_VIDEO);
         if (videoTracks != null && !videoTracks.isEmpty()) {
             for (Track track : videoTracks) {
+                final List<String> urls = new ArrayList<>();
+                urls.add(track.getUrl());
+                if (track.getBackupUrls() != null) {
+                    urls.addAll(track.getBackupUrls());
+                }
                 videoInfos.add(
                         new BareVideoInfo.Builder()
                                 .mediaType(trackType2VideoModelMediaType(track.getTrackType()))
-                                .urls(Arrays.asList(track.getUrl()))
+                                .urls(urls)
                                 .fileId(track.getFileId())
                                 .fileHash(cacheKeyFactory.generateCacheKey(source, track))
                                 .size(track.getFileSize())
@@ -428,6 +225,8 @@ public class Mapper {
 
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
         if (videoModel == null) return;
+        if (mediaSource.getTracks() != null) return;
+
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
         mediaSource.setSegmentType(dynamicType2SegmentType(videoModel.getDynamicType()));
         mediaSource.setSupportABR(videoModel.getVideoRefBool(VideoRef.VALUE_VIDEO_REF_ENABLE_ADAPTIVE));
@@ -600,8 +399,7 @@ public class Mapper {
         if (mediaSource == null) {
             throw new IOException(new NullPointerException("mediaSource is null"));
         }
-        final int trackType = mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ?
-                TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
+        final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         switch (mediaSource.getSourceType()) {
             case MediaSource.SOURCE_TYPE_URL: {
                 Track track = null;
@@ -616,14 +414,7 @@ public class Mapper {
                 }
             }
             case MediaSource.SOURCE_TYPE_ID: {
-                Track track = null;
-                if (selector != null) {
-                    track = selector.selectTrack(selectType, trackType, mockResolutionTracks, mediaSource);
-                }
-                if (track != null) {
-                    return mediaSource2VidPlayAuthTokenSource(mediaSource, track.getQuality());
-                }
-                break;
+                return mediaSource2VidPlayAuthTokenSource(mediaSource);
             }
             case MediaSource.SOURCE_TYPE_MODEL: {
                 updateVideoModelMediaSource(mediaSource);
@@ -636,72 +427,6 @@ public class Mapper {
             }
         }
         return null;
-    }
-
-    public static VideoModelSource mediaSource2VideoModelSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
-        IVideoModel videoModel;
-        if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_MODEL) {
-            videoModel = VolcVideoModelCache.acquire(mediaSource.getModelJson());
-        } else {
-            videoModel = Mapper.mediaSource2VideoModel(mediaSource, cacheKeyFactory);
-        }
-        Resolution resolution = Mapper.track2Resolution(track);
-        return new VideoModelSource.Builder()
-                .setVid(mediaSource.getMediaId())
-                .setVideoModel(videoModel)
-                .setResolution(resolution)
-                .build();
-    }
-
-    public static boolean isDirectUrlSeamlessSwitchEnabled(MediaSource mediaSource) {
-        final VolcConfig config = VolcConfig.get(mediaSource);
-        final int protocol = mediaSource.getMediaProtocol();
-        boolean isProtocolSeamlessSwitchingEnabled =
-                (protocol == MediaSource.MEDIA_PROTOCOL_DEFAULT && config.enableMP4SeamlessSwitch) ||
-                        (protocol == MediaSource.MEDIA_PROTOCOL_HLS && config.enableHlsSeamlessSwitch) ||
-                        (protocol == MediaSource.MEDIA_PROTOCOL_DASH && config.enableDash);
-        return isProtocolSeamlessSwitchingEnabled && mediaSource.isSupportABR();
-    }
-
-    public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
-        if (track != null) {
-            VolcConfig volcConfig = VolcConfig.get(mediaSource);
-            DirectUrlSource.Builder builder = new DirectUrlSource.Builder()
-                    .setVid(mediaSource.getMediaId())
-                    .addItem(new DirectUrlSource.UrlItem.Builder()
-                            .setUrl(track.getUrl())
-                            .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
-                            .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
-                            .setPlayAuth(track.getEncryptedKey())
-                            .build());
-            if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
-                builder.setCodecStrategy(volcConfig.codecStrategyType);
-            }
-            return builder.build();
-        }
-        return null;
-    }
-
-    public static VidPlayAuthTokenSource mediaSource2VidPlayAuthTokenSource(MediaSource mediaSource, Quality quality) {
-        Resolution resolution = null;
-        if (quality != null) {
-            resolution = quality2Resolution(quality);
-        }
-
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
-        VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
-                .setVid(mediaSource.getMediaId())
-                .setPlayAuthToken(mediaSource.getPlayAuthToken())
-                .setResolution(resolution);
-
-        if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
-            builder.setCodecStrategy(volcConfig.codecStrategyType);
-        } else {
-            final String encodeType = trackEncodeType2VideoModelEncodeType(volcConfig.sourceEncodeType);
-            builder.setEncodeType(encodeType);
-        }
-        return builder.build();
     }
 
     public static List<StrategySource> mediaSources2StrategySources(List<MediaSource> mediaSources, CacheKeyFactory cacheKeyFactory, TrackSelector selector, int selectType) {
@@ -721,14 +446,102 @@ public class Mapper {
         return strategySources;
     }
 
+    /**
+     * @throws IllegalArgumentException when mediaSource.getSourceType() is not MediaSource.SOURCE_TYPE_URL
+     */
+    public static boolean isDirectUrlSeamlessSwitchEnabled(MediaSource mediaSource) {
+        Asserts.checkArgument(mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_URL);
+        final VolcConfig config = VolcConfig.get(mediaSource);
+        final int protocol = mediaSource.getMediaProtocol();
+        boolean isProtocolSeamlessSwitchingEnabled =
+                (protocol == MediaSource.MEDIA_PROTOCOL_DEFAULT && config.enableMP4SeamlessSwitch) ||
+                        (protocol == MediaSource.MEDIA_PROTOCOL_HLS && config.enableHlsSeamlessSwitch) ||
+                        (protocol == MediaSource.MEDIA_PROTOCOL_DASH && config.enableDash);
+        return isProtocolSeamlessSwitchingEnabled && mediaSource.isSupportABR();
+    }
+
+    public static VideoModelSource mediaSource2VideoModelSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
+        IVideoModel videoModel;
+        if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_MODEL) {
+            videoModel = VolcVideoModelCache.acquire(mediaSource.getModelJson());
+        } else {
+            videoModel = Mapper.mediaSource2VideoModel(mediaSource, cacheKeyFactory);
+        }
+        Resolution resolution = Mapper.track2Resolution(track);
+        VideoModelSource strategySource = new VideoModelSource.Builder()
+                .setVid(videoModel != null ? videoModel.getVideoRefStr(VideoRef.VALUE_VIDEO_REF_VIDEO_ID) : mediaSource.getMediaId())
+                .setVideoModel(videoModel)
+                .setResolution(resolution)
+                .setTag(mediaSource)
+                .build();
+        return strategySource;
+    }
+
+    public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
+        if (track == null) return null;
+        VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        DirectUrlSource.Builder builder = new DirectUrlSource.Builder()
+                .setVid(mediaSource.getMediaId())
+                .addItem(new DirectUrlSource.UrlItem.Builder()
+                        .setUrl(track.getUrl())
+                        .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
+                        .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
+                        .setPlayAuth(track.getEncryptedKey())
+                        .build());
+        if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
+            builder.setCodecStrategy(volcConfig.codecStrategyType);
+        }
+        DirectUrlSource strategySource = builder.setTag(mediaSource).build();
+        return strategySource;
+    }
+
+    public static VidPlayAuthTokenSource mediaSource2VidPlayAuthTokenSource(MediaSource mediaSource) {
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+
+        VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
+                .setVid(mediaSource.getMediaId())
+                .setPlayAuthToken(mediaSource.getPlayAuthToken());
+
+        if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
+            builder.setCodecStrategy(volcConfig.codecStrategyType);
+        } else {
+            final String encodeType = trackEncodeType2VideoModelEncodeType(volcConfig.sourceEncodeType);
+            builder.setEncodeType(encodeType);
+        }
+        VidPlayAuthTokenSource strategySource = builder.setTag(mediaSource).build();
+        return strategySource;
+    }
+
     public static int mapVolcScene2EngineScene(int volcScene) {
         switch (volcScene) {
-            case VolcC.SCENE_SHORT_VIDEO:
+            case VolcScene.SCENE_SHORT_VIDEO:
                 return StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
-            case VolcC.SCENE_FEED_VIDEO:
+            case VolcScene.SCENE_FEED_VIDEO:
                 return StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
             default:
                 throw new IllegalArgumentException("unsupported scene " + volcScene);
         }
+    }
+
+    static Map<String, String> findHeaders(MediaSource mediaSource, @Nullable Track track) {
+        final Map<String, String> headers = track == null ? null : track.getHeaders();
+        if (headers != null && !headers.isEmpty()) {
+            return headers;
+        }
+        return mediaSource.getHeaders();
+    }
+
+    static float displayAspectRatio(@NonNull MediaSource mediaSource, @Nullable Track track) {
+        if (mediaSource.getDisplayAspectRatio() > 0) {
+            return mediaSource.getDisplayAspectRatio();
+        }
+        if (track != null && track.getVideoWidth() > 0 && track.getVideoHeight() > 0) {
+            if (track.getRotate() == 0 || track.getRotate() == 180) {
+                return track.getVideoWidth() / (float) track.getVideoHeight();
+            } else {
+                return track.getVideoHeight() / (float) track.getVideoWidth();
+            }
+        }
+        return 0;
     }
 }

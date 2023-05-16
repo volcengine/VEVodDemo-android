@@ -42,6 +42,7 @@ import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.OnPageChangeCallbackCompat;
 
 import java.util.List;
@@ -115,6 +116,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void setItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.setItems(videoItems);
         ShortVideoStrategy.setItems(videoItems);
 
@@ -122,11 +124,13 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void prependItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.prependItems(videoItems);
         ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
     }
 
     public void appendItems(List<VideoItem> videoItems) {
+        VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.appendItems(videoItems);
         ShortVideoStrategy.appendItems(videoItems);
     }
@@ -143,6 +147,8 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void replaceItem(int position, VideoItem videoItem) {
+        VideoItem.playScene(videoItem, PlayScene.SCENE_SHORT);
+
         if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
         final int currentPosition = getCurrentItem();
         if (currentPosition == position) {

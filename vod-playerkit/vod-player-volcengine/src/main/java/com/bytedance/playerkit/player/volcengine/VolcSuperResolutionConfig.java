@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2023/2/16
+ * Create Date : 2023/5/24
  */
 
 package com.bytedance.playerkit.player.volcengine;
 
-public class VolcC {
+import java.io.Serializable;
 
-    public static final int SCENE_UNKNOWN = 0;
-    public static final int SCENE_SHORT_VIDEO = 1;
-    public static final int SCENE_FEED_VIDEO = 2;
-
-    public static String mapScene(int volcScene) {
-        switch (volcScene) {
-            case SCENE_SHORT_VIDEO:
-                return "short";
-            case SCENE_FEED_VIDEO:
-                return "feed";
-            default:
-            case SCENE_UNKNOWN:
-                return "unknown";
-        }
-    }
+public class VolcSuperResolutionConfig implements Serializable {
+    public static final String sSuperResolutionBinPath = "bytedance/playerkit/volcplayer/bmf";
+    public boolean enableSuperResolutionAbility = true;
+    public boolean enableSuperResolutionOnStartup = false;
+    public boolean enableAsyncInitSuperResolution = true;
+    public boolean enableSuperResolutionMaliGPUOpt = true;
+    public int maxTextureWidth = 720;
+    public int maxTextureHeight = 1280;
 }

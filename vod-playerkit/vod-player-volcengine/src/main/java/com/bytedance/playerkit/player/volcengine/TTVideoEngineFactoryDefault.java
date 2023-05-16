@@ -40,15 +40,20 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
         final TTVideoEngine player;
         if (volcConfig.enableEngineLooper) {
             Map<String, Object> params = new HashMap<>();
             params.put("enable_looper", true);
-            player = new TTVideoEngine(context, VolcPlayerEditions.engineCoreType(), params);
+            player = new TTVideoEngine(context, VolcEditions.engineCoreType(), params);
         } else {
-            player = new TTVideoEngine(context, VolcPlayerEditions.engineCoreType());
+            player = new TTVideoEngine(context, VolcEditions.engineCoreType());
         }
+        return setup(context, player, mediaSource);
+    }
+
+    @Override
+    public TTVideoEngine setup(Context context, TTVideoEngine player, MediaSource mediaSource) {
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, L.ENABLE_LOG ? 1 : 0);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
@@ -87,12 +92,11 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         }
         if (volcConfig.enableDash) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DASH, 1);
-            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
         }
         if (volcConfig.enableMP4SeamlessSwitch) {
-            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, 1);
             player.setIntOption(PLAYER_OPTION_SEGMENT_FORMAT_FLAG, (1 << SEGMENT_FORMAT_FMP4) | (1 << SEGMENT_FORMAT_MP4));
         }
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_BASH, volcConfig.enableDash || volcConfig.enableMP4SeamlessSwitch ? 1 : 0);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, volcConfig.enableAudioTrackVolume ? 1 : 0);
 
         if (volcConfig.enableSeekEnd) {
@@ -110,6 +114,4 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         }
         return player;
     }
-
-
 }

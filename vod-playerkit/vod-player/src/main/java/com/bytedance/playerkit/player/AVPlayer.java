@@ -280,26 +280,26 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onSourceInfoLoadStart(PlayerAdapter mp, int type, MediaSource source) {
+        public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource source) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
-            L.d(player, "onSourceInfoLoadStart", type, source);
+            L.d(player, "onMediaSourceUpdateStart", type, source);
         }
 
         @Override
-        public void onSourceInfoLoadComplete(PlayerAdapter mp, int type, MediaSource source) {
+        public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource source) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
-            L.d(player, "onSourceInfoLoadComplete", type, source);
+            L.d(player, "onMediaSourceUpdated", type, source);
             int refreshType = 0;
-            if (type == PlayerAdapter.SourceLoadInfo.SOURCE_INFO_PLAY_INFO_FETCHED) {
+            if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
                 refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_PLAY_INFO_FETCHED;
-            } else if (type == PlayerAdapter.SourceLoadInfo.SOURCE_INFO_SUBTITLE_INFO_FETCHED) {
-                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_SUBTITLE;
-            } else if (type == PlayerAdapter.SourceLoadInfo.SOURCE_INFO_MASK_INFO_FETCHED) {
-                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_MASK;
+            } else if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED) {
+                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_SUBTITLE_INFO_FETCHED;
+            } else if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_MASK_INFO_FETCHED) {
+                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_MASK_INFO_FETCHED;
             }
             if (refreshType > 0) {
                 player.mDispatcher.obtain(InfoDataSourceRefreshed.class, player).init(refreshType).dispatch();
@@ -307,11 +307,11 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onSourceInfoLoadError(PlayerAdapter mp, int type, PlayerException e) {
+        public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
-            L.d(player, "onSourceInfoLoadError", e, type);
+            L.d(player, "onMediaSourceUpdateError", e, type);
         }
 
         @Override
@@ -361,7 +361,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
         @Override
         public void onTrackChanged(@NonNull PlayerAdapter mp, @TrackType int trackType,
-                                   @NonNull Track pre, @NonNull Track current) {
+                                   @Nullable Track pre, @NonNull Track current) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
@@ -482,7 +482,7 @@ public class AVPlayer extends ExtraObject implements Player {
 
         try {
             handleSourceSet(source);
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
             moveToErrorState(new PlayerException(PlayerException.CODE_ERROR_ACTION, "setDataSource", e));
             return;
         }
@@ -557,11 +557,10 @@ public class AVPlayer extends ExtraObject implements Player {
     @Nullable
     @Override
     public Track getSelectedTrack(@TrackType int trackType) {
-        Track track = getPendingTrack(trackType);
-        if (track == null) {
-            track = getCurrentTrack(trackType);
-        }
-        return track;
+        if (checkIsRelease("getSelectedTrack")) return null;
+
+        Asserts.checkOneOf(trackType, TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO);
+        return mPlayer.getSelectedTrack(trackType);
     }
 
     @Nullable
@@ -571,6 +570,12 @@ public class AVPlayer extends ExtraObject implements Player {
 
         Asserts.checkOneOf(trackType, TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO);
         return mPlayer.getTracks(trackType);
+    }
+
+    @Override
+    public void selectTrack(@Nullable Track track) {
+        if (track == null) return; // TODO AUTO
+        selectTrack(track.getTrackType(), track);
     }
 
     @Override

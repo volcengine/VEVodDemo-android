@@ -33,11 +33,10 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
-
-import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 
 public class LoadingLayer extends AnimateLayer {
 
@@ -94,7 +93,7 @@ public class LoadingLayer extends AnimateLayer {
                 }
                 case PlayerEvent.Action.SET_SURFACE: {
                     Player player = event.owner(Player.class);
-                    if (player.isBuffering()) {
+                    if (player.isPlaying() && player.isBuffering()) {
                         showOpt();
                     } else if (player.isPreparing()) {
                         showOpt();
@@ -107,7 +106,7 @@ public class LoadingLayer extends AnimateLayer {
                 case PlayerEvent.Info.VIDEO_RENDERING_START_BEFORE_START:
                 case PlayerEvent.State.STARTED: {
                     Player player = event.owner(Player.class);
-                    if (player.isBuffering()) {
+                    if (player.isPlaying() && player.isBuffering()) {
                         showOpt();
                     } else {
                         dismiss();
@@ -121,7 +120,10 @@ public class LoadingLayer extends AnimateLayer {
                     break;
                 }
                 case PlayerEvent.Info.BUFFERING_START: {
-                    showOpt();
+                    Player player = event.owner(Player.class);
+                    if (player.isPlaying()) {
+                        showOpt();
+                    }
                     break;
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 bytedance
+ * Copyright (C) 2023 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2022/12/15
+ * Create Date : 2023/5/24
  */
 
 package com.bytedance.playerkit.player.volcengine;
 
-public class VolcConfigGlobal {
-    public static final boolean ENABLE_HLS_CACHE_MODULE = true;
-    public static final boolean ENABLE_USE_ORIGINAL_URL = true;
-    public static final boolean ENABLE_BUFFER_START_MSG_OPT = false;
-    public static final boolean ENABLE_SCENE_STRATEGY_INIT = true;
-    public static final boolean ENABLE_SPEED_TEST_STRATEGY_INIT = true;
+import com.ss.ttvideoengine.DataLoaderHelper;
+import com.ss.ttvideoengine.TTVideoEngine;
+
+public class VolcNetSpeedStrategy {
+
+    static void init() {
+        if (!VolcConfigGlobal.ENABLE_SPEED_TEST_STRATEGY_INIT) return;
+
+        TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_NEED_SPEED_TEST_BY_TIMEINTERNAL, 1);
+        TTVideoEngine.startSpeedPredictor(TTVideoEngine.TESTSPEED_HECNET, 500, 1, 100);
+    }
 }

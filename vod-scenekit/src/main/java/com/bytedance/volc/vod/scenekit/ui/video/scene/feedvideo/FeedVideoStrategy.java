@@ -18,8 +18,8 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo;
 
-import com.bytedance.playerkit.player.volcengine.VolcC;
-import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.playerkit.player.volcengine.VolcEngineStrategy;
+import com.bytedance.playerkit.player.volcengine.VolcScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 
@@ -30,7 +30,7 @@ public class FeedVideoStrategy {
     public static void setEnabled(boolean enable) {
         if (!VideoSettings.booleanValue(VideoSettings.FEED_VIDEO_ENABLE_PRELOAD)) return;
 
-        VolcPlayerStatic.setSceneStrategyEnabled(VolcC.SCENE_FEED_VIDEO, enable);
+        VolcEngineStrategy.setEnabled(VolcScene.SCENE_FEED_VIDEO, enable);
     }
 
     public static void setItems(List<VideoItem> videoItems) {
@@ -38,7 +38,7 @@ public class FeedVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.setMediaSources(VideoItem.toMediaSources(videoItems, true));
+        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(videoItems, true));
     }
 
     public static void appendItems(List<VideoItem> videoItems) {
@@ -46,6 +46,6 @@ public class FeedVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.addMediaSources(VideoItem.toMediaSources(videoItems, true));
+        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(videoItems, true));
     }
 }
