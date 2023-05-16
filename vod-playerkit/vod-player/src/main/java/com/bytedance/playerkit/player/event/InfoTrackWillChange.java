@@ -47,7 +47,7 @@ public class InfoTrackWillChange extends Event {
     @Override
     public void recycle() {
         super.recycle();
-        trackType = 0;
+        trackType = Track.TRACK_TYPE_UNKNOWN;
         current = null;
         target = null;
     }

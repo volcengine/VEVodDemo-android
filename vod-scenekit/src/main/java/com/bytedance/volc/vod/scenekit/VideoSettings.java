@@ -33,7 +33,7 @@ import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
-import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.utils.FileUtils;
 import com.bytedance.volc.vod.settingskit.Option;
 import com.bytedance.volc.vod.settingskit.Options;
@@ -440,12 +440,12 @@ public class VideoSettings {
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,
                 "Device ID",
-                new SettingItem.Getter(VolcPlayerStatic::getDeviceId)
+                new SettingItem.Getter(VolcPlayerInit::getDeviceId)
         ));
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,
                 "TTSDK Version",
-                new SettingItem.Getter(VolcPlayerStatic::getSDKVersion)
+                new SettingItem.Getter(VolcPlayerInit::getSDKVersion)
         ));
 
         final CleanCacheHolder holder = new CleanCacheHolder();

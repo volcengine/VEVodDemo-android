@@ -27,4 +27,12 @@ public class Numbers {
             return defaultValue;
         }
     }
+
+    public static int safeParseInt(String s, int defaultValue) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
 }

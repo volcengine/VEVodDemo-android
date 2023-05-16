@@ -20,8 +20,8 @@ package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo;
 
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.VideoView;
-import com.bytedance.playerkit.player.volcengine.VolcC;
-import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.playerkit.player.volcengine.VolcEngineStrategy;
+import com.bytedance.playerkit.player.volcengine.VolcScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 
@@ -32,7 +32,7 @@ public class ShortVideoStrategy {
     public static void setEnabled(boolean enable) {
         if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_STRATEGY)) return;
 
-        VolcPlayerStatic.setSceneStrategyEnabled(VolcC.SCENE_SHORT_VIDEO, enable);
+        VolcEngineStrategy.setEnabled(VolcScene.SCENE_SHORT_VIDEO, enable);
     }
 
     public static void setItems(List<VideoItem> videoItems) {
@@ -40,7 +40,7 @@ public class ShortVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.setMediaSources(VideoItem.toMediaSources(videoItems, false));
+        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(videoItems, false));
     }
 
     public static void appendItems(List<VideoItem> videoItems) {
@@ -48,7 +48,7 @@ public class ShortVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcPlayerStatic.addMediaSources(VideoItem.toMediaSources(videoItems, false));
+        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(videoItems, false));
     }
 
     public static boolean renderFrame(VideoView videoView) {
@@ -56,7 +56,7 @@ public class ShortVideoStrategy {
         if (videoView == null) return false;
 
         int[] frameInfo = new int[2];
-        VolcPlayerStatic.renderFrame(videoView.getDataSource(), videoView.getSurface(), frameInfo);
+        VolcEngineStrategy.renderFrame(videoView.getDataSource(), videoView.getSurface(), frameInfo);
         int videoWidth = frameInfo[0];
         int videoHeight = frameInfo[1];
         if (videoWidth > 0 && videoHeight > 0) {

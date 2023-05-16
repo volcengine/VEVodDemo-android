@@ -261,7 +261,7 @@ class VolcCacheTask implements CacheLoader.Task {
     }
 
     private void preloadVid(MediaSource source) {
-        final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(source, null);
+        final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(source);
         final long preloadSize = resolvePreloadSize(source, null);
         final PreloaderVidItem preloadItem = new PreloaderVidItem(vidSource, preloadSize);
 
@@ -501,6 +501,8 @@ class VolcCacheTask implements CacheLoader.Task {
         if (target == null) return;
 
         VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(source, target, mCacheKeyFactory);
+        if (videoModelSource == null) return;
+
         final long preloadSize = resolvePreloadSize(target);
 
         final PreloaderVideoModelItem preloadItem = new PreloaderVideoModelItem(videoModelSource, preloadSize);

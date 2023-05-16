@@ -18,6 +18,9 @@
 
 package com.bytedance.playerkit.player.source;
 
+import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_AUDIO;
+import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -309,6 +313,9 @@ public class MediaSource extends ExtraObject implements Serializable {
      * A list of url track of video/audio stream in different quality.
      */
     private List<Track> tracks;
+
+
+    private final Map<Integer, List<Track>> tracksMap = new HashMap<>();
 
     /**
      * Utility method for quick create single url source.
@@ -627,7 +634,9 @@ public class MediaSource extends ExtraObject implements Serializable {
      * @return list of {@link Track}
      */
     public List<Track> getTracks() {
-        return tracks;
+        synchronized (this) {
+            return tracks;
+        }
     }
 
     /**
@@ -646,12 +655,17 @@ public class MediaSource extends ExtraObject implements Serializable {
      * @param comparator list sorter
      */
     public void setTracks(List<Track> tracks, @Nullable Comparator<Track> comparator) {
-        final List<Track> list = new ArrayList<>(tracks);
-        if (comparator != null) {
-            Collections.sort(list, comparator);
+        synchronized (this) {
+            final List<Track> list = new ArrayList<>(tracks);
+            if (comparator != null) {
+                Collections.sort(list, comparator);
+            }
+            tracksMap.clear();
+            this.tracks = Collections.unmodifiableList(list);
         }
-        this.tracks = list;
     }
+
+
 
     /**
      * @param trackType track type
@@ -659,14 +673,26 @@ public class MediaSource extends ExtraObject implements Serializable {
      */
     @Nullable
     public List<Track> getTracks(@Track.TrackType int trackType) {
-        if (tracks == null) return null;
-        List<Track> result = new ArrayList<>();
-        for (Track track : tracks) {
-            if (track.getTrackType() == trackType) {
-                result.add(track);
+        synchronized (this) {
+            if (tracks == null) return null;
+            List<Track> result = tracksMap.get(trackType);
+            if (result == null) {
+                result = new ArrayList<>();
+                for (Track track : tracks) {
+                    if (track.getTrackType() == trackType) {
+                        result.add(track);
+                    }
+                }
+                result = Collections.unmodifiableList(result);
+                tracksMap.put(trackType, result);
             }
+            return result;
         }
-        return result;
+    }
+
+    public List<Track> getTracksByMediaType() {
+        @Track.TrackType final int trackType = mediaType2TrackType(this);
+        return getTracks(trackType);
     }
 
     /**
@@ -675,13 +701,20 @@ public class MediaSource extends ExtraObject implements Serializable {
      */
     @Nullable
     public Track getFirstTrack(@Track.TrackType int trackType) {
-        if (tracks == null) return null;
-        for (Track track : tracks) {
-            if (track.getTrackType() == trackType) {
-                return track;
+        synchronized (this) {
+            if (tracks == null) return null;
+            for (Track track : tracks) {
+                if (track.getTrackType() == trackType) {
+                    return track;
+                }
             }
         }
         return null;
+    }
+
+    @Track.TrackType
+    public static int mediaType2TrackType(@NonNull MediaSource mediaSource) {
+        return mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ? TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
     }
 
     public static String dump(MediaSource source) {

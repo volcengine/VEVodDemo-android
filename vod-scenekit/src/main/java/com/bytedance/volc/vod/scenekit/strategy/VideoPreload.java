@@ -33,7 +33,7 @@ import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
-import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.playerkit.player.volcengine.VolcEngineStrategy;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -83,7 +83,7 @@ public class VideoPreload implements Dispatcher.EventListener {
 
         public Config(int scene) {
             this.scene = scene;
-            final JSONObject preloadConfig = VolcPlayerStatic.getPreloadConfig(scene);
+            final JSONObject preloadConfig = VolcEngineStrategy.getPreloadConfig(scene);
             if (preloadConfig != null) {
                 this.preloadCount = preloadConfig.optInt("count", 3);
                 this.preloadSizeInBytes = preloadConfig.optInt("size", 800) * 1024L;

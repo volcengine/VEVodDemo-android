@@ -61,10 +61,15 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
 
     implementation "com.bytedanceapi:ttsdk-player_${project.ext.bytedance.ttsdkPlayerEdition}:${project.ext.bytedance.ttsdkVersion}"
-    if (project.ext.bytedance.ttsdkPlayerEdition == "premium" &&
-            project.ext.bytedance.ttsdkPlayerExtensions.contains("super_resolution")) {
-        // + super resolution sdk
-        implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+    if (project.ext.bytedance.ttsdkPlayerEdition == "premium") {
+        if (project.ext.bytedance.ttsdkPlayerExtensions.contains("super_resolution")) {
+            // + super resolution sdk
+            implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+        }
+        if (project.ext.bytedance.ttsdkPlayerExtensions.contains("abr")) {
+            // + abr sdk
+            implementation "com.bytedanceapi:ttsdk-ttabr:${project.ext.bytedance.ttsdkVersion}"
+        }
     }
     implementation "com.bytedanceapi:ttvideoengine-debugtool:0.3.0.1"
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"

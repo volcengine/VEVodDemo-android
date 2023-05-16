@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 bytedance
+ * Copyright (C) 2023 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2022/12/15
+ * Create Date : 2023/6/21
  */
 
-package com.bytedance.playerkit.player.volcengine;
+package com.bytedance.volc.vod.scenekit.strategy;
 
-public class VolcConfigGlobal {
-    public static final boolean ENABLE_HLS_CACHE_MODULE = true;
-    public static final boolean ENABLE_USE_ORIGINAL_URL = true;
-    public static final boolean ENABLE_BUFFER_START_MSG_OPT = false;
-    public static final boolean ENABLE_SCENE_STRATEGY_INIT = true;
-    public static final boolean ENABLE_SPEED_TEST_STRATEGY_INIT = true;
+import com.bytedance.playerkit.player.volcengine.VolcSuperResolutionConfig;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+
+public class VideoSR {
+    public static VolcSuperResolutionConfig createConfig(int playScene) {
+        VolcSuperResolutionConfig config = new VolcSuperResolutionConfig();
+        config.enableSuperResolutionOnStartup = VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION);
+        return config;
+    }
 }

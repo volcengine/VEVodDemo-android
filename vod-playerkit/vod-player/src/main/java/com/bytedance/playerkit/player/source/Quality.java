@@ -21,10 +21,13 @@ package com.bytedance.playerkit.player.source;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.utils.L;
+
 import java.io.Serializable;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Objects;
 
 public class Quality implements Serializable {
@@ -89,18 +92,21 @@ public class Quality implements Serializable {
      * {@link #QUALITY_RES_4K}
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({QUALITY_RES_240,
+    @IntDef({QUALITY_RES_DEFAULT,
+            QUALITY_RES_240,
             QUALITY_RES_360,
             QUALITY_RES_480,
             QUALITY_RES_540,
             QUALITY_RES_720,
             QUALITY_RES_1080,
             QUALITY_RES_2K,
-            QUALITY_RES_4K
+            QUALITY_RES_4K,
+            QUALITY_RES_8K
     })
     public @interface QualityRes {
     }
 
+    public static final int QUALITY_RES_DEFAULT = 0;
     public static final int QUALITY_RES_240 = 240;
     public static final int QUALITY_RES_360 = 360;
     public static final int QUALITY_RES_480 = 480;
@@ -109,6 +115,7 @@ public class Quality implements Serializable {
     public static final int QUALITY_RES_1080 = 1080;
     public static final int QUALITY_RES_2K = 2000;
     public static final int QUALITY_RES_4K = 4000;
+    public static final int QUALITY_RES_8K = 8000;
 
     @QualityRes
     private int qualityRes;
@@ -194,5 +201,37 @@ public class Quality implements Serializable {
 
     public void setQualityTag(Serializable qualityTag) {
         this.qualityTag = qualityTag;
+    }
+
+    public String dump(boolean hash) {
+        final StringBuilder sb = new StringBuilder();
+        if (hash) {
+            sb.append(L.obj2String(this)).append(" ");
+        }
+        sb.append(qualityRes).append("P");
+        if (qualityFps != QUALITY_FPS_DEFAULT) {
+            sb.append(" ").append(qualityFps).append("FPS");
+        }
+        if (qualityDynamicRange != QUALITY_DYNAMIC_RANGE_SDR) {
+            sb.append(" ").append(Quality.mapQualityDynamicRange(qualityDynamicRange));
+        }
+        return sb.toString();
+    }
+
+    public static String dump(Quality quality) {
+        if (!L.ENABLE_LOG) return null;
+
+        if (quality == null) return null;
+        return quality.dump(true);
+    }
+
+    public static String dump(List<Quality> qualities) {
+        if (!L.ENABLE_LOG) return null;
+
+        StringBuilder sb = new StringBuilder();
+        for (Quality quality : qualities) {
+            sb.append(quality.dump(true)).append(", ");
+        }
+        return sb.toString();
     }
 }

@@ -36,7 +36,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.bytedance.playerkit.player.volcengine.VolcPlayerStatic;
+import com.bytedance.playerkit.player.volcengine.VolcDebugTools;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
@@ -106,7 +106,7 @@ public class VideoActivity extends BaseActivity {
         }
 
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)) {
-            VolcPlayerStatic.setDebugToolContainerView(findViewById(R.id.debugTool));
+            VolcDebugTools.setContainerView(findViewById(R.id.debugTool));
         }
     }
 
@@ -114,7 +114,7 @@ public class VideoActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_DEBUG_TOOL)) {
-            VolcPlayerStatic.releaseDebugTool();
+            VolcDebugTools.release();
         }
     }
 

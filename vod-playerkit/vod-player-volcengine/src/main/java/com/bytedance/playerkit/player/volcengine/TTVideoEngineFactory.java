@@ -39,4 +39,6 @@ public interface TTVideoEngineFactory {
     }
 
     TTVideoEngine create(Context context, MediaSource mediaSource);
+
+    TTVideoEngine setup(Context context, TTVideoEngine ttVideoEngine, MediaSource mediaSource);
 }

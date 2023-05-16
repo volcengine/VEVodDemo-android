@@ -330,12 +330,10 @@ public class Track implements Serializable {
 
     public String dump() {
         if (quality != null) {
-            return String.format(Locale.getDefault(), "%s %s %dP %dFPS %s",
+            return String.format(Locale.getDefault(), "%s %s %s",
                     L.obj2String(this),
                     mapEncoderType(encoderType),
-                    quality.getQualityRes(),
-                    quality.getQualityFps(),
-                    Quality.mapQualityDynamicRange(quality.getQualityDynamicRange()));
+                    quality.dump(false));
         } else {
             return String.format(Locale.getDefault(), "%s", L.obj2String(this));
         }
