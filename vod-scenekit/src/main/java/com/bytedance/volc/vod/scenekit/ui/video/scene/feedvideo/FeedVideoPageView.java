@@ -214,6 +214,11 @@ public class FeedVideoPageView extends FrameLayout {
         FeedVideoStrategy.setItems(videoItems);
     }
 
+    public void prependItems(List<VideoItem> videoItems) {
+        mFeedVideoAdapter.prependItems(videoItems);
+        FeedVideoStrategy.setItems(mFeedVideoAdapter.getItems());
+    }
+
     public void appendItems(List<VideoItem> videoItems) {
         mFeedVideoAdapter.appendItems(videoItems);
         FeedVideoStrategy.appendItems(videoItems);

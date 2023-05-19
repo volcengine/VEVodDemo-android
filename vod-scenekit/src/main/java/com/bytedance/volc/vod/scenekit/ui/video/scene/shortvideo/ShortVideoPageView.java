@@ -97,6 +97,11 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         mViewPager.getChildAt(0).post(this::play);
     }
 
+    public void prependItems(List<VideoItem> videoItems) {
+        mShortVideoAdapter.prependItems(videoItems);
+        ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
+    }
+
     public void appendItems(List<VideoItem> videoItems) {
         mShortVideoAdapter.appendItems(videoItems);
         ShortVideoStrategy.appendItems(videoItems);
