@@ -96,9 +96,16 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
         notifyDataSetChanged();
     }
 
+    public void prependItems(List<VideoItem> videoItems) {
+        if (videoItems != null && !videoItems.isEmpty()) {
+            mItems.addAll(0, videoItems);
+            notifyItemRangeInserted(0, videoItems.size());
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     public void appendItems(List<VideoItem> videoItems) {
-        if (videoItems != null) {
+        if (videoItems != null && !videoItems.isEmpty()) {
             int count = mItems.size();
             mItems.addAll(videoItems);
             if (count > 0) {
