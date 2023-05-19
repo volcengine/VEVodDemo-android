@@ -41,7 +41,8 @@ public class Params {
         }
 
         public static Integer codec() {
-            return null;
+            boolean h265 = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265);
+            return h265 ? Codec.MH265Codec : Codec.H264Codec;
         }
 
         public static Integer definition() {
