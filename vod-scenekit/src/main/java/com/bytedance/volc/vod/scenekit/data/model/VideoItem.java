@@ -61,6 +61,8 @@ public class VideoItem implements Parcelable, Serializable {
         url = in.readString();
         urlCacheKey = in.readString();
         sourceType = in.readInt();
+        tag = in.readString();
+        subTag = in.readString();
     }
 
     @Override
@@ -75,6 +77,8 @@ public class VideoItem implements Parcelable, Serializable {
         dest.writeString(url);
         dest.writeString(urlCacheKey);
         dest.writeInt(sourceType);
+        dest.writeString(tag);
+        dest.writeString(subTag);
     }
 
     @Override
@@ -234,11 +238,7 @@ public class VideoItem implements Parcelable, Serializable {
 
     @NonNull
     public static MediaSource toMediaSource(VideoItem videoItem, boolean syncProgress) {
-        if (videoItem.mediaSource != null) {
-            return videoItem.mediaSource;
-        }
         final MediaSource mediaSource;
-        // TODO
         if (videoItem.mediaSource != null) {
             mediaSource = videoItem.mediaSource;
         } else {
