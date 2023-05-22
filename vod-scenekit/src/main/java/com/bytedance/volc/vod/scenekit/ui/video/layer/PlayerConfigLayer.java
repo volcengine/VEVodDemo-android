@@ -29,6 +29,7 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayer;
 import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 
 public class PlayerConfigLayer extends VideoLayer {
     @Nullable
@@ -57,7 +58,7 @@ public class PlayerConfigLayer extends VideoLayer {
         switch (event.code()) {
             case PlayerEvent.Action.PREPARE:
                 Player player = event.owner(Player.class);
-                player.setLooping(true);
+                player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
                 break;
         }
     };

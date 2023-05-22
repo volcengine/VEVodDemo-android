@@ -57,14 +57,12 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
         if (view == null && retryCountAtPos < RETRY_COUNT) {
             mPageSelectedTryInvokeCounts.put(position, ++retryCountAtPos);
             L.i(this, "onPageSelected", viewPager, position, "retry", retryCountAtPos);
-            viewPager.post(() -> {
+            viewPager.postDelayed(() -> {
                 onPageSelected(position);
-            });
+            }, 10);
             return;
         }
-        if (retryCountAtPos > 0) {
-            mPageSelectedTryInvokeCounts.removeAt(position);
-        }
+        mPageSelectedTryInvokeCounts.put(position, 0);
         onPageSelected(position, viewPager);
     }
 
