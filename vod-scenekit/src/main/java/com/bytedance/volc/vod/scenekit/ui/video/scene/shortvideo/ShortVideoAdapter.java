@@ -31,15 +31,14 @@ import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoProgressBarLayer;
 
@@ -75,6 +74,13 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
             } else {
                 notifyDataSetChanged();
             }
+        }
+    }
+
+    public void deleteItem(int position) {
+        if (position >= 0 && position < mItems.size()) {
+            mItems.remove(position);
+            notifyItemRemoved(position);
         }
     }
 
@@ -159,7 +165,6 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
             layerHost.addLayer(new LogLayer());
         }
-
         layerHost.attachToVideoView(videoView);
         videoView.setBackgroundColor(parent.getResources().getColor(android.R.color.black));
         //videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT); // fit mode

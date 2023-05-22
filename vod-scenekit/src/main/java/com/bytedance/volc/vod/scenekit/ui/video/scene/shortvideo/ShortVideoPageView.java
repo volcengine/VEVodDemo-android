@@ -38,6 +38,7 @@ import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.OnPageChangeCallbackCompat;
 
 import java.util.List;
 
@@ -64,9 +65,9 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         mViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         mShortVideoAdapter = new ShortVideoAdapter();
         mViewPager.setAdapter(mShortVideoAdapter);
-        mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        mViewPager.registerOnPageChangeCallback(new OnPageChangeCallbackCompat(mViewPager) {
             @Override
-            public void onPageSelected(int position) {
+            public void onPageSelected(int position, ViewPager2 pager) {
                 togglePlayback(position);
             }
         });
@@ -107,6 +108,17 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         ShortVideoStrategy.appendItems(videoItems);
     }
 
+    public void deleteItem(int position) {
+        if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
+
+        final int currentPosition = getCurrentItem();
+        mShortVideoAdapter.deleteItem(position);
+        ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
+        if (currentPosition == position && position < mShortVideoAdapter.getItemCount()) {
+            mViewPager.postDelayed(this::play, 100);
+        }
+    }
+
     public int getItemCount() {
         return mShortVideoAdapter.getItemCount();
     }
@@ -128,8 +140,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         if (!mLifeCycle.getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             return;
         }
-
-        long start = System.currentTimeMillis();
+        L.d(this, "togglePlayback", currentPosition);
         final VideoView videoView = (VideoView) findItemViewByPosition(mViewPager, currentPosition);
         if (mController.videoView() == null) {
             if (videoView != null) {
@@ -143,9 +154,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
             }
             mController.startPlayback();
         }
-        L.i(this, "togglePlayback", System.currentTimeMillis() - start);
     }
-
 
     public void play() {
         final int currentPosition = mViewPager.getCurrentItem();
