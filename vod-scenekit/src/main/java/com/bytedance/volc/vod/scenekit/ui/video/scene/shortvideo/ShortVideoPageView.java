@@ -34,9 +34,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.OnPageChangeCallbackCompat;
 
@@ -73,6 +77,25 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         });
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        mController.addPlaybackListener(new Dispatcher.EventListener() {
+            @Override
+            public void onEvent(Event event) {
+                switch (event.code()) {
+                    case PlayerEvent.State.COMPLETED: {
+                        final Player player = event.owner(Player.class);
+                        if (player != null && !player.isLooping() &&
+                                VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
+                            final int currentPosition = getCurrentItem();
+                            final int nextPosition = currentPosition + 1;
+                            if (nextPosition < mShortVideoAdapter.getItemCount()) {
+                                setCurrentItem(nextPosition, true);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     public ViewPager2 viewPager() {

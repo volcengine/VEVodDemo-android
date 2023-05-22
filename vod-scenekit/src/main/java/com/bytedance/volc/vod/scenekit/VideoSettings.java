@@ -57,9 +57,10 @@ public class VideoSettings {
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
     public static final String CATEGORY_DEBUG = "调试选项";
 
+    public static final String SHORT_VIDEO_SCENE_ACCOUNT_ID = "short_video_scene_account_id";
     public static final String SHORT_VIDEO_ENABLE_STRATEGY = "short_video_enable_strategy";
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
-    public static final String SHORT_VIDEO_SCENE_ACCOUNT_ID = "short_video_scene_account_id";
+    public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
 
     public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
@@ -220,6 +221,29 @@ public class VideoSettings {
                         Boolean.class,
                         Boolean.TRUE,
                         null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_SHORT_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_SHORT_VIDEO,
+                        SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION,
+                        "短视频播放完成行为",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        0,
+                        Arrays.asList(0, 1)), new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        final int action = (int) value;
+                        switch (action) {
+                            case 0:
+                                return "循环播放";
+                            case 1:
+                                return "播放下一个";
+                        }
+                        return null;
+                    }
+                }));
     }
 
     private static void createFeedVideoSettings(List<SettingItem> settings) {
