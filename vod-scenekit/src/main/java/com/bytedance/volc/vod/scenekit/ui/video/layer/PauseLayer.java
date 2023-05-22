@@ -33,11 +33,10 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
-
-import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 
 
 public class PauseLayer extends AnimateLayer {
@@ -111,7 +110,6 @@ public class PauseLayer extends AnimateLayer {
         if (player != null && player.isInPlaybackState()) {
             if (player.isPlaying()) {
                 player.pause();
-                animateShow(false);
             } else {
                 player.start();
             }
@@ -141,6 +139,9 @@ public class PauseLayer extends AnimateLayer {
                 case PlayerEvent.Action.STOP:
                 case PlayerEvent.Action.RELEASE:
                     dismiss();
+                    break;
+                case PlayerEvent.Action.PAUSE:
+                    animateShow(false);
                     break;
             }
         }
