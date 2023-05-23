@@ -137,7 +137,20 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         final int currentPosition = getCurrentItem();
         mShortVideoAdapter.deleteItem(position);
         ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
-        if (currentPosition == position && position < mShortVideoAdapter.getItemCount()) {
+        if (currentPosition == position) {
+            mViewPager.postDelayed(this::play, 100);
+        }
+    }
+
+    public void replaceItem(int position, VideoItem videoItem) {
+        if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
+        final int currentPosition = getCurrentItem();
+        if (currentPosition == position) {
+            stop();
+        }
+        mShortVideoAdapter.replaceItem(position, videoItem);
+        ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
+        if (currentPosition == position) {
             mViewPager.postDelayed(this::play, 100);
         }
     }

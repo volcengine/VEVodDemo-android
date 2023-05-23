@@ -84,6 +84,13 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         }
     }
 
+    public void replaceItem(int position, VideoItem videoItem) {
+        if (0 <= position && position < mItems.size()) {
+            mItems.set(position, videoItem);
+            notifyItemChanged(position);
+        }
+    }
+
     public VideoItem getItem(int position) {
         return mItems.get(position);
     }
