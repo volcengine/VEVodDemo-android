@@ -22,6 +22,7 @@ import static com.bytedance.playerkit.player.Player.STATE_STOPPED;
 import static com.bytedance.playerkit.player.Player.mapState;
 import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_AUDIO;
 import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
+import static com.bytedance.playerkit.player.volcengine.VolcPlayerEditions.dumpEngineCoreType;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
@@ -1021,7 +1022,7 @@ class VolcPlayer implements PlayerAdapter {
     public String dump() {
         return L.obj2String(this)
                 + " " + resolvePlayerDecoderType(mPlayer)
-                + " " + resolvePlayerCoreType(mPlayer)
+                + " " + dumpEngineCoreType(mPlayer)
                 + (mPreRenderPlayer ? " pre" : "");
     }
 
@@ -1089,7 +1090,7 @@ class VolcPlayer implements PlayerAdapter {
 
             player.setState(Player.STATE_PREPARED);
 
-            String enginePlayerType = resolvePlayerCoreType(engine);
+            String enginePlayerType = dumpEngineCoreType(engine);
             L.v(player, "onPrepared", "enginePlayerType", engine, enginePlayerType);
 
             @MediaSource.SourceType final int sourceType = source.getSourceType();
@@ -1309,20 +1310,5 @@ class VolcPlayer implements PlayerAdapter {
         } else {
             return "sw";
         }
-    }
-
-    @NonNull
-    private static String resolvePlayerCoreType(TTVideoEngine engine) {
-        String enginePlayerType = "";
-        if (engine != null) {
-            if (engine.isPlayerType(TTVideoEngine.PLAYER_TYPE_EXO)) {
-                enginePlayerType = "exo";
-            } else if (engine.isPlayerType(TTVideoEngine.PLAYER_TYPE_OWN)) {
-                enginePlayerType = "own";
-            } else if (engine.isPlayerType(TTVideoEngine.PLAYER_TYPE_OS)) {
-                enginePlayerType = "os";
-            }
-        }
-        return enginePlayerType;
     }
 }

@@ -15,7 +15,6 @@
  *
  * Create Date : 2022/9/13
  */
-
 project.ext {
     compileSdkVersion = 30
     buildToolsVersion = "30.0.3"
@@ -38,10 +37,11 @@ project.ext {
     okhttp = "4.9.3"
 
     bytedance = [
-            ttsdkVersion : "1.37.2.13",
-            applogVersion: "6.14.3"
+            ttsdkPlayerEdition   : "premium", // supported value: "premium", "standard", "lite"
+            ttsdkPlayerExtensions: "super_resolution",
+            ttsdkVersion         : "1.37.2.13",
+            applogVersion        : "6.14.3",
     ]
-
     versionCode = 3
     versionName = "$versionCode$bytedance.ttsdkVersion"
 }

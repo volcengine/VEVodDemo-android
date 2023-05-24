@@ -58,7 +58,8 @@ android {
             def variantName = variant.name
             def versionName = variant.versionName
             def formattedDate = new Date().format('YYYYMMddHHmmss')
-            def fileName = "${applicationId}_${variantName}_${formattedDate}_V${versionName}.apk"
+            def playerEdition = project.ext.bytedance.ttsdkPlayerEdition
+            def fileName = "${applicationId}_${playerEdition}_${variantName}_${formattedDate}_V${versionName}.apk"
             outputFileName = fileName
         }
     }
