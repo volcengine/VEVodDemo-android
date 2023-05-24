@@ -21,5 +21,5 @@ package com.bytedance.playerkit.player.volcengine;
 public class VolcConfigGlobal {
     public static final boolean ENABLE_HLS_CACHE_MODULE = true;
     public static final boolean ENABLE_USE_ORIGINAL_URL = true;
-    public static final boolean ENABLE_SUPER_RESOLUTION = true;
+    public static final boolean ENABLE_SUPER_RESOLUTION = VolcPlayerEditions.isIntegrateSuperResolutionExtensionSDK();
 }

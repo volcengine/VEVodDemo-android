@@ -35,6 +35,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField "String", "TTSDK_PLAYER_EDITION", "\"$project.ext.bytedance.ttsdkPlayerEdition\""
+        buildConfigField "String", "TTSDK_PLAYER_EXTENSIONS", "\"$project.ext.bytedance.ttsdkPlayerExtensions\""
     }
 
     buildTypes {
@@ -57,10 +60,13 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
 
-    implementation "com.bytedanceapi:ttsdk-player_premium:${project.ext.bytedance.ttsdkVersion}"
-    implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+    implementation "com.bytedanceapi:ttsdk-player_${project.ext.bytedance.ttsdkPlayerEdition}:${project.ext.bytedance.ttsdkVersion}"
+    if (project.ext.bytedance.ttsdkPlayerEdition == "premium" &&
+            project.ext.bytedance.ttsdkPlayerExtensions.contains("super_resolution")) {
+        // + super resolution sdk
+        implementation "com.bytedanceapi:ttsdk-ttbmf:${project.ext.bytedance.ttsdkVersion}"
+    }
     implementation "com.bytedanceapi:ttvideoengine-debugtool:0.3.0.1"
-
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"
     implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
 

@@ -18,7 +18,6 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.ss.ttvideoengine.ITTVideoEngineInternal.PLAYER_TYPE_OWN;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.IMAGE_LAYOUT_TO_FILL;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_SEGMENT_FORMAT_FLAG;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_FMP4;
@@ -40,15 +39,15 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
-        VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         final TTVideoEngine player;
         if (volcConfig.enableEngineLooper) {
             Map<String, Object> params = new HashMap<>();
             params.put("enable_looper", true);
-            player = new TTVideoEngine(context, PLAYER_TYPE_OWN, params);
+            player = new TTVideoEngine(context, VolcPlayerEditions.engineCoreType(), params);
         } else {
-            player = new TTVideoEngine(context, PLAYER_TYPE_OWN);
+            player = new TTVideoEngine(context, VolcPlayerEditions.engineCoreType());
         }
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, L.ENABLE_LOG ? 1 : 0);

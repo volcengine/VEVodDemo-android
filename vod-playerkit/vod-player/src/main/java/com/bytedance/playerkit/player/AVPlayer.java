@@ -1001,7 +1001,7 @@ public class AVPlayer extends ExtraObject implements Player {
     @Override
     public String dump() {
         String playerInfo = mPlayer == null ? null : mPlayer.dump();
-        return String.format("%s state:%s %s", L.obj2String(this), mapState(mState), playerInfo);
+        return String.format("%s %s %s", L.obj2String(this), mapState(mState), playerInfo);
     }
 
     private void recordProgress() {
