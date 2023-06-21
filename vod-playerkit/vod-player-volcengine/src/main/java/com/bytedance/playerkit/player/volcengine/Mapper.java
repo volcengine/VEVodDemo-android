@@ -223,6 +223,35 @@ public class Mapper {
         }
     }
 
+    @Nullable
+    public static Track findTrack(MediaSource mediaSource, MediaSource mediaSource1, Track t1) {
+        if (mediaSource == mediaSource1) return t1;
+        if (mediaSource.getTracks() == mediaSource1.getTracks()) return t1;
+
+        CacheKeyFactory cacheKeyFactory = VolcPlayerInit.getCacheKeyFactory();
+
+        List<Track> tracks = mediaSource.getTracks();
+        for (Track track : tracks) {
+            String cacheKey = cacheKeyFactory.generateCacheKey(mediaSource, track);
+            String cacheKey1 =  cacheKeyFactory.generateCacheKey(mediaSource1, t1);
+            if  (TextUtils.equals(cacheKey, cacheKey1)){
+                return track;
+            }
+        }
+        return null;
+    }
+
+    public static void updateMediaSource(MediaSource mediaSource, MediaSource mediaSource1) {
+        if (mediaSource == mediaSource1) return;
+        if (!MediaSource.mediaEquals(mediaSource, mediaSource1)) {
+            throw new IllegalArgumentException("MediaSource is not media equal!" + MediaSource.dump(mediaSource) + " " + MediaSource.dump(mediaSource1));
+        }
+
+        if (mediaSource.getTracks() == null) {
+            mediaSource.setTracks(mediaSource1.getTracks());
+        }
+    }
+
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
         if (videoModel == null) return;
         if (mediaSource.getTracks() != null) return;
