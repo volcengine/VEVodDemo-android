@@ -131,6 +131,8 @@ public interface PlayerAdapter {
 
     void setDataSource(@NonNull MediaSource source) throws IOException;
 
+    MediaSource getDataSource();
+
     boolean isSupportSmoothTrackSwitching(@Track.TrackType int trackType);
 
     void selectTrack(@Track.TrackType int trackType, @Nullable Track track) throws IllegalStateException;
@@ -211,8 +213,10 @@ public interface PlayerAdapter {
 
     String dump();
 
-    interface Listener extends MediaSourceListener, TrackListener {
+    interface Listener extends PlayerListener, MediaSourceListener, TrackListener {
+    }
 
+    interface PlayerListener {
         void onPrepared(@NonNull PlayerAdapter mp);
 
         void onCompletion(@NonNull PlayerAdapter mp);
@@ -248,6 +252,6 @@ public interface PlayerAdapter {
 
         void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target);
 
-        void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull Track pre, @NonNull Track current);
+        void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre, @NonNull Track current);
     }
 }

@@ -47,7 +47,6 @@ import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.VideoEngineInfos;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoModel;
-import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.Error;
 
@@ -59,16 +58,15 @@ import java.util.WeakHashMap;
 
 class VolcPlayer implements PlayerAdapter {
     private final Context mContext;
-
-    private TTVideoEngine mPlayer;
-    private boolean mPreRenderPlayer;
-
     private final ListenerAdapter mListenerAdapter;
-    private Listener mListener;
+    private final boolean mPreCreatePlayer;
+    private boolean mPreRenderPlayer;
+    private TTVideoEngine mPlayer;
 
+    private Listener mListener;
     private Surface mSurface;
     private SurfaceHolder mSurfaceHolder;
-    private boolean mStartWhenPrepared = true;
+    private boolean mStartWhenPrepared;
     private long mStartTime;
     private final PlaybackParams mPlaybackParams = new PlaybackParams();
 
@@ -79,13 +77,11 @@ class VolcPlayer implements PlayerAdapter {
     private int mState;
     private boolean mPausedWhenChangeAVTrack;
     private long mPlaybackTimeWhenChangeAVTrack;
-
     private boolean mBuffering;
 
     private final SparseArray<Track> mSelectedTrack = new SparseArray<>();
     private final SparseArray<Track> mPendingTrack = new SparseArray<>();
     private final SparseArray<Track> mCurrentTrack = new SparseArray<>();
-
 
     public static String getDeviceId() {
         return TTVideoEngine.getDeviceID();
@@ -101,13 +97,19 @@ class VolcPlayer implements PlayerAdapter {
         }
 
         @Override
-        public PlayerAdapter create(Looper eventLooper) {
-            return new VolcPlayer(mContext, mMediaSource);
+        public VolcPlayer create(Looper eventLooper) {
+            return new VolcPlayer(mContext, mMediaSource, false);
+        }
+
+        public VolcPlayer preCreate(Looper eventLooper) {
+            return new VolcPlayer(mContext, mMediaSource, true);
         }
     }
 
     static final class EngineParams {
         private final static WeakHashMap<TTVideoEngine, EngineParams> sPlayerParams = new WeakHashMap<>();
+
+        VolcPlayer mPreCreatedPlayerInstance;
         boolean mPreRenderPlayer;
         boolean mSuperResolutionInitialized;
         int mVideoWidth;
@@ -128,22 +130,37 @@ class VolcPlayer implements PlayerAdapter {
         }
     }
 
-    private VolcPlayer(final Context context, MediaSource mediaSource) {
-        L.d(this, "constructor", "DEVICE_ID", TTVideoEngine.getDeviceID());
-        mContext = context;
-        mListenerAdapter = new ListenerAdapter(this);
-        TTVideoEngine player = VolcEngineStrategy.removePreRenderEngine(mediaSource);
-        if (player == null) {
+    private VolcPlayer(final Context context, MediaSource mediaSource, boolean preCreate) {
+        L.d(this, "constructor", "DEVICE_ID");
+        this.mContext = context;
+        this.mListenerAdapter = new ListenerAdapter(this);
+        this.mPreCreatePlayer = preCreate;
+
+        TTVideoEngine player;
+        if (preCreate) {
             player = TTVideoEngineFactory.Default.get().create(mContext, mediaSource);
-            L.d(this, "constructor", "create", mPlayer, MediaSource.dump(mediaSource));
-        } else {
-            L.d(this, "constructor", "preRender", player, MediaSource.dump(mediaSource));
-            EngineParams.get(player).mPreRenderPlayer = true;
-            mPreRenderPlayer = true;
+            EngineParams.get(player).mPreCreatedPlayerInstance = this;
             mStartWhenPrepared = false;
+            L.d(this, "constructor", "preCreate", mPlayer, MediaSource.dump(mediaSource));
+        } else {
+            player = VolcEngineStrategy.removePreRenderEngine(mediaSource);
+            if (player == null) {
+                player = TTVideoEngineFactory.Default.get().create(mContext, mediaSource);
+                mStartWhenPrepared = true;
+                L.d(this, "constructor", "create", mPlayer, MediaSource.dump(mediaSource));
+            } else {
+                EngineParams.get(player).mPreRenderPlayer = true;
+                mPreRenderPlayer = true;
+                mStartWhenPrepared = false;
+                L.d(this, "constructor", "preRender", player, MediaSource.dump(mediaSource));
+            }
         }
         bind(player);
         setState(Player.STATE_IDLE);
+    }
+
+    TTVideoEngine getTTVideoEngine() {
+        return mPlayer;
     }
 
     protected void bind(TTVideoEngine player) {
@@ -201,6 +218,11 @@ class VolcPlayer implements PlayerAdapter {
     public void setDataSource(@NonNull MediaSource mediaSource) throws IllegalStateException {
         L.d(this, "setDataSource", MediaSource.dump(mediaSource));
         mMediaSource = mediaSource;
+    }
+
+    @Override
+    public MediaSource getDataSource() {
+        return mMediaSource;
     }
 
     private static void setHeaders(TTVideoEngine player, @Nullable Map<String, String> headers) {
@@ -380,86 +402,131 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void syncPreRenderState(@NonNull MediaSource mediaSource) {
+        L.d(this, "syncPreRenderState", MediaSource.dump(mediaSource));
         Asserts.checkState(getState(), Player.STATE_IDLE, Player.STATE_STOPPED);
         setState(Player.STATE_PREPARING);
-        L.d(this, "syncPreRenderState", MediaSource.dump(mediaSource));
 
-        @MediaSource.SourceType final int sourceType = mediaSource.getSourceType();
-        @Track.TrackType int trackType = MediaSource.mediaType2TrackType(mediaSource);
-        if (sourceType == MediaSource.SOURCE_TYPE_ID || sourceType == MediaSource.SOURCE_TYPE_MODEL) {
-            IVideoModel videoModel = mPlayer.getIVideoModel();
-            if (videoModel != null) {
-                Mapper.updateMediaSource(mediaSource, videoModel);
-            }
-            if (mListener != null) {
-                mListener.onMediaSourceUpdated(this, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED, mediaSource);
-            }
+        final VolcPlayer prePlayer = EngineParams.get(mPlayer).mPreCreatedPlayerInstance;
+        final VolcPlayer player = this;
+
+        if (prePlayer == null) return;
+
+        final PlaybackParams playbackParams = prePlayer.mPlaybackParams;
+        mPlaybackParams.setSpeed(playbackParams.getSpeed())
+                .setPitch(playbackParams.getPitch())
+                .setAudioFallbackMode(playbackParams.getAudioFallbackMode());
+
+        mStrategySource = prePlayer.mStrategySource;
+        final SparseArray<Track> selectedTrack = prePlayer.mSelectedTrack;
+        for (int i = 0; i < selectedTrack.size(); i++) {
+            mSelectedTrack.put(selectedTrack.keyAt(i), selectedTrack.valueAt(i));
         }
 
-        final List<Track> tracks = mediaSource.getTracks(trackType);
-        if (tracks != null && !tracks.isEmpty()) {
+        final Listener listener = prePlayer.mListener;
+        if (listener == null) return;
+        final VolcPlayerEventRecorder recorder = listener instanceof VolcPlayerEventRecorder ? (VolcPlayerEventRecorder) listener : null;
+        if (recorder == null) return;
+        prePlayer.setListener(null);
 
-            if (mListener != null) {
-                mListener.onTrackInfoReady(this, trackType, tracks);
+        if (mListener == null) return;
+        recorder.notifyEvents(new Listener() {
+            @Override
+            public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource mediaSource1) {
+                mListener.onMediaSourceUpdateStart(player, type, mediaSource);
             }
-            if (trackType == Track.TRACK_TYPE_VIDEO) {
-                Track track = null;
-                switch (sourceType) {
-                    case MediaSource.SOURCE_TYPE_ID:
-                    case MediaSource.SOURCE_TYPE_MODEL: {
-                        Resolution resolution = mPlayer.getCurrentResolution();
-                        if (resolution != null) {
-                            track = Mapper.findTrackWithResolution(tracks, resolution);
-                        }
-                        break;
-                    }
-                    case MediaSource.SOURCE_TYPE_URL: {
-                        if (mPlayer.getIVideoModel() != null) {
-                            Resolution resolution = mPlayer.getCurrentResolution();
-                            if (resolution != null) {
-                                track = Mapper.findTrackWithResolution(tracks, resolution);
-                            }
-                        } else {
-                            DirectUrlSource directUrlSource = (DirectUrlSource) mPlayer.getStrategySource();
-                            if (directUrlSource != null) {
-                                track = Mapper.findTrackWithDirectUrlSource(mediaSource, tracks, directUrlSource, VolcPlayerInit.getCacheKeyFactory());
-                            }
-                        }
-                        break;
-                    }
+
+            @Override
+            public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource mediaSource1) {
+                if (type == MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
+                    Mapper.updateMediaSource(mMediaSource, mediaSource1); // TODO
                 }
-
-                if (track == null) return; // TODO throw error
-
-                setPendingTrack(trackType, track);
-
-                if (mListener != null) {
-                    mListener.onTrackWillChange(this, trackType, getCurrentTrack(trackType), track);
-                }
-            } else {
-                throw new IllegalArgumentException("Only support video track for now. " + Track.mapTrackType(trackType));
+                mListener.onMediaSourceUpdated(player, type, mediaSource);
             }
-        }
 
-        final Track current = getCurrentTrack(trackType);
-        final Track pending = removePendingTrack(trackType);
-
-        if (pending != null) {
-            String fileHash = VolcPlayerInit.getCacheKeyFactory().generateCacheKey(mMediaSource, pending);
-            if (fileHash != null) {
-                long cachedSize = TTVideoEngine.quickGetCacheFileSize(fileHash);
-                if (mListener != null) {
-                    mListener.onCacheHint(this, cachedSize);
-                }
+            @Override
+            public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
+                mListener.onMediaSourceUpdated(player, type, mediaSource);
             }
-            setCurrentTrack(trackType, pending);
-            if (mListener != null) {
-                mListener.onTrackChanged(this, trackType, current, pending);
+
+            @Override
+            public void onPrepared(@NonNull PlayerAdapter mp) {
                 setState(Player.STATE_PREPARED);
-                mListener.onPrepared(this);
-                mListener.onVideoSizeChanged(this, mPlayer.getVideoWidth(), mPlayer.getVideoHeight());
+
+                mListener.onPrepared(player);
             }
-        }
+
+            @Override
+            public void onCompletion(@NonNull PlayerAdapter mp) { /**/ }
+
+            @Override
+            public void onError(@NonNull PlayerAdapter mp, int code, @NonNull String msg) { /**/ }
+
+            @Override
+            public void onSeekComplete(@NonNull PlayerAdapter mp) { /**/ }
+
+            @Override
+            public void onVideoSizeChanged(@NonNull PlayerAdapter mp, int width, int height) {
+                mListener.onVideoSizeChanged(player, width, height);
+            }
+
+            @Override
+            public void onSARChanged(@NonNull PlayerAdapter mp, int num, int den) {
+                mListener.onSARChanged(player, num, den);
+            }
+
+            @Override
+            public void onBufferingUpdate(@NonNull PlayerAdapter mp, int percent) { /**/ }
+
+            @Override
+            public void onProgressUpdate(@NonNull PlayerAdapter mp, long position) { /**/ }
+
+            @Override
+            public void onInfo(@NonNull PlayerAdapter mp, int what, int extra) {
+                switch (what) {
+                    case Info.MEDIA_INFO_BUFFERING_START:
+                    case Info.MEDIA_INFO_BUFFERING_END:
+                        break;
+                    default:
+                        mListener.onInfo(player, what, extra);
+                        break;
+                }
+            }
+
+            @Override
+            public void onCacheHint(PlayerAdapter mp, long cacheSize) {
+                mListener.onCacheHint(player, cacheSize);
+            }
+
+            @Override
+            public void onTrackInfoReady(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull List<Track> tracks1) {
+                List<Track> tracks = mediaSource.getTracks(trackType);
+                if (tracks == null || tracks.isEmpty()) return;
+
+                mListener.onTrackInfoReady(player, trackType, tracks);
+            }
+
+            @Override
+            public void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current1, @NonNull Track target1) {
+                final Track current = Mapper.findTrack(mediaSource, mp.getDataSource(), current1);
+                final Track target = Mapper.findTrack(mediaSource, mp.getDataSource(), target1);
+                if (target == null) return;
+
+                setPendingTrack(trackType, target);
+                mListener.onTrackWillChange(player, trackType, current, target);
+            }
+
+            @Override
+            public void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre1, @NonNull Track current1) {
+                Track pre = Mapper.findTrack(mediaSource, mp.getDataSource(), pre1);
+                Track current = Mapper.findTrack(mediaSource, mp.getDataSource(), current1);
+                if (current == null) return;
+
+                removePendingTrack(trackType);
+                setCurrentTrack(trackType, current);
+
+                mListener.onTrackChanged(player, trackType, pre, current);
+            }
+        });
     }
 
     private void prepareAsync(@NonNull MediaSource mediaSource) {
@@ -539,6 +606,7 @@ class VolcPlayer implements PlayerAdapter {
 
             if (selected == null) {
                 selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
+                setSelectedTrack(trackType, selected);
                 setPendingTrack(trackType, selected);
                 if (mListener != null) {
                     mListener.onTrackWillChange(this, trackType, null, selected);
@@ -561,6 +629,7 @@ class VolcPlayer implements PlayerAdapter {
                 VolcPlayerInit.getCacheKeyFactory());
         mPlayer.setStrategySource(mStrategySource);
         config(mContext, mPlayer, mediaSource, track);
+
         preparePlayer(mPlayer, startWhenPrepared);
     }
 
@@ -572,10 +641,15 @@ class VolcPlayer implements PlayerAdapter {
         );
         mPlayer.setStrategySource(mStrategySource);
         config(mContext, mPlayer, mediaSource, track);
+
         preparePlayer(mPlayer, startWhenPrepared);
     }
 
-    static void preparePlayer(TTVideoEngine player, boolean startWhenPrepared) {
+    void preparePlayer(TTVideoEngine player, boolean startWhenPrepared) {
+        if (mPreCreatePlayer) return;
+
+        L.d(this, "preparePlayer", mStartWhenPrepared);
+
         if (startWhenPrepared) {
             player.play();
         } else {

@@ -24,7 +24,7 @@ import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOA
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
 import android.content.Context;
-import android.os.Handler;
+import android.os.Looper;
 import android.view.Surface;
 
 import androidx.annotation.Nullable;
@@ -32,13 +32,12 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
+import com.bytedance.playerkit.player.utils.ProgressRecorder;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.PreloaderVidItem;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
-import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.EngineStrategyListener;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.StrategySettings;
@@ -64,40 +63,15 @@ public class VolcEngineStrategy {
         TTVideoEngine.setEngineStrategyListener(new EngineStrategyListener() {
             @Override
             public TTVideoEngine createPreRenderEngine(StrategySource strategySource) {
-                final MediaSource mediaSource = (MediaSource) strategySource.tag();
                 final Context context = VolcPlayerInit.getContext();
-                final TTVideoEngine player = TTVideoEngineFactory.Default.get().create(context, mediaSource);
-                player.setStrategySource(strategySource);
-                switch (mediaSource.getSourceType()) {
-                    case MediaSource.SOURCE_TYPE_URL: {
-                        final Track track = Mapper.findTrackWithDirectUrlSource(mediaSource, mediaSource.getTracksByMediaType(), (DirectUrlSource) strategySource, VolcPlayerInit.getCacheKeyFactory());
-                        VolcPlayer.config(context, player, mediaSource, track);
-                        break;
-                    }
-                    case MediaSource.SOURCE_TYPE_MODEL: {
-                        VideoModelSource videoModelSource = (VideoModelSource) strategySource;
-                        final Track track = Mapper.findTrackWithResolution(mediaSource.getTracksByMediaType(), videoModelSource.resolution());
-                        VolcPlayer.config(context, player, mediaSource, track);
-                        break;
-                    }
-                    case MediaSource.SOURCE_TYPE_ID: {
-                        player.setVideoInfoListener(videoModel -> {
-                            if (player.isPrepared()) return false;
-                            Mapper.updateMediaSource(mediaSource, videoModel);
-                            final Track playTrack = selectPlayTrack(TrackSelector.TYPE_PLAY, mediaSource);
-                            if (playTrack != null) {
-                                VolcPlayer.config(context, player, mediaSource, playTrack);
-                                return false;
-                            } else {
-                                // notify error
-                                new Handler().post(player::releaseAsync);
-                                return true;
-                            }
-                        });
-                        break;
-                    }
-                }
-                return player;
+                final MediaSource mediaSource = (MediaSource) strategySource.tag();
+                final long recordPosition = ProgressRecorder.getProgress(mediaSource.getSyncProgressId());
+                final VolcPlayer player = new VolcPlayer.Factory(context, mediaSource).preCreate(Looper.getMainLooper());
+                player.setListener(new VolcPlayerEventRecorder());
+                player.setDataSource(mediaSource);
+                player.setStartTime(recordPosition > 0 ? recordPosition : 0);
+                player.prepareAsync();
+                return player.getTTVideoEngine();
             }
         });
 
@@ -269,5 +243,4 @@ public class VolcEngineStrategy {
     private static String key(MediaSource mediaSource) {
         return mediaSource.getMediaId();
     }
-
 }
