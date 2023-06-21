@@ -45,6 +45,7 @@ public class VideoDetail {
             return VideoItem.createVidItem(
                     detail.vid,
                     detail.playAuthToken,
+                    detail.subtitleAuthToken,
                     (long) (detail.duration * 1000),
                     detail.coverUrl,
                     detail.caption);

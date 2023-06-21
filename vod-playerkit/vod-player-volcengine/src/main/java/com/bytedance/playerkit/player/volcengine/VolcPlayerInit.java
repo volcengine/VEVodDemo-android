@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.source.SubtitleSelector;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
@@ -48,6 +49,8 @@ public class VolcPlayerInit {
     private static Context sContext;
     private static CacheKeyFactory sCacheKeyFactory;
     private static TrackSelector sTrackSelector;
+    private static SubtitleSelector sSubtitleSelector;
+
 
     public static String getDeviceId() {
         return VolcPlayer.getDeviceId();
@@ -58,13 +61,14 @@ public class VolcPlayerInit {
     }
 
     public static void init(final Context context, AppInfo appInfo) {
-        init(context, appInfo, CacheKeyFactory.DEFAULT, TrackSelector.DEFAULT);
+        init(context, appInfo, CacheKeyFactory.DEFAULT, TrackSelector.DEFAULT, new VolcSubtitleSelector());
     }
 
     public static void init(Context context,
                             AppInfo appInfo,
                             CacheKeyFactory cacheKeyFactory,
-                            TrackSelector trackSelector) {
+                            TrackSelector trackSelector,
+                            SubtitleSelector subtitleSelector) {
 
         if (sInited.getAndSet(true)) return;
 
@@ -80,6 +84,11 @@ public class VolcPlayerInit {
         } else {
             sCacheKeyFactory = CacheKeyFactory.DEFAULT;
         }
+        if (subtitleSelector != null) {
+            sSubtitleSelector = subtitleSelector;
+        } else {
+            sSubtitleSelector = new VolcSubtitleSelector();
+        }
 
         initVOD(context, appInfo);
 
@@ -94,6 +103,10 @@ public class VolcPlayerInit {
 
     public static TrackSelector getTrackSelector() {
         return sTrackSelector;
+    }
+
+    public static SubtitleSelector getSubtitleSelector() {
+        return sSubtitleSelector;
     }
 
     public static CacheKeyFactory getCacheKeyFactory() {

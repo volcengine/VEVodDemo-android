@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 bytedance
+ * Copyright (C) 2023 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2021/12/3
+ * Create Date : 2023/6/14
  */
 
-package com.bytedance.playerkit.utils.event;
+package com.bytedance.playerkit.player.source;
 
-class Factory {
-    static <T extends Event> T create(Class<T> clazz) {
-        try {
-            return clazz.newInstance();
-        } catch (IllegalAccessException | InstantiationException |
-                 NullPointerException e ) {
-            e.printStackTrace();
-        }
-        throw new NullPointerException();
-    }
+import androidx.annotation.NonNull;
+
+import java.util.List;
+
+public interface SubtitleSelector {
+
+
+    @NonNull
+    Subtitle selectSubtitle(@NonNull MediaSource mediaSource, @NonNull List<Subtitle> subtitles);
 }

@@ -149,6 +149,7 @@
                 android:padding="0dp"
                 android:text="@string/vevod_time_progress_subtitle"
                 android:textColor="#FFFFFF"
+                android:textStyle="bold"
                 android:textSize="15sp" />
         </LinearLayout>
 

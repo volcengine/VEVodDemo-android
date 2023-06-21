@@ -216,5 +216,17 @@ public interface PlayerEvent {
          * @see InfoCacheUpdate
          */
         public static final int CACHE_UPDATE = 3016;
+
+        public static final int SUBTITLE_STATE_CHANGED = 3017;
+
+        public static final int SUBTITLE_LIST_INFO_READY = 3018;
+
+        public static final int SUBTITLE_FILE_LOAD_FINISH = 3019;
+
+        public static final int SUBTITLE_WILL_CHANGE = 3020;
+
+        public static final int SUBTITLE_TEXT_UPDATE = 3021;
+
+        public static final int SUBTITLE_CHANGED = 3022;
     }
 }

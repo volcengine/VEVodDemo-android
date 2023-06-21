@@ -37,6 +37,7 @@ import com.bytedance.playerkit.player.event.StateStarted;
 import com.bytedance.playerkit.player.event.StateStopped;
 import com.bytedance.playerkit.player.legacy.PlayerLegacy;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.Track.TrackType;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -480,6 +481,16 @@ public interface Player {
     void selectTrack(@TrackType int trackType, @Nullable Track track)
             throws UnsupportedOperationException;
 
+    List<Subtitle> getSubtitles();
+
+    void selectSubtitle(@Nullable Subtitle subtitle);
+
+    Subtitle getSelectedSubtitle();
+
+    Subtitle getPendingSubtitle();
+
+    Subtitle getCurrentSubtitle();
+
     /**
      * @param trackType Track type. One of {@link TrackType}
      * @return true if player is support smooth track switching for
@@ -675,6 +686,10 @@ public interface Player {
     void setSuperResolutionEnabled(boolean enabled);
 
     boolean isSuperResolutionEnabled();
+
+    void setSubtitleEnabled(boolean enabled);
+
+    boolean isSubtitleEnabled();
 
     /**
      * @return true: IO buffering. Otherwise, false.

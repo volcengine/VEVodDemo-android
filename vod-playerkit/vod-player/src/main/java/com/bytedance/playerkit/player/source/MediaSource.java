@@ -287,6 +287,11 @@ public class MediaSource extends ExtraObject implements Serializable {
     private String modelJson;
 
     /**
+     * Auth token of subtitle. Only works with {@link #SOURCE_TYPE_ID}
+     */
+    private String subtitleAuthToken;
+
+    /**
      * Additional headers of video url http request
      */
     private Map<String, String> headers;
@@ -310,12 +315,17 @@ public class MediaSource extends ExtraObject implements Serializable {
     private boolean supportABR;
 
     /**
-     * A list of url track of video/audio stream in different quality.
+     * A list of url track of video/audio stream in different qualities.
      */
     private List<Track> tracks;
 
 
     private final Map<Integer, List<Track>> tracksMap = new HashMap<>();
+
+    /**
+     * A list of subtitle stream in different languages.
+     */
+    private List<Subtitle> subtitles;
 
     /**
      * Utility method for quick create single url source.
@@ -547,6 +557,22 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     /**
+     * @return Auth token of subtitle. Only works with {@link #SOURCE_TYPE_ID}
+     */
+    public String getSubtitleAuthToken() {
+        return subtitleAuthToken;
+    }
+
+    /**
+     * Set Auth token of subtitle. Only works with {@link #SOURCE_TYPE_ID}
+     *
+     * @param subtitleAuthToken Auth token of subtitle
+     */
+    public void setSubtitleAuthToken(String subtitleAuthToken) {
+        this.subtitleAuthToken = subtitleAuthToken;
+    }
+
+    /**
      * @return Additional headers of video url http request
      */
     public Map<String, String> getHeaders() {
@@ -666,7 +692,6 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
 
-
     /**
      * @param trackType track type
      * @return List of track by trackType
@@ -715,6 +740,23 @@ public class MediaSource extends ExtraObject implements Serializable {
     @Track.TrackType
     public static int mediaType2TrackType(@NonNull MediaSource mediaSource) {
         return mediaSource.getMediaType() == MediaSource.MEDIA_TYPE_AUDIO ? TRACK_TYPE_AUDIO : TRACK_TYPE_VIDEO;
+    }
+
+    public void setSubtitles(List<Subtitle> subtitles) {
+        this.subtitles = subtitles;
+    }
+
+    public List<Subtitle> getSubtitles() {
+        return subtitles;
+    }
+
+    public Subtitle getSubtitle(int subtitleId) {
+        for (Subtitle subtitle : subtitles) {
+            if (subtitle.getSubtitleId() == subtitleId) {
+                return subtitle;
+            }
+        }
+        return null;
     }
 
     public static String dump(MediaSource source) {

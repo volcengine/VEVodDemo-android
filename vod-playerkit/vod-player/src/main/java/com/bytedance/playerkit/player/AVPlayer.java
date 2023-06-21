@@ -51,6 +51,12 @@ import com.bytedance.playerkit.player.event.InfoDataSourceRefreshed;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
+import com.bytedance.playerkit.player.event.InfoSubtitleChanged;
+import com.bytedance.playerkit.player.event.InfoSubtitleFileLoadFinish;
+import com.bytedance.playerkit.player.event.InfoSubtitleInfoReady;
+import com.bytedance.playerkit.player.event.InfoSubtitleStateChanged;
+import com.bytedance.playerkit.player.event.InfoSubtitleTextUpdate;
+import com.bytedance.playerkit.player.event.InfoSubtitleWillChange;
 import com.bytedance.playerkit.player.event.InfoTrackChanged;
 import com.bytedance.playerkit.player.event.InfoTrackInfoReady;
 import com.bytedance.playerkit.player.event.InfoTrackWillChange;
@@ -68,9 +74,10 @@ import com.bytedance.playerkit.player.event.StateStarted;
 import com.bytedance.playerkit.player.event.StateStopped;
 import com.bytedance.playerkit.player.legacy.PlayerLegacy;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
-import com.bytedance.playerkit.player.utils.ProgressTracker;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.ExtraObject;
 import com.bytedance.playerkit.utils.L;
@@ -127,7 +134,7 @@ public class AVPlayer extends ExtraObject implements Player {
         setState(STATE_IDLE);
     }
 
-    private static class Listener implements PlayerAdapter.Listener, ProgressTracker.ProgressTaskListener {
+    private static class Listener implements PlayerAdapter.Listener {
 
         private final WeakReference<AVPlayer> mPlayerRef;
 
@@ -324,22 +331,6 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public long onTrackingProgress() {
-            final AVPlayer player = mPlayerRef.get();
-            if (player == null) return -1;
-
-            long duration = player.getDuration();
-            long currentPosition = player.getCurrentPosition();
-            if (duration >= 0 && currentPosition >= 0) {
-                player.recordProgress();
-                long delay = Math.min(Math.max(duration / 1000, 200), 1000);
-                player.notifyProgressUpdate(currentPosition, duration);
-                return delay;
-            }
-            return -1;
-        }
-
-        @Override
         public void onTrackInfoReady(@NonNull PlayerAdapter mp, @TrackType int trackType, @NonNull List<Track> tracks) {
             // select default resolution
             final AVPlayer player = mPlayerRef.get();
@@ -371,6 +362,66 @@ public class AVPlayer extends ExtraObject implements Player {
                 player.start();
             }
             player.mDispatcher.obtain(InfoTrackChanged.class, player).init(trackType, pre, current).dispatch();
+        }
+
+        @Override
+        public void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleStateChanged", enabled);
+
+            player.mDispatcher.obtain(InfoSubtitleStateChanged.class, player).init(enabled).dispatch();
+        }
+
+        @Override
+        public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleInfoReady", Subtitle.dump(subtitles));
+
+            player.mDispatcher.obtain(InfoSubtitleInfoReady.class, player).init(subtitles).dispatch();
+        }
+
+        @Override
+        public void onSubtitleFileLoadFinish(@NonNull PlayerAdapter mp, int success, String info) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleFileLoadFinish", success, info);
+
+            player.mDispatcher.obtain(InfoSubtitleFileLoadFinish.class, player).init(success, info).dispatch();
+        }
+
+        @Override
+        public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleWillChange", Subtitle.dump(current), Subtitle.dump(target));
+
+            player.mDispatcher.obtain(InfoSubtitleWillChange.class, player).init(current, target).dispatch();
+        }
+
+        @Override
+        public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleChanged", Subtitle.dump(pre), Subtitle.dump(current));
+
+            player.mDispatcher.obtain(InfoSubtitleChanged.class, player).init(pre, current).dispatch();
+        }
+
+        @Override
+        public void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.v(player, "onSubtitleTextUpdate", SubtitleText.dump(subtitleText));
+
+            player.mDispatcher.obtain(InfoSubtitleTextUpdate.class, player).init(subtitleText).dispatch();
         }
     }
 
@@ -590,6 +641,31 @@ public class AVPlayer extends ExtraObject implements Player {
                 Track.dump(selected), "target: " + Track.dump(target));
         if (target == null || Objects.equals(target, selected)) return;
         mPlayer.selectTrack(trackType, target);
+    }
+
+    @Override
+    public List<Subtitle> getSubtitles() {
+        return mPlayer.getSubtitles();
+    }
+
+    @Override
+    public void selectSubtitle(Subtitle subtitle) {
+        mPlayer.selectSubtitle(subtitle);
+    }
+
+    @Override
+    public Subtitle getSelectedSubtitle() {
+        return mPlayer.getSelectedSubtitle();
+    }
+
+    @Override
+    public Subtitle getPendingSubtitle() {
+        return mPlayer.getPendingSubtitle();
+    }
+
+    @Override
+    public Subtitle getCurrentSubtitle() {
+        return mPlayer.getCurrentSubtitle();
     }
 
     @Override
@@ -885,6 +961,20 @@ public class AVPlayer extends ExtraObject implements Player {
         if (checkIsRelease("isSuperResolutionEnabled")) return false;
 
         return mPlayer.isSuperResolutionEnabled();
+    }
+
+    @Override
+    public void setSubtitleEnabled(boolean enabled) {
+        if (checkIsRelease("setSubtitleEnabled")) return;
+
+        mPlayer.setSubtitleEnabled(enabled);
+    }
+
+    @Override
+    public boolean isSubtitleEnabled() {
+        if (checkIsRelease("isSubtitleEnabled")) return false;
+
+        return mPlayer.isSubtitleEnabled();
     }
 
     @Override

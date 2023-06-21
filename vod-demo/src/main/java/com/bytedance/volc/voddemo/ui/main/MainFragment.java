@@ -73,8 +73,8 @@ public class MainFragment extends BaseFragment {
                 PlayScene.SCENE_FEED));
         mItems.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_LONG));
-        mItems.add(new Item(R.string.vevod_input_source, R.drawable.ic_launcher_foreground, Item.TYPE_INPUT_SOURCE,
-                PlayScene.SCENE_UNKNOWN));
+//        mItems.add(new Item(R.string.vevod_input_source, R.drawable.ic_launcher_foreground, Item.TYPE_INPUT_SOURCE,
+//                PlayScene.SCENE_UNKNOWN));
         mItems.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
                 PlayScene.SCENE_UNKNOWN));
     }

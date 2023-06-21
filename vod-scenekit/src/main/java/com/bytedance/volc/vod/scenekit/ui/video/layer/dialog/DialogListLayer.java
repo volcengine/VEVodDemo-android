@@ -122,6 +122,10 @@ public abstract class DialogListLayer<T> extends DialogLayer {
             }
         }
 
+        public Item<T> getSelected() {
+            return mSelected;
+        }
+
         public Item<T> findItem(T obj) {
             for (Item<T> item : mItems) {
                 if (Objects.equals(obj, item.obj)) return item;

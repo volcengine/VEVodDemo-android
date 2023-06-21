@@ -39,11 +39,14 @@ import com.bytedance.playerkit.player.event.InfoTrackWillChange;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.source.Quality;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 
+import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.QualitySelectDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SpeedSelectDialogLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SubtitleSelectDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
@@ -223,10 +226,14 @@ public class TimeProgressBarLayer extends AnimateLayer {
                     Toast.makeText(context(), "Danmaku is not supported yet!", Toast.LENGTH_SHORT).show();
                 }
             });
+            mSubtitle = mInteractLayout.findViewById(R.id.subtitle);
             mSubtitleContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(context(), "Subtitle is not supported yet!", Toast.LENGTH_SHORT).show();
+                    SubtitleSelectDialogLayer subtitleSelectLayer = layerHost().findLayer(SubtitleSelectDialogLayer.class);
+                    if (subtitleSelectLayer != null) {
+                        subtitleSelectLayer.animateShow(false);
+                    }
                 }
             });
 
@@ -346,6 +353,28 @@ public class TimeProgressBarLayer extends AnimateLayer {
         }
     }
 
+    private void syncSubtitle() {
+        if (mSubtitle == null) return;
+
+        final Player player = player();
+        if (player != null) {
+            Subtitle selected = player.isSubtitleEnabled() ? player.getSelectedSubtitle() : null;
+            if (selected != null) {
+                mSubtitle.setText(VideoSubtitle.subtitle2String(selected));
+            } else {
+                mSubtitle.setText(mSubtitle.getResources().getString(R.string.vevod_time_progress_subtitle));
+            }
+            List<Subtitle> subtitles = player.getSubtitles();
+            if (subtitles == null) {
+                mSubtitleContainer.setVisibility(View.GONE);
+            } else {
+                mSubtitleContainer.setVisibility(View.VISIBLE);
+            }
+        } else {
+            mSubtitleContainer.setVisibility(View.GONE);
+        }
+    }
+
     @Override
     protected void onBindPlaybackController(@NonNull PlaybackController controller) {
         controller.addPlaybackListener(mPlaybackListener);
@@ -435,6 +464,7 @@ public class TimeProgressBarLayer extends AnimateLayer {
         syncProgress();
         syncQuality();
         syncSpeed();
+        syncSubtitle();
     }
 
     @Override

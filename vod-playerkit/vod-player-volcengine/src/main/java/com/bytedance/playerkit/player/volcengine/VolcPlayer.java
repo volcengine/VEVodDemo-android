@@ -24,6 +24,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -36,19 +37,29 @@ import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.player.adapter.PlayerAdapter;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineListenerAdapter;
+import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineSubtitleCallbackAdapter;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttm.player.PlaybackParams;
 import com.ss.ttvideoengine.Resolution;
+import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.VideoEngineInfos;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoModel;
+import com.ss.ttvideoengine.source.DirectUrlSource;
+import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.Error;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -72,6 +83,7 @@ class VolcPlayer implements PlayerAdapter {
 
     private MediaSource mMediaSource;
     private StrategySource mStrategySource;
+    private SubDesInfoModel mSubtitleSource;
 
     @Player.PlayerState
     private int mState;
@@ -82,6 +94,10 @@ class VolcPlayer implements PlayerAdapter {
     private final SparseArray<Track> mSelectedTrack = new SparseArray<>();
     private final SparseArray<Track> mPendingTrack = new SparseArray<>();
     private final SparseArray<Track> mCurrentTrack = new SparseArray<>();
+
+    private Subtitle mSelectedSubtitle;
+    private Subtitle mPendingSubtitle;
+    private Subtitle mCurrentSubtitle;
 
     public static String getDeviceId() {
         return TTVideoEngine.getDeviceID();
@@ -112,6 +128,7 @@ class VolcPlayer implements PlayerAdapter {
         VolcPlayer mPreCreatedPlayerInstance;
         boolean mPreRenderPlayer;
         boolean mSuperResolutionInitialized;
+        boolean mSubtitleEnabled;
         int mVideoWidth;
         int mVideoHeight;
         Exception mPlayerException;
@@ -169,6 +186,7 @@ class VolcPlayer implements PlayerAdapter {
         player.setVideoEngineInfoListener(mListenerAdapter);
         player.setVideoInfoListener(mListenerAdapter);
         player.setPlayerEventListener(mListenerAdapter);
+        player.setSubInfoCallBack(new TTVideoEngineSubtitleCallbackAdapter(mListenerAdapter));
         mPlayer = player;
     }
 
@@ -335,54 +353,113 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public Track getPendingTrack(@Track.TrackType int trackType) throws IllegalStateException {
-        return mPendingTrack.get(trackType);
-    }
-
-    private Track removePendingTrack(@Track.TrackType int trackType) {
-        final Track track = mPendingTrack.get(trackType);
-        if (track != null) {
-            mPendingTrack.remove(trackType);
+        synchronized (this) {
+            return mPendingTrack.get(trackType);
         }
-        return track;
     }
 
     private void setPendingTrack(@Track.TrackType int trackType, Track track) {
         L.d(this, "setPendingTrack", Track.dump(track));
-        mPendingTrack.put(trackType, track);
+        synchronized (this) {
+            mPendingTrack.put(trackType, track);
+        }
     }
 
     @Override
     public Track getCurrentTrack(@Track.TrackType int trackType) {
-        return mCurrentTrack.get(trackType);
+        synchronized (this) {
+            return mCurrentTrack.get(trackType);
+        }
     }
 
     private void setCurrentTrack(@Track.TrackType int trackType, Track track) {
         L.d(this, "setCurrentTrack", Track.dump(track));
-        this.mCurrentTrack.put(trackType, track);
-    }
-
-    private Track removeCurrentTrack(@Track.TrackType int trackType) {
-        final Track track = mCurrentTrack.get(trackType);
-        L.d(this, "removeCurrentTrack", Track.dump(track));
-        if (track != null) {
-            mCurrentTrack.remove(trackType);
+        synchronized (this) {
+            this.mCurrentTrack.put(trackType, track);
         }
-        return track;
     }
 
     @Override
     public Track getSelectedTrack(@Track.TrackType int trackType) {
-        return mSelectedTrack.get(trackType);
+        synchronized (this) {
+            return mSelectedTrack.get(trackType);
+        }
     }
 
     private void setSelectedTrack(@Track.TrackType int trackType, Track track) {
         L.d(this, "setSelectedTrack", Track.dump(track));
-        mSelectedTrack.put(trackType, track);
+        synchronized (this) {
+            mSelectedTrack.put(trackType, track);
+        }
     }
 
     @Override
     public List<Track> getTracks(@Track.TrackType int trackType) {
         return mMediaSource.getTracks(trackType);
+    }
+
+    @Override
+    public List<Subtitle> getSubtitles() {
+        return mMediaSource.getSubtitles();
+    }
+
+    @Override
+    public void selectSubtitle(@Nullable Subtitle subtitle) {
+        if (subtitle == null) return;
+        final Subtitle selected = getSelectedSubtitle();
+        final Subtitle current = getCurrentSubtitle();
+        if (selected != subtitle) {
+            setSelectedSubtitle(subtitle);
+            setPendingSubtitle(subtitle);
+            if (mListener != null) {
+                mListener.onSubtitleWillChange(this, current, subtitle);
+            }
+            mPlayer.setIntOption(TTVideoEngine.PLAYER_OPTION_SWITCH_SUB_ID, subtitle.getSubtitleId());
+        }
+    }
+
+    public void setSelectedSubtitle(Subtitle subtitle) {
+        L.d(this, "setSelectedSubtitle", Subtitle.dump(subtitle));
+        synchronized (this) {
+            mSelectedSubtitle = subtitle;
+        }
+    }
+
+    @Override
+    public Subtitle getSelectedSubtitle() {
+        synchronized (this) {
+            return mSelectedSubtitle;
+        }
+    }
+
+
+    public void setPendingSubtitle(Subtitle subtitle) {
+        L.d(this, "setPendingSubtitle", Subtitle.dump(subtitle));
+        synchronized (this) {
+            mPendingSubtitle = subtitle;
+        }
+    }
+
+
+    @Override
+    public Subtitle getPendingSubtitle() {
+        synchronized (this) {
+            return mPendingSubtitle;
+        }
+    }
+
+    public void setCurrentSubtitle(Subtitle subtitle) {
+        L.d(this, "setCurrentSubtitle", Subtitle.dump(subtitle));
+        synchronized (this) {
+            mCurrentSubtitle = subtitle;
+        }
+    }
+
+    @Override
+    public Subtitle getCurrentSubtitle() {
+        synchronized (this) {
+            return mCurrentSubtitle;
+        }
     }
 
     @Override
@@ -422,37 +499,19 @@ class VolcPlayer implements PlayerAdapter {
             mSelectedTrack.put(selectedTrack.keyAt(i), selectedTrack.valueAt(i));
         }
 
-        final Listener listener = prePlayer.mListener;
-        if (listener == null) return;
-        final VolcPlayerEventRecorder recorder = listener instanceof VolcPlayerEventRecorder ? (VolcPlayerEventRecorder) listener : null;
+        final VolcPlayerEventRecorder recorder = (VolcPlayerEventRecorder) prePlayer.mListener;
         if (recorder == null) return;
         prePlayer.setListener(null);
 
-        if (mListener == null) return;
+        final Listener listener = mListener;
+        if (listener == null) return;
         recorder.notifyEvents(new Listener() {
-            @Override
-            public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource mediaSource1) {
-                mListener.onMediaSourceUpdateStart(player, type, mediaSource);
-            }
-
-            @Override
-            public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource mediaSource1) {
-                if (type == MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
-                    Mapper.updateMediaSource(mMediaSource, mediaSource1); // TODO
-                }
-                mListener.onMediaSourceUpdated(player, type, mediaSource);
-            }
-
-            @Override
-            public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
-                mListener.onMediaSourceUpdated(player, type, mediaSource);
-            }
 
             @Override
             public void onPrepared(@NonNull PlayerAdapter mp) {
                 setState(Player.STATE_PREPARED);
 
-                mListener.onPrepared(player);
+                listener.onPrepared(player);
             }
 
             @Override
@@ -466,12 +525,12 @@ class VolcPlayer implements PlayerAdapter {
 
             @Override
             public void onVideoSizeChanged(@NonNull PlayerAdapter mp, int width, int height) {
-                mListener.onVideoSizeChanged(player, width, height);
+                listener.onVideoSizeChanged(player, width, height);
             }
 
             @Override
             public void onSARChanged(@NonNull PlayerAdapter mp, int num, int den) {
-                mListener.onSARChanged(player, num, den);
+                listener.onSARChanged(player, num, den);
             }
 
             @Override
@@ -487,44 +546,93 @@ class VolcPlayer implements PlayerAdapter {
                     case Info.MEDIA_INFO_BUFFERING_END:
                         break;
                     default:
-                        mListener.onInfo(player, what, extra);
+                        listener.onInfo(player, what, extra);
                         break;
                 }
             }
 
             @Override
             public void onCacheHint(PlayerAdapter mp, long cacheSize) {
-                mListener.onCacheHint(player, cacheSize);
+                listener.onCacheHint(player, cacheSize);
             }
 
             @Override
-            public void onTrackInfoReady(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull List<Track> tracks1) {
-                List<Track> tracks = mediaSource.getTracks(trackType);
-                if (tracks == null || tracks.isEmpty()) return;
+            public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource mediaSource1) {
 
-                mListener.onTrackInfoReady(player, trackType, tracks);
+                listener.onMediaSourceUpdateStart(player, type, mediaSource);
             }
 
             @Override
-            public void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current1, @NonNull Track target1) {
-                final Track current = Mapper.findTrack(mediaSource, mp.getDataSource(), current1);
-                final Track target = Mapper.findTrack(mediaSource, mp.getDataSource(), target1);
-                if (target == null) return;
+            public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource mediaSource1) {
+                if (type == MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
+                    Mapper.updateMediaSource(mMediaSource, mediaSource); // TODO
+                }
+                listener.onMediaSourceUpdated(player, type, mediaSource);
+            }
 
+            @Override
+            public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
+                listener.onMediaSourceUpdated(player, type, mediaSource);
+            }
+
+            @Override
+            public void onTrackInfoReady(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull List<Track> tracks) {
+                mediaSource.setTracks(tracks);
+
+                listener.onTrackInfoReady(player, trackType, tracks);
+            }
+
+            @Override
+            public void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target) {
                 setPendingTrack(trackType, target);
-                mListener.onTrackWillChange(player, trackType, current, target);
+
+                listener.onTrackWillChange(player, trackType, current, target);
             }
 
             @Override
-            public void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre1, @NonNull Track current1) {
-                Track pre = Mapper.findTrack(mediaSource, mp.getDataSource(), pre1);
-                Track current = Mapper.findTrack(mediaSource, mp.getDataSource(), current1);
-                if (current == null) return;
-
-                removePendingTrack(trackType);
+            public void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre, @NonNull Track current) {
+                setPendingTrack(trackType, null);
                 setCurrentTrack(trackType, current);
 
-                mListener.onTrackChanged(player, trackType, pre, current);
+                listener.onTrackChanged(player, trackType, pre, current);
+            }
+
+            @Override
+            public void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled) {
+                listener.onSubtitleStateChanged(player, enabled);
+            }
+
+            @Override
+            public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
+                mediaSource.setSubtitles(subtitles);
+
+                listener.onSubtitleInfoReady(player, subtitles);
+            }
+
+            @Override
+            public void onSubtitleFileLoadFinish(@NonNull PlayerAdapter mp, int success, String info) {
+                listener.onSubtitleFileLoadFinish(player, success, info);
+            }
+
+            @Override
+            public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+                setPendingSubtitle(target);
+
+                listener.onSubtitleWillChange(player, current, target);
+            }
+
+            @Override
+            public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+                setPendingSubtitle(null);
+                setCurrentSubtitle(current);
+
+                listener.onSubtitleChanged(player, pre, current);
+            }
+
+            @Override
+            public void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText) {
+                if (mListener == null) return;
+                mListener.onSubtitleTextUpdate(player, subtitleText);
             }
         });
     }
@@ -559,8 +667,18 @@ class VolcPlayer implements PlayerAdapter {
         Asserts.checkState(getState(), Player.STATE_IDLE, Player.STATE_STOPPED);
         setState(Player.STATE_PREPARING);
 
-        mStrategySource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource);
+        final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource);
+        if (vidSource == null) {
+            // TODO error
+            return;
+        }
+        mStrategySource = vidSource;
         mPlayer.setStrategySource(mStrategySource);
+
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        if (volcConfig.enableSubtitle) {
+            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
+        }
         /** config in {@link  #prepareVid(MediaSource, Track)} which invoked in
          * {@link  TTVideoEngineListenerAdapter#onFetchedVideoInfo(VideoModel)} */
         preparePlayer(mPlayer, mStartWhenPrepared);
@@ -568,6 +686,7 @@ class VolcPlayer implements PlayerAdapter {
 
     private void prepareDirectUrl(@NonNull MediaSource mediaSource) {
         L.d(this, "prepareDirectUrl", MediaSource.dump(mediaSource));
+
         Asserts.checkState(getState(), Player.STATE_IDLE, Player.STATE_STOPPED);
         setState(Player.STATE_PREPARING);
 
@@ -619,30 +738,97 @@ class VolcPlayer implements PlayerAdapter {
         return null;
     }
 
+    @Nullable
+    private Subtitle selectPlaySubtitle(MediaSource mediaSource) {
+        final List<Subtitle> subtitles = mediaSource.getSubtitles();
+        if (subtitles != null && !subtitles.isEmpty()) {
+            mListener.onSubtitleInfoReady(this, subtitles);
+        }
+
+        Subtitle subtitle = getSelectedSubtitle();
+        if (subtitle != null) return subtitle;
+
+        if (subtitles != null && !subtitles.isEmpty()) {
+            subtitle = VolcPlayerInit.getSubtitleSelector().selectSubtitle(mediaSource, mediaSource.getSubtitles());
+        }
+        return subtitle;
+    }
+
     private void prepareDirectUrl(MediaSource mediaSource, Track track, boolean startWhenPrepared) {
         if (isInState(Player.STATE_IDLE, Player.STATE_STOPPED)) {
             setState(Player.STATE_PREPARING);
         }
-        mStrategySource = Mapper.mediaSource2DirectUrlSource(
+
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+
+        final DirectUrlSource directUrlSource = Mapper.mediaSource2DirectUrlSource(
                 mediaSource,
                 track,
                 VolcPlayerInit.getCacheKeyFactory());
+
+        if (directUrlSource == null) {
+            // TODO error
+            return;
+        }
+
+        mStrategySource = directUrlSource;
         mPlayer.setStrategySource(mStrategySource);
-        config(mContext, mPlayer, mediaSource, track);
+
+        if (volcConfig.enableSubtitle) {
+            mSubtitleSource = Mapper.subtitles2SubtitleSource(mediaSource.getSubtitles());
+            if (mSubtitleSource != null) {
+                mPlayer.setSubDesInfoModel(mSubtitleSource);
+                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
+                if (subtitle != null) {
+                    selectSubtitle(subtitle);
+                }
+            }
+        }
+
+        config(mediaSource, track);
 
         preparePlayer(mPlayer, startWhenPrepared);
     }
 
     private void prepareVideoModel(MediaSource mediaSource, @NonNull Track track, boolean startWhenPrepared) {
-        mStrategySource = Mapper.mediaSource2VideoModelSource(
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+
+        final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(
                 mediaSource,
                 track,
                 VolcPlayerInit.getCacheKeyFactory()
         );
+
+        if (videoModelSource == null) {
+            // TODO error
+            return;
+        }
+
+        mStrategySource = videoModelSource;
         mPlayer.setStrategySource(mStrategySource);
-        config(mContext, mPlayer, mediaSource, track);
+
+        if (volcConfig.enableSubtitle) {
+            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
+            setSubtitleIds(videoModelSource.videoModel());
+        }
+
+        config(mediaSource, track);
 
         preparePlayer(mPlayer, startWhenPrepared);
+    }
+
+    private void setSubtitleIds(IVideoModel videoModel) {
+        final VolcConfig volcConfig = VolcConfig.get(mMediaSource);
+        if (volcConfig.enableSubtitle &&
+                volcConfig.subtitleLanguageIds != null) {
+            final String subtitleIds = Mapper.subtitleList2SubtitleIds(
+                    Mapper.findSubInfoListWithLanguageIds(
+                            Mapper.findSubInfoList(videoModel),
+                            volcConfig.subtitleLanguageIds));
+            if (!TextUtils.isEmpty(subtitleIds)) {
+                mPlayer.setStringOption(TTVideoEngine.PLAYER_OPTION_SUB_IDS, subtitleIds);
+            }
+        }
     }
 
     void preparePlayer(TTVideoEngine player, boolean startWhenPrepared) {
@@ -657,17 +843,25 @@ class VolcPlayer implements PlayerAdapter {
         }
     }
 
-    static void config(Context context, TTVideoEngine player, MediaSource mediaSource, @Nullable Track track) {
+    private void config(MediaSource mediaSource, @Nullable Track track) {
         if (track != null) {
-            player.configResolution(Mapper.track2Resolution(track));
+            mPlayer.configResolution(Mapper.track2Resolution(track));
         }
 
         final Map<String, String> headers = Mapper.findHeaders(mediaSource, track);
         if (headers != null) {
-            setHeaders(player, headers);
+            setHeaders(mPlayer, headers);
         }
 
-        VolcSuperResolutionStrategy.initSuperResolution(context, player, mediaSource, track);
+        VolcSuperResolutionStrategy.initSuperResolution(mContext, mPlayer, mediaSource, track);
+    }
+
+    @Nullable
+    private static SubDesInfoModel createSubtitleSource(MediaSource mediaSource) {
+        List<Subtitle> subtitles = mediaSource.getSubtitles();
+        if (subtitles == null || subtitles.isEmpty()) return null;
+        final JSONObject jsonObject = Mapper.subtitles2SubtitleModel(subtitles);
+        return new SubDesInfoModel(jsonObject);
     }
 
     @Override
@@ -766,7 +960,6 @@ class VolcPlayer implements PlayerAdapter {
     private void resetSource() {
         L.d(this, "resetSource", MediaSource.dump(mMediaSource));
         mMediaSource = null;
-        mStrategySource = null;
         mCurrentTrack.clear();
         mPendingTrack.clear();
         mSelectedTrack.clear();
@@ -800,9 +993,8 @@ class VolcPlayer implements PlayerAdapter {
         if (isInState(Player.STATE_RELEASED)) {
             return;
         }
-        final MediaSource mediaSource = mMediaSource;
+        L.d(this, "release", mPlayer, MediaSource.dump(mMediaSource));
         resetInner();
-        L.d(this, "release", mPlayer, MediaSource.dump(mediaSource));
         mPlayer.setIsMute(true);
         mPlayer.releaseAsync();
         setState(Player.STATE_RELEASED);
@@ -907,7 +1099,7 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public float[] getVolume() {
-        if (!VolcConfig.get(mMediaSource).enableAudioTrackVolume && mPlayer != null) {
+        if (!VolcConfig.get(mMediaSource).enableAudioTrackVolume) {
             float maxVolume = mPlayer.getMaxVolume();
             float volume = mPlayer.getVolume();
             if (volume >= 0 && volume <= maxVolume) {
@@ -975,6 +1167,24 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public boolean isSuperResolutionEnabled() {
         return VolcSuperResolutionStrategy.isEnabled(mPlayer);
+    }
+
+    @Override
+    public void setSubtitleEnabled(boolean enabled) {
+        if (VolcConfig.get(mMediaSource).enableSubtitle) {
+            if (EngineParams.get(mPlayer).mSubtitleEnabled != enabled) {
+                EngineParams.get(mPlayer).mSubtitleEnabled = enabled;
+                mPlayer.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPEN_SUB, enabled ? 1 : 0);
+                if (mListener != null) {
+                    mListener.onSubtitleStateChanged(this, enabled);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean isSubtitleEnabled() {
+        return VolcConfig.get(mMediaSource).enableSubtitle && EngineParams.get(mPlayer).mSubtitleEnabled;
     }
 
     @Override
@@ -1059,7 +1269,8 @@ class VolcPlayer implements PlayerAdapter {
 
             //TODO dash abr
             final Track current = player.getCurrentTrack(trackType);
-            final Track pending = player.removePendingTrack(trackType);
+            final Track pending = player.getPendingTrack(trackType);
+            player.setPendingTrack(trackType, null);
 
             if (pending == null) {
                 return;
@@ -1214,7 +1425,7 @@ class VolcPlayer implements PlayerAdapter {
 
             L.d(player, "onVideoStreamBitrateChanged", Track.dump(current), Track.dump(track), Quality.dump(quality));
             if (track != null && Objects.equals(track.getQuality(), quality)) {
-                player.removePendingTrack(Track.TRACK_TYPE_VIDEO);
+                player.setPendingTrack(Track.TRACK_TYPE_VIDEO, null);
                 player.setCurrentTrack(Track.TRACK_TYPE_VIDEO, track);
                 listener.onTrackChanged(player, Track.TRACK_TYPE_VIDEO, current, track);
             }
@@ -1239,9 +1450,12 @@ class VolcPlayer implements PlayerAdapter {
                 listener.onMediaSourceUpdated(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED, mediaSource);
             }
 
+            // select start play subtitle
+            player.setSubtitleIds(videoModel);
+            // select start play video/audio track
             final Track playTrack = player.selectPlayTrack(mediaSource);
             if (playTrack != null) {
-                config(player.mContext, mPlayer, mediaSource, playTrack);
+                player.config(mediaSource, playTrack);
                 return false;
             } else {
                 new Handler().post(() -> {
@@ -1292,6 +1506,100 @@ class VolcPlayer implements PlayerAdapter {
             if (listener == null) return;
 
             listener.onProgressUpdate(player, currentPlaybackTime);
+        }
+
+        @Override
+        public void onSubPathInfo(String subPathInfo, Error error) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            final Listener listener = player.mListener;
+            if (listener == null) return;
+
+            final MediaSource mediaSource = player.mMediaSource;
+            if (mediaSource == null) return;
+
+            L.d(player, "onSubPathInfo", subPathInfo, error);
+
+            if (error != null) {
+                listener.onMediaSourceUpdateError(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, new PlayerException(error.code, error.toString()));
+                return;
+            }
+
+            // TODO
+            if (!TextUtils.isEmpty(subPathInfo)) {
+                JSONObject subtitleModel;
+                try {
+                    subtitleModel = new JSONObject(subPathInfo);
+                } catch (JSONException e) {
+                    listener.onMediaSourceUpdateError(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, new PlayerException(PlayerException.CODE_SUBTITLE_PARSE_ERROR, "subtitleModel parse error", e));
+                    return;
+                }
+                List<Subtitle> subtitles = Mapper.subtitleModel2Subtitles(subtitleModel);
+                if (subtitles != null && !subtitles.isEmpty()) {
+                    mediaSource.setSubtitles(subtitles);
+                    listener.onMediaSourceUpdated(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, mediaSource);
+
+                    final Subtitle playSubtitle = player.selectPlaySubtitle(mediaSource);
+                    if (playSubtitle != null) {
+                        player.selectSubtitle(playSubtitle);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onSubInfoCallback(int code, String info) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            Listener listener = player.mListener;
+            if (listener == null) return;
+
+            L.v(player, "onSubInfoCallback", code, info);
+            SubtitleText subtitleText = Mapper.mapSubtitleFrameInfo2SubtitleText(info);
+            if (subtitleText != null) {
+                listener.onSubtitleTextUpdate(player, subtitleText);
+            }
+        }
+
+        @Override
+        public void onSubSwitchCompleted(int success, int subId) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            Listener listener = player.mListener;
+            if (listener == null) return;
+            MediaSource mediaSource = player.mMediaSource;
+            if (mediaSource == null) return;
+
+            L.d(player, "onSubSwitchCompleted", success, subId);
+
+            final Subtitle subtitle = mediaSource.getSubtitle(subId);
+            final Subtitle pending = player.getPendingSubtitle();
+            final Subtitle current = player.getCurrentSubtitle();
+            if (pending == subtitle) {
+                player.setPendingSubtitle(null);
+                player.setCurrentSubtitle(subtitle);
+                listener.onSubtitleChanged(player, current, subtitle);
+            }
+        }
+
+        @Override
+        public void onSubLoadFinished2(int success, String info) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            Listener listener = player.mListener;
+            if (listener == null) return;
+
+            L.d(player, "onSubLoadFinished2", success, info);
+
+            final Subtitle selected = player.getSelectedSubtitle();
+            final Subtitle current = player.getCurrentSubtitle();
+            if (current == null) {
+                player.setPendingSubtitle(null);
+                player.setCurrentSubtitle(selected);
+                listener.onSubtitleChanged(player, null, selected);
+            }
+
+            listener.onSubtitleFileLoadFinish(player, success, info);
         }
     }
 

@@ -26,6 +26,7 @@ import com.bytedance.playerkit.player.source.Track;
 import com.ss.ttvideoengine.source.Source;
 
 import java.io.Serializable;
+import java.util.List;
 
 
 public class VolcConfig implements Serializable {
@@ -68,6 +69,8 @@ public class VolcConfig implements Serializable {
 
     public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
     public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
+    public boolean enableSubtitle = false;
+    public List<Integer> subtitleLanguageIds;
 
     public String tag;
     public String subTag;
