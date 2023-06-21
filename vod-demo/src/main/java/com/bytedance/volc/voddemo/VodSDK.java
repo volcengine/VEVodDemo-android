@@ -28,9 +28,10 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
-import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
+import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 
@@ -89,6 +90,6 @@ public class VodSDK {
         if (VolcConfigGlobal.ENABLE_PCDN) {
             VolcConfig.PCDN_FILE_KEY_REGULAR_EXPRESSION = "[a-zA-z]+://[^/]*/[^/]*/[^/]*/(.*?)\\?.*";
         }
-        VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector);
+        VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector, new VolcSubtitleSelector());
     }
 }

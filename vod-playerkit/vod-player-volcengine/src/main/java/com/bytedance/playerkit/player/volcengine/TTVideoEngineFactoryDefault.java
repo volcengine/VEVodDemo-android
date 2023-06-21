@@ -18,6 +18,7 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import static com.bytedance.playerkit.player.volcengine.VolcPlayer.*;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.IMAGE_LAYOUT_TO_FILL;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_SEGMENT_FORMAT_FLAG;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_FMP4;
@@ -110,6 +111,16 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
                 VolcConfigGlobal.ENABLE_PCDN &&
                 VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_PCDN)) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_P2P_CDN_TYPE, 2);
+        }
+
+        if (volcConfig.enableSubtitle && (mediaSource.getSubtitles() != null || mediaSource.getSubtitleAuthToken() != null)) {
+            // 字幕开关，启播或者播放过程中控制打开或者关闭字幕
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPEN_SUB, 1);
+            // 字幕的线程是否开启，play之前调用
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPEN_SUB_THREAD, 1);
+            // 使用字幕单路加载优化
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPT_SUB_LOAD_TIME, 1);
+            EngineParams.get(player).mSubtitleEnabled = true;
         }
 
         // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUXER_RW_LOCK, 1);

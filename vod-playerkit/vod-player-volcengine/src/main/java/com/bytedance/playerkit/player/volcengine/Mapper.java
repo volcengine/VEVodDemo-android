@@ -30,14 +30,18 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.utils.Asserts;
 import com.ss.ttvideoengine.Resolution;
+import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.model.BareVideoInfo;
 import com.ss.ttvideoengine.model.BareVideoModel;
 import com.ss.ttvideoengine.model.IVideoModel;
+import com.ss.ttvideoengine.model.SubInfo;
 import com.ss.ttvideoengine.model.VideoInfo;
 import com.ss.ttvideoengine.model.VideoRef;
 import com.ss.ttvideoengine.source.DirectUrlSource;
@@ -47,6 +51,10 @@ import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
 import com.ss.ttvideoengine.utils.TTHelper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -233,8 +241,8 @@ public class Mapper {
         List<Track> tracks = mediaSource.getTracks();
         for (Track track : tracks) {
             String cacheKey = cacheKeyFactory.generateCacheKey(mediaSource, track);
-            String cacheKey1 =  cacheKeyFactory.generateCacheKey(mediaSource1, t1);
-            if  (TextUtils.equals(cacheKey, cacheKey1)){
+            String cacheKey1 = cacheKeyFactory.generateCacheKey(mediaSource1, t1);
+            if (TextUtils.equals(cacheKey, cacheKey1)) {
                 return track;
             }
         }
@@ -254,13 +262,14 @@ public class Mapper {
 
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
         if (videoModel == null) return;
-        if (mediaSource.getTracks() != null) return;
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
         mediaSource.setSegmentType(dynamicType2SegmentType(videoModel.getDynamicType()));
         mediaSource.setSupportABR(videoModel.getVideoRefBool(VideoRef.VALUE_VIDEO_REF_ENABLE_ADAPTIVE));
-        mediaSource.setTracks(videoInfoList2TrackList(videoModel));
-
+        if (mediaSource.getTracks() == null) {
+            mediaSource.setTracks(videoInfoList2TrackList(videoModel));
+        }
         long duration = videoModel.getVideoRefInt(VideoRef.VALUE_VIDEO_REF_VIDEO_DURATION) * 1000L;
         if (mediaSource.getDuration() <= 0) { // using app server
             mediaSource.setDuration(duration);
@@ -572,5 +581,158 @@ public class Mapper {
             }
         }
         return 0;
+    }
+
+    @Nullable
+    private static Subtitle parseSubtitle(@Nullable JSONObject object) {
+        if (object == null) return null;
+        Subtitle subtitle = new Subtitle();
+        subtitle.setUrl(object.optString("url"));
+        subtitle.setLanguageId(object.optInt("language_id"));
+        subtitle.setFormat(object.optString("format"));
+        subtitle.setLanguage(object.optString("language"));
+        subtitle.setIndex(object.optInt("id"));
+        subtitle.setExpire(object.optLong("expire"));
+        subtitle.setSubtitleId(object.optInt("sub_id"));
+        return subtitle;
+    }
+
+    @Nullable
+    private static JSONObject subtitle2Json(Subtitle subtitle) {
+        if (subtitle == null) return null;
+        JSONObject object = new JSONObject();
+        try {
+            object.put("url", subtitle.getUrl());
+            object.put("language_id", subtitle.getLanguageId());
+            object.put("format", subtitle.getFormat());
+            object.put("language", subtitle.getLanguage());
+            object.put("id", subtitle.getIndex());
+            object.put("expire", subtitle.getExpire());
+            object.put("sub_id", subtitle.getSubtitleId());
+            return object;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    public static List<Subtitle> subtitleModel2Subtitles(@Nullable JSONObject subtitleModel) {
+        if (subtitleModel == null) return null;
+        JSONArray jsonArray = subtitleModel.optJSONArray("list");
+        if (jsonArray == null) return null;
+
+        List<Subtitle> subtitles = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            Subtitle subtitle = parseSubtitle(jsonArray.optJSONObject(i));
+            if (subtitle != null) {
+                subtitles.add(subtitle);
+            }
+        }
+        return subtitles;
+    }
+
+    @Nullable
+    public static JSONObject subtitles2SubtitleModel(@Nullable List<Subtitle> subtitles) {
+        if (subtitles == null) return null;
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (Subtitle subtitle : subtitles) {
+                JSONObject object = subtitle2Json(subtitle);
+                if (object != null) {
+                    jsonArray.put(object);
+                }
+            }
+            jsonObject.put("list", jsonArray);
+            return jsonObject;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    public static SubDesInfoModel subtitleModel2SubtitleSource(@Nullable JSONObject subtitleModel) {
+        if (subtitleModel == null) return null;
+        SubDesInfoModel subtitleSource = new SubDesInfoModel(subtitleModel);
+        if (subtitleSource.getSubModelList() != null && !subtitleSource.getSubModelList().isEmpty()) {
+            return subtitleSource;
+        }
+        return null;
+    }
+
+    @Nullable
+    public static SubDesInfoModel subtitles2SubtitleSource(@Nullable List<Subtitle> subtitles) {
+        return Mapper.subtitleModel2SubtitleSource(Mapper.subtitles2SubtitleModel(subtitles));
+    }
+
+    public static List<SubInfo> findSubInfoList(IVideoModel videoModel) {
+        if (videoModel == null) return null;
+        return videoModel.getSubInfoList();
+    }
+
+    public static List<SubInfo> findSubInfoListWithLanguageIds(List<SubInfo> subInfoList, List<Integer> subtitleLanguageIds) {
+        if (subInfoList == null) return null;
+        if (subtitleLanguageIds == null) return subInfoList;
+
+        List<SubInfo> list = new ArrayList<>();
+        for (int languageId : subtitleLanguageIds) {
+            for (SubInfo subInfo : subInfoList) {
+                if (subInfo.getValueInt(SubInfo.VALUE_SUB_INFO_LANGUAGE_ID) == languageId) {
+                    list.add(subInfo);
+                }
+            }
+        }
+        return list;
+    }
+
+    @Nullable
+    public static List<Subtitle> subInfoList2Subtitles(List<SubInfo> subInfoList) {
+        if (subInfoList == null) return null;
+        List<Subtitle> subtitles = new ArrayList<>();
+        for (SubInfo subInfo : subInfoList) {
+            Subtitle subtitle = subInfo2Subtitle(subInfo);
+            subtitles.add(subtitle);
+        }
+        return subtitles;
+    }
+
+    public static Subtitle subInfo2Subtitle(SubInfo subInfo) {
+        Subtitle subtitle = new Subtitle();
+        subtitle.setSubtitleId(subInfo.getValueInt(SubInfo.VALUE_SUB_INFO_ID));
+        subtitle.setLanguageId(subInfo.getValueInt(SubInfo.VALUE_SUB_INFO_LANGUAGE_ID));
+        subtitle.setFormat(subInfo.getValueStr(SubInfo.VALUE_SUB_INFO_FORMAT));
+        return subtitle;
+    }
+
+    @Nullable
+    public static String subtitleList2SubtitleIds(List<SubInfo> subInfoList) {
+        if (subInfoList == null) return null;
+        StringBuilder sb = new StringBuilder();
+        for (SubInfo subInfo : subInfoList) {
+            sb.append(subInfo.getValueInt(SubInfo.VALUE_SUB_INFO_ID)).append(",");
+        }
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+    @Nullable
+    public static SubtitleText mapSubtitleFrameInfo2SubtitleText(@Nullable String subtitleFrameInfo) {
+        if (TextUtils.isEmpty(subtitleFrameInfo)) return null;
+        try {
+            JSONObject json = new JSONObject(subtitleFrameInfo);
+            SubtitleText subtitleText = new SubtitleText();
+            subtitleText.setText(json.optString("info"));
+            subtitleText.setPts(json.optLong("pts"));
+            subtitleText.setDuration(json.optLong("duration"));
+            return subtitleText;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

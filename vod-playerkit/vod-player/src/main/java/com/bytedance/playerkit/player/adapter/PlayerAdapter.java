@@ -29,6 +29,8 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 
 import java.io.Closeable;
@@ -145,6 +147,16 @@ public interface PlayerAdapter {
 
     List<Track> getTracks(@Track.TrackType int trackType) throws IllegalStateException;
 
+    List<Subtitle> getSubtitles();
+
+    void selectSubtitle(@Nullable Subtitle subtitle);
+
+    Subtitle getSelectedSubtitle();
+
+    Subtitle getPendingSubtitle();
+
+    Subtitle getCurrentSubtitle();
+
     void setStartTime(long startTime);
 
     void setStartWhenPrepared(boolean startWhenPrepared);
@@ -211,9 +223,13 @@ public interface PlayerAdapter {
 
     boolean isSuperResolutionEnabled();
 
+    void setSubtitleEnabled(boolean enabled);
+
+    boolean isSubtitleEnabled();
+
     String dump();
 
-    interface Listener extends PlayerListener, MediaSourceListener, TrackListener {
+    interface Listener extends PlayerListener, MediaSourceListener, TrackListener, SubtitleListener {
     }
 
     interface PlayerListener {
@@ -253,5 +269,19 @@ public interface PlayerAdapter {
         void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target);
 
         void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre, @NonNull Track current);
+    }
+
+    interface SubtitleListener {
+        void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled);
+
+        void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles);
+
+        void onSubtitleFileLoadFinish(@NonNull PlayerAdapter mp, int success, String info);
+
+        void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target);
+
+        void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current);
+
+        void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText);
     }
 }

@@ -26,6 +26,8 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.player.adapter.PlayerAdapter;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 
 import java.util.ArrayList;
@@ -148,6 +150,49 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
                 () -> mListener.onTrackChanged(mp, trackType, pre, current)));
     }
 
+    @Override
+    public void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleStateChanged,
+                new Object[]{enabled},
+                () -> mListener.onSubtitleStateChanged(mp, enabled)));
+    }
+
+    @Override
+    public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleInfoReady,
+                new Object[]{subtitles},
+                () -> mListener.onSubtitleInfoReady(mp, subtitles)));
+    }
+
+    @Override
+    public void onSubtitleFileLoadFinish(@NonNull PlayerAdapter mp, int success, String info) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleFileLoadFinish,
+                new Object[]{success, info},
+                () -> mListener.onSubtitleFileLoadFinish(mp, success, info)));
+    }
+
+    @Override
+    public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleWillChange,
+                new Object[]{current, target},
+                () -> mListener.onSubtitleWillChange(mp, current, target)));
+    }
+
+    @Override
+    public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleChanged,
+                new Object[]{pre, current},
+                () -> mListener.onSubtitleChanged(mp, pre, current)));
+    }
+
+    @Override
+    public void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleTextUpdate,
+                new Object[]{subtitleText},
+                () -> mListener.onSubtitleTextUpdate(mp, subtitleText)));
+    }
+
+
     void notifyEvents(PlayerAdapter.Listener listener) {
         this.mListener = listener;
         List<VolcEvent> events;
@@ -179,6 +224,13 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
         static final int EVENT_onTrackInfoReady = 15;
         static final int EVENT_onTrackWillChange = 16;
         static final int EVENT_onTrackChanged = 17;
+
+        static final int EVENT_onSubtitleStateChanged = 18;
+        static final int EVENT_onSubtitleInfoReady = 19;
+        static final int EVENT_onSubtitleFileLoadFinish = 20;
+        static final int EVENT_onSubtitleWillChange = 21;
+        static final int EVENT_onSubtitleChanged = 22;
+        static final int EVENT_onSubtitleTextUpdate = 23;
 
         final int type;
 

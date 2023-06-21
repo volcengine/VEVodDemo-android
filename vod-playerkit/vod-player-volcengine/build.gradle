@@ -79,6 +79,8 @@ dependencies {
     implementation "com.bytedance.applog:RangersAppLog-Lite-cn:${project.ext.bytedance.applogVersion}"
     implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
 
+    implementation "com.google.code.gson:gson:2.8.9"
+
     implementation project(':vod-playerkit:vod-player')
     implementation project(':vod-playerkit:vod-player-utils')
 }

@@ -17,7 +17,7 @@
   -->
 
 <resources>
-    <string name="vevod_feed_video_vv_layer_watch_count_info">"17.2万观看  "</string>
+    <string name="vevod_feed_video_vv_layer_watch_count_info">17.2W Watches</string>
 
 
     <string name="vevod_time_progress_bar_speed">Speed</string>
@@ -41,11 +41,17 @@
     <string name="vevod_speed_select_default">(Default)</string>
     <string name="vevod_quality_select_tips_will_switch">Definition is being switched to %1$s</string>
     <string name="vevod_quality_select_tips_switched">%1$s has been switched success</string>
+    <string name="vevod_subtitle_select_tips_hide">Subtitle has been hidden.</string>
+    <string name="vevod_subtitle_select_tips_will_switch">Subtitle is being switched to %1$s</string>
+    <string name="vevod_subtitle_select_tips_switched">%1$s has been switched success</string>
+    <string name="vevod_subtitle_hide">Hide Subtitle</string>
+    <string name="vevod_subtitle_language_cn">Chinese</string>
+    <string name="vevod_subtitle_language_english">English</string>
     <string name="vevod_more_dialog_item_noloop">No loop</string>
     <string name="vevod_more_dialog_item_loop">Loop</string>
-    <string name="vevod_time_progress_subtitle">字幕</string>
-    <string name="vevod_time_progress_send_danmaku">发送弹幕</string>
-    <string name="vevod_more_dialog_category_loop_mode">循环模式</string>
+    <string name="vevod_time_progress_subtitle">Subtitle</string>
+    <string name="vevod_time_progress_send_danmaku">Danmaku</string>
+    <string name="vevod_more_dialog_category_loop_mode">Loop</string>
     <string name="vevod_media_seek_bar_text2">00:00</string>
     <string name="vevod_media_seekbar_text1">00:00</string>
     <string name="vevod_more_dialog_item_super_res">Super Resolution</string>

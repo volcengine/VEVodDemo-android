@@ -68,6 +68,7 @@ public class TipsLayer extends AnimateLayer {
         int paddingV = (int) dip2Px(parent.getContext(), 2);
         int paddingH = (int) dip2Px(parent.getContext(), 8);
         textView.setPadding(paddingH, paddingV, paddingH, paddingV);
+        textView.setShadowLayer(5, 0, 0, Color.BLACK);
         return textView;
     }
 

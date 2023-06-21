@@ -22,6 +22,7 @@ import com.ss.ttvideoengine.PlayerEventListener;
 import com.ss.ttvideoengine.PlayerEventSimpleListener;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SeekCompletionListener;
+import com.ss.ttvideoengine.SubInfoCallBack;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.VideoEngineCallback;
 import com.ss.ttvideoengine.VideoEngineInfoListener;
@@ -36,7 +37,8 @@ public class TTVideoEngineListenerAdapter extends PlayerEventSimpleListener impl
         SeekCompletionListener,
         VideoInfoListener,
         VideoEngineInfoListener,
-        PlayerEventListener {
+        PlayerEventListener,
+        SubInfoCallBack {
 
     @Override
     public void onCompletion(boolean b) {
@@ -145,4 +147,49 @@ public class TTVideoEngineListenerAdapter extends PlayerEventSimpleListener impl
     public String getEncryptedLocalTime() {
         return null;
     }
+
+    /**
+     * subtitle
+     * video model场景使用
+     * @param subPathInfo sub apiString response info
+     * @param error error info
+     */
+    @Override
+    public void onSubPathInfo(String subPathInfo, Error error) {}
+
+
+    /**
+     * subtitle
+     * @param info 字幕信息json String
+     * @param code 错误码，暂不使用
+     * 字段:
+     * duration: 字幕时长
+     * pts:      时间戳
+     * info:     字幕内容
+     *
+     */
+    @Override
+    public void onSubInfoCallback(int code, String info) {}
+
+    /**
+     * subtitle
+     * @param success is switch success
+     * @param subId current sub id
+     */
+    @Override
+    public void onSubSwitchCompleted(int success, int subId) {}
+
+    @Override
+    public void onSubLoadFinished(int i) {
+    }
+
+    /**
+     * subtitle
+     * @param success is subttile load success
+     * @param info 字幕信息json String
+     * 字段:
+     * first_pts: 字幕文件第一贞时间戳
+     * code：字幕加载完成状态码
+     * */
+    public void onSubLoadFinished2(int success, String info){}
 }

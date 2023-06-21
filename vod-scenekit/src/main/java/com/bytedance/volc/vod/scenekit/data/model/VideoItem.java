@@ -19,26 +19,29 @@
 package com.bytedance.volc.vod.scenekit.data.model;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSR;
+import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
+
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class VideoItem implements Parcelable, Serializable {
+public class VideoItem implements Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
     public static final int SOURCE_TYPE_VID = 0;
@@ -48,64 +51,17 @@ public class VideoItem implements Parcelable, Serializable {
     private VideoItem() {
     }
 
-    protected VideoItem(Parcel in) {
-        vid = in.readString();
-        playAuthToken = in.readString();
-        videoModel = in.readString();
-        mediaSource = (MediaSource) in.readSerializable();
-        duration = in.readLong();
-        title = in.readString();
-        cover = in.readString();
-        url = in.readString();
-        urlCacheKey = in.readString();
-        sourceType = in.readInt();
-        tag = in.readString();
-        subTag = in.readString();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(vid);
-        dest.writeString(playAuthToken);
-        dest.writeString(videoModel);
-        dest.writeSerializable(mediaSource);
-        dest.writeLong(duration);
-        dest.writeString(title);
-        dest.writeString(cover);
-        dest.writeString(url);
-        dest.writeString(urlCacheKey);
-        dest.writeInt(sourceType);
-        dest.writeString(tag);
-        dest.writeString(subTag);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<VideoItem> CREATOR = new Creator<VideoItem>() {
-        @Override
-        public VideoItem createFromParcel(Parcel in) {
-            return new VideoItem(in);
-        }
-
-        @Override
-        public VideoItem[] newArray(int size) {
-            return new VideoItem[size];
-        }
-    };
-
     public static VideoItem createVidItem(
             @NonNull String vid,
             @NonNull String playAuthToken,
             @Nullable String cover) {
-        return createVidItem(vid, playAuthToken, 0, cover, null);
+        return createVidItem(vid, playAuthToken, null,0, cover, null);
     }
 
     public static VideoItem createVidItem(
             @NonNull String vid,
             @NonNull String playAuthToken,
+            @Nullable String subtitleAuthToken,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -113,6 +69,7 @@ public class VideoItem implements Parcelable, Serializable {
         videoItem.sourceType = SOURCE_TYPE_VID;
         videoItem.vid = vid;
         videoItem.playAuthToken = playAuthToken;
+        videoItem.subtitleAuthToken = subtitleAuthToken;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;
@@ -120,13 +77,14 @@ public class VideoItem implements Parcelable, Serializable {
     }
 
     public static VideoItem createUrlItem(@NonNull String url, @Nullable String cover) {
-        return createUrlItem(MD5.getMD5(url), url, null, 0, cover, null);
+        return createUrlItem(MD5.getMD5(url), url, null, null,0, cover, null);
     }
 
     public static VideoItem createUrlItem(
             @NonNull String vid,
             @NonNull String url,
             @Nullable String urlCacheKey,
+            @Nullable List<Subtitle> subtitles,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -135,6 +93,7 @@ public class VideoItem implements Parcelable, Serializable {
         videoItem.vid = vid;
         videoItem.url = url;
         videoItem.urlCacheKey = urlCacheKey;
+        videoItem.subtitles = subtitles;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;
@@ -177,6 +136,8 @@ public class VideoItem implements Parcelable, Serializable {
 
     private String playAuthToken;
 
+    private String subtitleAuthToken;
+
     private String videoModel;
 
     private MediaSource mediaSource;
@@ -190,6 +151,8 @@ public class VideoItem implements Parcelable, Serializable {
     private String url;
 
     private String urlCacheKey;
+
+    private List<Subtitle> subtitles;
 
     private int sourceType;
 
@@ -238,12 +201,17 @@ public class VideoItem implements Parcelable, Serializable {
 
     private static MediaSource createMediaSource(VideoItem videoItem) {
         if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
-            return MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
+            MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
+            mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken);
+            return mediaSource;
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
-            return MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+            MediaSource mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+            mediaSource.setSubtitles(videoItem.subtitles);
+            return mediaSource;
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
             MediaSource mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
             Mapper.updateVideoModelMediaSource(mediaSource);
+            mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken); // TODO
             return mediaSource;
         } else {
             throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
@@ -282,6 +250,8 @@ public class VideoItem implements Parcelable, Serializable {
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.enablePCDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PCDN);
+        volcConfig.enableSubtitle = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUBTITLE);
+        volcConfig.subtitleLanguageIds = VideoSubtitle.createLanguageIds();
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;
         return volcConfig;
