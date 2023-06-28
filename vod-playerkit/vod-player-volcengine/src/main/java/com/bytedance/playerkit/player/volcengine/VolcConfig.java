@@ -63,10 +63,9 @@ public class VolcConfig implements Serializable {
     public boolean enableDash = true;
     public boolean enableEngineLooper = VolcEditions.isSupportEngineLooper();
     public boolean enableSeekEnd = true;
-
+    public boolean enableFrameUpdateCallback = false;
     public boolean enablePCDN = false;
     public static String PCDN_FILE_KEY_REGULAR_EXPRESSION;
-
     public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
     public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
     public boolean enableSubtitle = false;

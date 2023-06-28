@@ -123,6 +123,10 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             EngineParams.get(player).mSubtitleEnabled = true;
         }
 
+        if (volcConfig.enableFrameUpdateCallback) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_VIDEO_FRAME_META_CALLBACK, 1);
+        }
+
         // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUXER_RW_LOCK, 1);
         // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_INTERRUPT, 1);
 

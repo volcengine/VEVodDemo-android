@@ -254,6 +254,17 @@ public interface Player {
         }
     }
 
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({FRAME_TYPE_UNKNOWN,
+            FRAME_TYPE_VIDEO,
+            FRAME_TYPE_AUDIO})
+    @interface FrameType {
+    }
+
+    int FRAME_TYPE_UNKNOWN = 0;
+    int FRAME_TYPE_VIDEO = 1;
+    int FRAME_TYPE_AUDIO = 2;
+
     interface Factory {
         class Default {
             private static Factory sInstance;

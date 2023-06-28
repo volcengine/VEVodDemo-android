@@ -18,6 +18,8 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import static com.bytedance.playerkit.player.Player.FRAME_TYPE_AUDIO;
+import static com.bytedance.playerkit.player.Player.FRAME_TYPE_VIDEO;
 import static com.bytedance.playerkit.player.Player.mapState;
 
 import android.annotation.SuppressLint;
@@ -494,10 +496,6 @@ class VolcPlayer implements PlayerAdapter {
                 .setAudioFallbackMode(playbackParams.getAudioFallbackMode());
 
         mStrategySource = prePlayer.mStrategySource;
-        final SparseArray<Track> selectedTrack = prePlayer.mSelectedTrack;
-        for (int i = 0; i < selectedTrack.size(); i++) {
-            mSelectedTrack.put(selectedTrack.keyAt(i), selectedTrack.valueAt(i));
-        }
 
         final VolcPlayerEventRecorder recorder = (VolcPlayerEventRecorder) prePlayer.mListener;
         if (recorder == null) return;
@@ -558,7 +556,6 @@ class VolcPlayer implements PlayerAdapter {
 
             @Override
             public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource mediaSource1) {
-
                 listener.onMediaSourceUpdateStart(player, type, mediaSource);
             }
 
@@ -584,6 +581,7 @@ class VolcPlayer implements PlayerAdapter {
 
             @Override
             public void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target) {
+                setSelectedTrack(trackType, target);
                 setPendingTrack(trackType, target);
 
                 listener.onTrackWillChange(player, trackType, current, target);
@@ -596,6 +594,7 @@ class VolcPlayer implements PlayerAdapter {
 
                 listener.onTrackChanged(player, trackType, pre, current);
             }
+
 
             @Override
             public void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled) {
@@ -616,6 +615,7 @@ class VolcPlayer implements PlayerAdapter {
 
             @Override
             public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+                setSelectedSubtitle(target);
                 setPendingSubtitle(target);
 
                 listener.onSubtitleWillChange(player, current, target);
@@ -631,9 +631,11 @@ class VolcPlayer implements PlayerAdapter {
 
             @Override
             public void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText) {
-                if (mListener == null) return;
-                mListener.onSubtitleTextUpdate(player, subtitleText);
+                listener.onSubtitleTextUpdate(player, subtitleText);
             }
+
+            @Override
+            public void onFrameInfoUpdate(@NonNull PlayerAdapter mp,  int frameType, long pts, long clockTime) { /**/}
         });
     }
 
@@ -1600,6 +1602,17 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             listener.onSubtitleFileLoadFinish(player, success, info);
+        }
+
+        @Override
+        public void onFrameAboutToBeRendered(TTVideoEngine engine, int type, long pts, long wallClockTime, Map<Integer, String> frameData) {
+            final VolcPlayer player = mPlayerRef.get();
+            if (player == null) return;
+            Listener listener = player.mListener;
+            if (listener == null) return;
+
+            L.v(player, "onFrameAboutToBeRendered", type, pts, wallClockTime);
+            listener.onFrameInfoUpdate(player, type == 0 ? FRAME_TYPE_VIDEO : FRAME_TYPE_AUDIO, pts, wallClockTime);
         }
     }
 

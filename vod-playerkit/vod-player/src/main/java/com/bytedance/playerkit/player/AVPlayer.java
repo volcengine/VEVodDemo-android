@@ -48,6 +48,7 @@ import com.bytedance.playerkit.player.event.InfoBufferingStart;
 import com.bytedance.playerkit.player.event.InfoBufferingUpdate;
 import com.bytedance.playerkit.player.event.InfoCacheUpdate;
 import com.bytedance.playerkit.player.event.InfoDataSourceRefreshed;
+import com.bytedance.playerkit.player.event.InfoFrameInfoUpdate;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
@@ -422,6 +423,16 @@ public class AVPlayer extends ExtraObject implements Player {
             L.v(player, "onSubtitleTextUpdate", SubtitleText.dump(subtitleText));
 
             player.mDispatcher.obtain(InfoSubtitleTextUpdate.class, player).init(subtitleText).dispatch();
+        }
+
+        @Override
+        public void onFrameInfoUpdate(@NonNull PlayerAdapter mp, int frameType, long pts, long clockTime) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            // L.v(player, "onFrameInfoUpdate", frameType, pts, clockTime);
+
+            player.mDispatcher.obtain(InfoFrameInfoUpdate.class, player).init(frameType, pts, clockTime).dispatch();
         }
     }
 
