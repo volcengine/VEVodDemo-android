@@ -500,7 +500,7 @@ class VolcCacheTask implements CacheLoader.Task {
         final Track target = resolvePreloadTrack(source);
         if (target == null) return;
 
-        VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(source, target, mCacheKeyFactory);
+        VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(source, mCacheKeyFactory);
         if (videoModelSource == null) return;
 
         final long preloadSize = resolvePreloadSize(target);
@@ -627,7 +627,7 @@ class VolcCacheTask implements CacheLoader.Task {
         Track target = getSelectedTrack(Track.TRACK_TYPE_VIDEO);
         if (target == null) {
             if (mTrackSelector != null) {
-                target = mTrackSelector.selectTrack(TrackSelector.TYPE_PRELOAD, Track.TRACK_TYPE_VIDEO, tracks, source);
+                target = mTrackSelector.selectTrack(TrackSelector.TYPE_PRELOAD, Track.TRACK_TYPE_VIDEO, tracks, source); // TODO
             }
             if (target == null) {
                 target = tracks.get(0);

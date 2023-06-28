@@ -34,10 +34,15 @@ import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
 import com.bytedance.playerkit.utils.L;
+import com.ss.ttvideoengine.PreloaderURLItem;
 import com.ss.ttvideoengine.PreloaderVidItem;
+import com.ss.ttvideoengine.PreloaderVideoModelItem;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.selector.strategy.GearStrategy;
+import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
+import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.EngineStrategyListener;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.StrategySettings;
@@ -78,14 +83,60 @@ public class VolcEngineStrategy {
                 final PreloaderVidItem item = PreloadTaskFactory.super.createVidItem(source, preloadSize);
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return item; // error
+                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
                 item.setFetchEndListener((videoModel, error) -> {
                     Mapper.updateMediaSource(mediaSource, videoModel);
-                    Track playTrack = selectPlayTrack(TrackSelector.TYPE_PRELOAD, mediaSource);
+                    final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+                    Track playTrack = null;
+                    if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+                        VolcQualityStrategy.StartupTrackResult result = VolcQualityStrategy.select(
+                                GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
+                                mediaSource,
+                                videoModel);
+                        playTrack = result.track;
+                    }
+                    if (playTrack == null) {
+                        playTrack = selectPlayTrack(TrackSelector.TYPE_PRELOAD, mediaSource);
+                    }
                     final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
                     if (resolution != null) {
                         item.mResolution = resolution;
                     }
                 });
+                return item;
+            }
+
+            @Override
+            public PreloaderVideoModelItem createVideoModelItem(VideoModelSource source, long preloadSize) {
+                final PreloaderVideoModelItem item = PreloadTaskFactory.super.createVideoModelItem(source, preloadSize);
+                final MediaSource mediaSource = (MediaSource) source.tag();
+                if (mediaSource == null) return item; // error
+                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
+                final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+                Track playTrack = null;
+                if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+                    VolcQualityStrategy.StartupTrackResult result = VolcQualityStrategy.select(
+                            GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
+                            mediaSource,
+                            source.videoModel());
+                    playTrack = result.track;
+                }
+                if (playTrack == null) {
+                    playTrack = selectPlayTrack(TrackSelector.TYPE_PRELOAD, mediaSource);
+                }
+                final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
+                if (resolution != null) {
+                    item.mResolution = resolution;
+                }
+                return item;
+            }
+
+            @Override
+            public PreloaderURLItem createUrlItem(DirectUrlSource source, long preloadSize) {
+                PreloaderURLItem item = PreloadTaskFactory.super.createUrlItem(source, preloadSize);
+                final MediaSource mediaSource = (MediaSource) source.tag();
+                if (mediaSource == null) return item; // error
+                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
                 return item;
             }
         });
@@ -94,7 +145,7 @@ public class VolcEngineStrategy {
     /**
      * For vid only
      */
-    private static Track selectPlayTrack(int type, MediaSource mediaSource) {
+    private static Track selectPlayTrack(@TrackSelector.Type int type, MediaSource mediaSource) {
         @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         List<Track> tracks = mediaSource.getTracks(trackType);
         if (tracks != null) {

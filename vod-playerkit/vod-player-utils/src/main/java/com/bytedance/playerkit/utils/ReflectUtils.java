@@ -21,6 +21,7 @@ package com.bytedance.playerkit.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 
 public class ReflectUtils {
@@ -63,5 +64,23 @@ public class ReflectUtils {
             e.printStackTrace();
         }
         return null;
+    }
+    public static void setStaticFiledValue(Class<?> owner, Class<?> filedClass, Object staticFiled) {
+        Field targetField = null;
+        Field[] fields = owner.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getType() == filedClass && Modifier.isStatic(field.getModifiers())) {
+                targetField = field;
+                break;
+            }
+        }
+        if (targetField != null) {
+            targetField.setAccessible(true);
+            try {
+                targetField.set(null, staticFiled);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

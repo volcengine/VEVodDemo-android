@@ -30,6 +30,7 @@ import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSR;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 
@@ -52,7 +53,7 @@ public class VideoItem implements Serializable {
             @NonNull String vid,
             @NonNull String playAuthToken,
             @Nullable String cover) {
-        return createVidItem(vid, playAuthToken, null,0, cover, null);
+        return createVidItem(vid, playAuthToken, null, 0, cover, null);
     }
 
     public static VideoItem createVidItem(
@@ -74,7 +75,7 @@ public class VideoItem implements Serializable {
     }
 
     public static VideoItem createUrlItem(@NonNull String url, @Nullable String cover) {
-        return createUrlItem(MD5.getMD5(url), url, null, null,0, cover, null);
+        return createUrlItem(MD5.getMD5(url), url, null, null, 0, cover, null);
     }
 
     public static VideoItem createUrlItem(
@@ -162,6 +163,8 @@ public class VideoItem implements Serializable {
 
     private int playScene;
 
+    private int userSelectedQualityRes;
+
     public String getVid() {
         return vid;
     }
@@ -196,6 +199,10 @@ public class VideoItem implements Serializable {
 
     public int getSourceType() {
         return sourceType;
+    }
+
+    public int getPlayScene() {
+        return playScene;
     }
 
     private static MediaSource createMediaSource(VideoItem videoItem) {
@@ -247,10 +254,12 @@ public class VideoItem implements Serializable {
         volcConfig.codecStrategyType = VideoSettings.intValue(VideoSettings.COMMON_CODEC_STRATEGY);
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
-        volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.enableECDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_ECDN);
         volcConfig.enableSubtitle = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUBTITLE);
         volcConfig.subtitleLanguageIds = VideoSubtitle.createLanguageIds();
+        volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
+        volcConfig.qualityConfig = VideoQuality.sceneGearConfig(videoItem.playScene);
+
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;
         return volcConfig;

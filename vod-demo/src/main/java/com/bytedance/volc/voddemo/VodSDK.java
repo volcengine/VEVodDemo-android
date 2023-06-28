@@ -30,10 +30,15 @@ import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
+import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
+import com.bytedance.playerkit.player.volcengine.VolcQuality;
+import com.bytedance.playerkit.player.volcengine.VolcQualityConfig;
 import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 
 import java.util.List;
 
@@ -65,13 +70,14 @@ public class VodSDK {
                 .setAppVersion(appVersion)
                 .setLicenseUri(licenseUri)
                 .build();
-
-        final int qualityRes = Quality.QUALITY_RES_720;
-
         final TrackSelector trackSelector = new TrackSelector() {
             @NonNull
             @Override
             public Track selectTrack(int type, int trackType, @NonNull List<Track> tracks, @NonNull MediaSource source) {
+                int qualityRes = VideoQuality.getUserSelectedQualityRes(source);
+                if (qualityRes <= 0) {
+                    qualityRes = VideoQuality.VIDEO_QUALITY_DEFAULT;
+                }
                 for (Track track : tracks) {
                     Quality quality = track.getQuality();
                     if (quality != null) {
@@ -84,10 +90,31 @@ public class VodSDK {
             }
         };
 
+        final VolcConfigUpdater configUpdater = new VolcConfigUpdater() {
+            @Override
+            public void updateVolcConfig(MediaSource mediaSource) {
+                VolcConfig config = VolcConfig.get(mediaSource);
+                if (config.qualityConfig == null) return;
+                if (!config.qualityConfig.enableStartupABR) return;
+
+                final int qualityRes = VideoQuality.getUserSelectedQualityRes(mediaSource);
+                if (qualityRes <= 0) {
+                    config.qualityConfig.userSelectedQuality = null;
+                } else {
+                    config.qualityConfig.userSelectedQuality = VolcQuality.quality(qualityRes);
+                }
+            }
+        };
+
         // 不使用 ECDN 无需关心
         if (VolcConfigGlobal.ENABLE_ECDN) {
             VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION = "[a-zA-z]+://[^/]*/[^/]*/[^/]*/(.*?)\\?.*";
         }
-        VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector, new VolcSubtitleSelector());
+        VolcPlayerInit.init(context,
+                appInfo,
+                CacheKeyFactory.DEFAULT,
+                trackSelector,
+                new VolcSubtitleSelector(),
+                configUpdater);
     }
 }

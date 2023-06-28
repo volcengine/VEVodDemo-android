@@ -150,6 +150,7 @@ public class MoreDialogLayer extends DialogLayer {
     public void show() {
         super.show();
         syncViewLoopState();
+        syncViewSuperResolutionState();
     }
 
     @Override
@@ -180,6 +181,27 @@ public class MoreDialogLayer extends DialogLayer {
             return;
         }
         setViewLoop(player.isLooping());
+    }
+
+    private void setViewSuperResolution(boolean superResolutionEnabled) {
+        if (mAdapter == null) return;
+
+        int position = mAdapter.getItemPositionByType(Item.SUPER_RES);
+        if (position < 0) return;
+
+        Item item = mAdapter.getItem(position);
+        if (item != null) {
+            item.selected = superResolutionEnabled;
+        }
+        mAdapter.notifyItemChanged(position);
+    }
+
+    private void syncViewSuperResolutionState() {
+        final Player player = player();
+        if (player == null) {
+            return;
+        }
+        setViewSuperResolution(player.isSuperResolutionEnabled());
     }
 
     @Override
@@ -230,7 +252,7 @@ public class MoreDialogLayer extends DialogLayer {
         holder.text.setSelected(item.selected);
 
         // change global options
-        Option superResOption = VideoSettings.option(VideoSettings.COMMON_SUPER_RESOLUTION);
+        Option superResOption = VideoSettings.option(VideoSettings.COMMON_ENABLE_SUPER_RESOLUTION);
         superResOption.userValues().saveValue(superResOption, item.selected);
     }
 
@@ -252,7 +274,7 @@ public class MoreDialogLayer extends DialogLayer {
         items.add(new Item(Item.SUPER_RES,
                 R.string.vevod_more_dialog_item_super_res,
                 R.drawable.vevod_more_dialog_layer_super_res_selector,
-                VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION)));
+                VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUPER_RESOLUTION)));
         return items;
     }
 
@@ -324,6 +346,16 @@ public class MoreDialogLayer extends DialogLayer {
 
         public Item getItem(int position) {
             return mItems.get(position);
+        }
+
+        public int getItemPositionByType(int type) {
+            for (int i = 0; i < mItems.size(); i++) {
+                Item item = mItems.get(i);
+                if (item.type == type) {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         static class ItemViewHolder extends RecyclerView.ViewHolder {

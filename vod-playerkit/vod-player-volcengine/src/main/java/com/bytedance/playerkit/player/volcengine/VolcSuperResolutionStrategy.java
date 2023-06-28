@@ -103,7 +103,9 @@ public class VolcSuperResolutionStrategy {
         }
 
         // 开启超分
-        setEnabled(player, isUseSuperResolution(volcConfig));
+        if (!VolcQualityStrategy.isEnableStartupABRSuperResolutionDowngrade(volcConfig)) {
+            setEnabled(player, isUseSuperResolution(volcConfig));
+        }
     }
 
     static void setEnabled(TTVideoEngine player, boolean enabled) {

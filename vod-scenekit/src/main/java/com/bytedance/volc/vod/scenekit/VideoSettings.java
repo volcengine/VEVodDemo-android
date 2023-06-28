@@ -31,10 +31,12 @@ import com.bumptech.glide.Glide;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.utils.FileUtils;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.settingskit.Option;
 import com.bytedance.volc.vod.settingskit.Options;
 import com.bytedance.volc.vod.settingskit.OptionsDefault;
@@ -55,16 +57,19 @@ public class VideoSettings {
 
     public static final String CATEGORY_SAMPLE_TEST_VIDEO = "示例测试页";
 
+    public static final String CATEGORY_QUALITY = "清晰度设置";
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
     public static final String CATEGORY_DEBUG = "调试选项";
 
     public static final String SHORT_VIDEO_SCENE_ACCOUNT_ID = "short_video_scene_account_id";
     public static final String SHORT_VIDEO_ENABLE_STRATEGY = "short_video_enable_strategy";
+
+
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
     public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
 
-    public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
+    public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
 
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
 
@@ -75,15 +80,19 @@ public class VideoSettings {
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
 
+    public static final String QUALITY_ENABLE_STARTUP_ABR = "quality_enable_startup_abr";
+    public static final String QUALITY_VIDEO_QUALITY_USER_SELECTED = "quality_video_quality_user_selected";
+
     public static final String COMMON_CODEC_STRATEGY = "common_codec_strategy";
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SOURCE_TYPE = "common_source_type";
     public static final String COMMON_SOURCE_ENCODE_TYPE_H265 = "common_source_encode_type_h265";
     public static final String COMMON_SOURCE_VIDEO_FORMAT_TYPE = "common_source_video_format_type";
     public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
-    public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
+    public static final String COMMON_ENABLE_SUPER_RESOLUTION = "common_enable_super_resolution";
     public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
     public static final String COMMON_ENABLE_SUBTITLE = "common_enable_subtitle";
+
 
     private static Options sOptions;
 
@@ -164,6 +173,7 @@ public class VideoSettings {
         createLongVideoSettings(settings);
         createDetailVideoSettings(settings);
         createSampleTestVideoSettings(settings);
+        createQualitySettings(settings);
         createCommonSettings(settings);
         return settings;
     }
@@ -264,6 +274,7 @@ public class VideoSettings {
                         String.class,
                         "feedvideo",
                         null)));
+
         settings.add(SettingItem.createOptionItem(CATEGORY_FEED_VIDEO,
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
@@ -318,8 +329,103 @@ public class VideoSettings {
                         null)));
     }
 
+    private static void createQualitySettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_QUALITY));
+        settings.add(SettingItem.createOptionItem(CATEGORY_QUALITY,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_QUALITY,
+                        QUALITY_ENABLE_STARTUP_ABR,
+                        "开启 ABR 起播选档",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        0,
+                        Arrays.asList(0, 1, 2)), new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        final int type = (int) value;
+                        switch (type) {
+                            case 1:
+                                return "ABR 起播选档";
+                            case 2:
+                                return "ABR 起播选档 + 超分降档";
+                            case 0:
+                            default:
+                                return "关闭";
+                        }
+                    }
+                }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_QUALITY,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_QUALITY,
+                        QUALITY_VIDEO_QUALITY_USER_SELECTED,
+                        "用户选择的清晰度",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        Quality.QUALITY_RES_DEFAULT,
+                        new ArrayList<>(VideoQuality.QUALITY_RES_ARRAY_USER_SELECTED)), new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        final int qualityRes = (int) value;
+                        return VideoQuality.qualityDesc(qualityRes);
+                    }
+                }));
+    }
+
     private static void createCommonSettings(List<SettingItem> settings) {
         settings.add(SettingItem.createCategoryItem(CATEGORY_COMMON_VIDEO));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_SOURCE_TYPE,
+                        "源类型",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        SourceType.SOURCE_TYPE_VID,
+                        Arrays.asList(SourceType.SOURCE_TYPE_VID, SourceType.SOURCE_TYPE_URL, SourceType.SOURCE_TYPE_MODEL)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case SourceType.SOURCE_TYPE_VID:
+                                return "VideoID";
+                            case SourceType.SOURCE_TYPE_URL:
+                                return "DirectURL";
+                            case SourceType.SOURCE_TYPE_MODEL:
+                                return "VideoModel";
+                        }
+                        return null;
+                    }
+                }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_SOURCE_VIDEO_FORMAT_TYPE,
+                        "视频格式",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        FormatType.FORMAT_TYPE_MP4,
+                        Arrays.asList(FormatType.FORMAT_TYPE_MP4, FormatType.FORMAT_TYPE_DASH, FormatType.FORMAT_TYPE_HLS)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case FormatType.FORMAT_TYPE_MP4:
+                                return "MP4";
+                            case FormatType.FORMAT_TYPE_DASH:
+                                return "DASH";
+                            case FormatType.FORMAT_TYPE_HLS:
+                                return "HLS";
+                        }
+                        return null;
+                    }
+                }));
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
@@ -373,31 +479,6 @@ public class VideoSettings {
                     }
                 }));
 
-        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
-                new Option(
-                        Option.TYPE_SELECTABLE_ITEMS,
-                        CATEGORY_COMMON_VIDEO,
-                        COMMON_SOURCE_TYPE,
-                        "源类型",
-                        Option.STRATEGY_IMMEDIATELY,
-                        Integer.class,
-                        SourceType.SOURCE_TYPE_VID,
-                        Arrays.asList(SourceType.SOURCE_TYPE_VID, SourceType.SOURCE_TYPE_URL, SourceType.SOURCE_TYPE_MODEL)),
-                new SettingItem.ValueMapper() {
-                    @Override
-                    public String toString(Object value) {
-                        switch ((Integer) value) {
-                            case SourceType.SOURCE_TYPE_VID:
-                                return "VideoID";
-                            case SourceType.SOURCE_TYPE_URL:
-                                return "DirectURL";
-                            case SourceType.SOURCE_TYPE_MODEL:
-                                return "VideoModel";
-                        }
-                        return null;
-                    }
-                }));
-
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
@@ -410,30 +491,6 @@ public class VideoSettings {
                         Boolean.TRUE,
                         null)));
 
-        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
-                new Option(
-                        Option.TYPE_SELECTABLE_ITEMS,
-                        CATEGORY_COMMON_VIDEO,
-                        COMMON_SOURCE_VIDEO_FORMAT_TYPE,
-                        "视频格式",
-                        Option.STRATEGY_IMMEDIATELY,
-                        Integer.class,
-                        FormatType.FORMAT_TYPE_MP4,
-                        Arrays.asList(FormatType.FORMAT_TYPE_MP4, FormatType.FORMAT_TYPE_DASH, FormatType.FORMAT_TYPE_HLS)),
-                new SettingItem.ValueMapper() {
-                    @Override
-                    public String toString(Object value) {
-                        switch ((Integer) value) {
-                            case FormatType.FORMAT_TYPE_MP4:
-                                return "MP4";
-                            case FormatType.FORMAT_TYPE_DASH:
-                                return "DASH";
-                            case FormatType.FORMAT_TYPE_HLS:
-                                return "HLS";
-                        }
-                        return null;
-                    }
-                }));
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
@@ -450,7 +507,7 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
                         CATEGORY_COMMON_VIDEO,
-                        COMMON_SUPER_RESOLUTION,
+                        COMMON_ENABLE_SUPER_RESOLUTION,
                         "开启超分",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
@@ -471,7 +528,7 @@ public class VideoSettings {
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
-                        CATEGORY_COMMON_VIDEO,
+                        CATEGORY_QUALITY,
                         COMMON_ENABLE_SUBTITLE,
                         "开启字幕",
                         Option.STRATEGY_IMMEDIATELY,

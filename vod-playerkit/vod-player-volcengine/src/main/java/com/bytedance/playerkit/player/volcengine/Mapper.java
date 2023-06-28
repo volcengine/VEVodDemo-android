@@ -40,6 +40,7 @@ import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.model.BareVideoInfo;
 import com.ss.ttvideoengine.model.BareVideoModel;
+import com.ss.ttvideoengine.model.IVideoInfo;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.SubInfo;
 import com.ss.ttvideoengine.model.VideoInfo;
@@ -79,8 +80,18 @@ public class Mapper {
         return null;
     }
 
+    static Track findTrackWithVideoInfo(@Nullable MediaSource mediaSource, @Nullable IVideoInfo videoInfo) {
+        if (mediaSource == null) return null;
+        return findTrackWithVideoInfo(mediaSource.getTracksByMediaType(), videoInfo);
+    }
+
     @Nullable
-    static Track findTrackWithResolution(List<Track> tracks, @Nullable Resolution resolution) {
+    static Track findTrackWithVideoInfo(@Nullable List<Track> tracks, @Nullable IVideoInfo videoInfo) {
+        return findTrackWithResolution(tracks, videoInfo == null ? null : videoInfo.getResolution());
+    }
+
+    @Nullable
+    static Track findTrackWithResolution(@Nullable List<Track> tracks, @Nullable Resolution resolution) {
         if (resolution == null) return null;
         if (tracks == null || tracks.isEmpty()) return null;
         for (Track track : tracks) {
@@ -134,7 +145,10 @@ public class Mapper {
 
     @Nullable
     static Resolution track2Resolution(Track track) {
-        return VolcQuality.quality2Resolution(track.getQuality());
+        if (track != null) {
+            return VolcQuality.quality2Resolution(track.getQuality());
+        }
+        return null;
     }
 
     public static IVideoModel mediaSource2VideoModel(MediaSource source, CacheKeyFactory cacheKeyFactory) {
@@ -269,8 +283,6 @@ public class Mapper {
 
     public static void updateMediaSource(MediaSource mediaSource, IVideoModel videoModel) {
         if (videoModel == null) return;
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
         mediaSource.setSegmentType(dynamicType2SegmentType(videoModel.getDynamicType()));
         mediaSource.setSupportABR(videoModel.getVideoRefBool(VideoRef.VALUE_VIDEO_REF_ENABLE_ADAPTIVE));
@@ -447,15 +459,15 @@ public class Mapper {
         final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         switch (mediaSource.getSourceType()) {
             case MediaSource.SOURCE_TYPE_URL: {
-                Track track = null;
-                List<Track> tracks = mediaSource.getTracks(trackType);
-                if (selector != null && tracks != null) {
-                    track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
-                }
                 if (isDirectUrlSeamlessSwitchEnabled(mediaSource)) {
-                    return mediaSource2VideoModelSource(mediaSource, track, cacheKeyFactory);
+                    return mediaSource2VideoModelSource(mediaSource, cacheKeyFactory);
                 } else {
-                    return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
+                    List<Track> tracks = mediaSource.getTracks(trackType);
+                    if (selector != null && tracks != null) {
+                        Track result = selector.selectTrack(selectType, trackType, tracks, mediaSource);
+                        return mediaSource2DirectUrlSource(mediaSource, result, cacheKeyFactory);
+                    }
+                    return null;
                 }
             }
             case MediaSource.SOURCE_TYPE_ID: {
@@ -463,12 +475,7 @@ public class Mapper {
             }
             case MediaSource.SOURCE_TYPE_MODEL: {
                 updateVideoModelMediaSource(mediaSource);
-                Track track = null;
-                List<Track> tracks = mediaSource.getTracks(trackType);
-                if (selector != null && tracks != null) {
-                    track = selector.selectTrack(selectType, trackType, tracks, mediaSource);
-                }
-                return mediaSource2VideoModelSource(mediaSource, track, cacheKeyFactory);
+                return mediaSource2VideoModelSource(mediaSource, cacheKeyFactory);
             }
         }
         return null;
@@ -505,18 +512,16 @@ public class Mapper {
         return isProtocolSeamlessSwitchingEnabled && mediaSource.isSupportABR();
     }
 
-    public static VideoModelSource mediaSource2VideoModelSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
+    public static VideoModelSource mediaSource2VideoModelSource(MediaSource mediaSource, CacheKeyFactory cacheKeyFactory) {
         IVideoModel videoModel;
         if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_MODEL) {
             videoModel = VolcVideoModelCache.acquire(mediaSource.getModelJson());
         } else {
             videoModel = Mapper.mediaSource2VideoModel(mediaSource, cacheKeyFactory);
         }
-        Resolution resolution = Mapper.track2Resolution(track);
         VideoModelSource strategySource = new VideoModelSource.Builder()
                 .setVid(videoModel != null ? videoModel.getVideoRefStr(VideoRef.VALUE_VIDEO_REF_VIDEO_ID) : mediaSource.getMediaId())
                 .setVideoModel(videoModel)
-                .setResolution(resolution)
                 .setTag(mediaSource)
                 .build();
         return strategySource;
@@ -541,12 +546,11 @@ public class Mapper {
     }
 
     public static VidPlayAuthTokenSource mediaSource2VidPlayAuthTokenSource(MediaSource mediaSource) {
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
         VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .setPlayAuthToken(mediaSource.getPlayAuthToken());
 
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
             builder.setCodecStrategy(volcConfig.codecStrategyType);
         } else {
@@ -621,6 +625,27 @@ public class Mapper {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @NonNull
+    public static String dumpResolutionsLog(IVideoModel videoModel) {
+        final StringBuilder resolutionInfo = new StringBuilder();
+        final Resolution[] resolutions = videoModel.getSupportResolutions();
+        Arrays.sort(resolutions);
+        for (Resolution r : resolutions) {
+            VideoInfo info = videoModel.getVideoInfo(r);
+            resolutionInfo.append(r).append("[")
+                    .append(info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE))
+                    .append("bps")
+                    .append(" ")
+                    .append(TTVideoEngine.getCacheFileSize(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH)))
+                    .append("/")
+                    .append(info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE))
+                    .append("B")
+                    .append("]")
+                    .append(",");
+        }
+        return resolutionInfo.toString();
     }
 
     @Nullable

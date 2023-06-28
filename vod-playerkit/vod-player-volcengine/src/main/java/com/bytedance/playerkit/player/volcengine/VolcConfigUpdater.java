@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2023/5/24
+ * Create Date : 2023/10/7
  */
 
 package com.bytedance.playerkit.player.volcengine;
 
-import com.ss.ttvideoengine.strategy.StrategyManager;
+import com.bytedance.playerkit.player.source.MediaSource;
 
-public class VolcNetSpeedStrategy {
+public interface VolcConfigUpdater {
+    void updateVolcConfig(MediaSource mediaSource);
 
-    static void init() {
-        if (!VolcConfigGlobal.ENABLE_SPEED_TEST_STRATEGY_INIT) return;
+    VolcConfigUpdater DEFAULT = new VolcConfigUpdater() {
+        @Override
+        public void updateVolcConfig(MediaSource mediaSource) {
 
-        StrategyManager.instance().startSpeedPredictor();
-    }
+        }
+    };
 }

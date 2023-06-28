@@ -31,28 +31,25 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.event.InfoTrackChanged;
 import com.bytedance.playerkit.player.event.InfoTrackInfoReady;
-import com.bytedance.playerkit.player.event.InfoTrackWillChange;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
-
+import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.TipsLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
-import com.bytedance.playerkit.utils.event.Dispatcher;
-import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class QualitySelectDialogLayer extends DialogListLayer<Track> {
-
-    private boolean mUserQualitySwitching;
 
     public QualitySelectDialogLayer() {
         super();
@@ -61,8 +58,17 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
             if (item != null) {
                 Player player = player();
                 if (player != null) {
-                    mUserQualitySwitching = true;
                     player.selectTrack(item.obj.getTrackType(), item.obj);
+                    select(item.obj);
+                    final Quality quality = item.obj.getQuality();
+                    if (quality != null) {
+                        VideoQuality.setUserSelectedQualityRes(playScene(), quality.getQualityRes());
+                    }
+                    TipsLayer tipsLayer = layerHost().findLayer(TipsLayer.class);
+                    if (tipsLayer != null) {
+                        tipsLayer.show(holder.itemView.getContext().getString(R.string.vevod_quality_select_tips_will_switch,
+                                quality == null ? null : quality.getQualityDesc()));
+                    }
                     animateDismiss();
                 }
             }
@@ -136,32 +142,15 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                     bindData(tracks);
                     break;
                 }
-                case PlayerEvent.Info.TRACK_WILL_CHANGE: {
-                    InfoTrackWillChange e = event.cast(InfoTrackWillChange.class);
-                    if (e.trackType != Track.TRACK_TYPE_VIDEO) return;
-
-                    select(e.target);
-
-                    if (!mUserQualitySwitching) return;
-
-                    TipsLayer tipsLayer = host.findLayer(TipsLayer.class);
-                    if (tipsLayer != null) {
-                        Quality quality = e.target.getQuality();
-                        tipsLayer.show(context.getString(R.string.vevod_quality_select_tips_will_switch,
-                                quality == null ? null : quality.getQualityDesc()));
-                    }
-                    break;
-                }
                 case PlayerEvent.Info.TRACK_CHANGED: {
                     InfoTrackChanged e = event.cast(InfoTrackChanged.class);
                     if (e.trackType != Track.TRACK_TYPE_VIDEO) return;
 
                     adapter().setSelected(adapter().findItem(e.current));
-
-                    if (!mUserQualitySwitching) return;
-                    mUserQualitySwitching = false;
-
                     select(e.current);
+
+                    if (e.pre == null) return;
+
                     TipsLayer tipsLayer = host.findLayer(TipsLayer.class);
                     if (tipsLayer != null) {
                         Quality quality = e.current.getQuality();
@@ -186,8 +175,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
         final MediaSource source = dataSource();
         if (source == null) return;
 
-        @Track.TrackType
-        final int trackType = MediaSource.mediaType2TrackType(source);
+        @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(source);
         final List<Track> tracks = player.getTracks(trackType);
         if (tracks == null) return;
 
