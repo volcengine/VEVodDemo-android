@@ -229,7 +229,7 @@ public interface PlayerAdapter {
 
     String dump();
 
-    interface Listener extends PlayerListener, MediaSourceListener, TrackListener, SubtitleListener {
+    interface Listener extends PlayerListener, MediaSourceListener, TrackListener, SubtitleListener, FrameInfoListener {
     }
 
     interface PlayerListener {
@@ -252,6 +252,10 @@ public interface PlayerAdapter {
         void onInfo(@NonNull PlayerAdapter mp, int what, int extra);
 
         void onCacheHint(PlayerAdapter mp, long cacheSize);
+    }
+
+    interface FrameInfoListener {
+        void onFrameInfoUpdate(PlayerAdapter mp, @Player.FrameType int frameType, long pts, long clockTime);
     }
 
     interface MediaSourceListener {

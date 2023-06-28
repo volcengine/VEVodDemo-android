@@ -743,17 +743,23 @@ public class MediaSource extends ExtraObject implements Serializable {
     }
 
     public void setSubtitles(List<Subtitle> subtitles) {
-        this.subtitles = subtitles;
+        synchronized (this) {
+            this.subtitles = subtitles;
+        }
     }
 
     public List<Subtitle> getSubtitles() {
-        return subtitles;
+        synchronized (this) {
+            return subtitles;
+        }
     }
 
     public Subtitle getSubtitle(int subtitleId) {
-        for (Subtitle subtitle : subtitles) {
-            if (subtitle.getSubtitleId() == subtitleId) {
-                return subtitle;
+        synchronized (this) {
+            for (Subtitle subtitle : subtitles) {
+                if (subtitle.getSubtitleId() == subtitleId) {
+                    return subtitle;
+                }
             }
         }
         return null;

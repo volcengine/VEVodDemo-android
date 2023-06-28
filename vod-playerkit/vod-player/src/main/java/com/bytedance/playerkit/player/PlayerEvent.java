@@ -228,5 +228,7 @@ public interface PlayerEvent {
         public static final int SUBTITLE_TEXT_UPDATE = 3021;
 
         public static final int SUBTITLE_CHANGED = 3022;
+
+        public static final int FRAME_INFO_UPDATE = 3023;
     }
 }
