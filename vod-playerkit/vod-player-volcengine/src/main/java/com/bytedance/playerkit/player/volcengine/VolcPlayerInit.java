@@ -51,6 +51,8 @@ public class VolcPlayerInit {
     private static TrackSelector sTrackSelector;
     private static SubtitleSelector sSubtitleSelector;
 
+    public static VolcConfigUpdater sConfigUpdater;
+
 
     public static String getDeviceId() {
         return VolcPlayer.getDeviceId();
@@ -61,14 +63,20 @@ public class VolcPlayerInit {
     }
 
     public static void init(final Context context, AppInfo appInfo) {
-        init(context, appInfo, CacheKeyFactory.DEFAULT, TrackSelector.DEFAULT, new VolcSubtitleSelector());
+        init(context,
+                appInfo,
+                CacheKeyFactory.DEFAULT,
+                TrackSelector.DEFAULT,
+                new VolcSubtitleSelector(),
+                VolcConfigUpdater.DEFAULT);
     }
 
     public static void init(Context context,
                             AppInfo appInfo,
                             CacheKeyFactory cacheKeyFactory,
                             TrackSelector trackSelector,
-                            SubtitleSelector subtitleSelector) {
+                            SubtitleSelector subtitleSelector,
+                            VolcConfigUpdater configUpdater) {
 
         if (sInited.getAndSet(true)) return;
 
@@ -89,7 +97,11 @@ public class VolcPlayerInit {
         } else {
             sSubtitleSelector = new VolcSubtitleSelector();
         }
-
+        if (configUpdater != null) {
+            sConfigUpdater = configUpdater;
+        } else {
+            sConfigUpdater = VolcConfigUpdater.DEFAULT;
+        }
         initVOD(context, appInfo);
 
         CacheLoader.Default.set(new VolcCacheLoader(context, new VolcCacheTask.Factory(context)));
@@ -111,6 +123,10 @@ public class VolcPlayerInit {
 
     public static CacheKeyFactory getCacheKeyFactory() {
         return sCacheKeyFactory;
+    }
+
+    public static VolcConfigUpdater getConfigUpdater() {
+        return sConfigUpdater;
     }
 
     public static File cacheDir(Context context) {
@@ -160,6 +176,7 @@ public class VolcPlayerInit {
         VolcEngineStrategy.init();
         VolcNetSpeedStrategy.init();
         VolcSuperResolutionStrategy.init();
+        VolcQualityStrategy.init();
     }
 
 

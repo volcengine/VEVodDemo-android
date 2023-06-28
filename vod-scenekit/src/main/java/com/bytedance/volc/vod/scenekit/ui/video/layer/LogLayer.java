@@ -47,6 +47,7 @@ import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
 import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 
@@ -180,6 +181,7 @@ public class LogLayer extends BaseLayer {
                     .append("x")
                     .append(player.getVideoHeight())
                     .append(")")
+                    .append(VideoQuality.isEnableStartupABR(dataSource()) ? "Startup ABR " : "")
                     .append(player.isSuperResolutionEnabled() ? "SR" : "")
                     .append("\n");
             info.append("Volume: ")

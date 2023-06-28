@@ -24,7 +24,7 @@ import com.bytedance.volc.vod.scenekit.VideoSettings;
 public class VideoSR {
     public static VolcSuperResolutionConfig createConfig(int playScene) {
         VolcSuperResolutionConfig config = new VolcSuperResolutionConfig();
-        config.enableSuperResolutionOnStartup = VideoSettings.booleanValue(VideoSettings.COMMON_SUPER_RESOLUTION);
+        config.enableSuperResolutionOnStartup = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUPER_RESOLUTION);
         return config;
     }
 }

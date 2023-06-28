@@ -18,13 +18,23 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import com.ss.ttvideoengine.strategy.StrategyManager;
+import com.bytedance.playerkit.player.source.Quality;
 
-public class VolcNetSpeedStrategy {
+import java.io.Serializable;
 
-    static void init() {
-        if (!VolcConfigGlobal.ENABLE_SPEED_TEST_STRATEGY_INIT) return;
+public class VolcQualityConfig implements Serializable {
+    public boolean enableStartupABR;
+    public Quality defaultQuality;
+    public Quality wifiMaxQuality;
+    public Quality mobileMaxQuality;
+    public Quality userSelectedQuality;
+    public VolcDisplaySizeConfig displaySizeConfig;
+    public boolean enableSupperResolutionDowngrade;
 
-        StrategyManager.instance().startSpeedPredictor();
+    public static class VolcDisplaySizeConfig {
+        public int screenWidth;
+        public int screenHeight;
+        public int displayWidth;
+        public int displayHeight;
     }
 }

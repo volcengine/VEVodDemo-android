@@ -46,6 +46,7 @@ import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineListenerAdapter;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineSubtitleCallbackAdapter;
 import com.bytedance.playerkit.utils.Asserts;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttm.player.PlaybackParams;
 import com.ss.ttvideoengine.Resolution;
@@ -154,7 +155,7 @@ class VolcPlayer implements PlayerAdapter {
         this.mContext = context;
         this.mListenerAdapter = new ListenerAdapter(this);
         this.mPreCreatePlayer = preCreate;
-
+        VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
         TTVideoEngine player;
         if (preCreate) {
             player = TTVideoEngineFactory.Default.get().create(mContext, mediaSource);
@@ -645,7 +646,7 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
-            public void onFrameInfoUpdate(@NonNull PlayerAdapter mp,  int frameType, long pts, long clockTime) { /**/}
+            public void onFrameInfoUpdate(@NonNull PlayerAdapter mp, int frameType, long pts, long clockTime) { /**/}
         });
     }
 
@@ -681,7 +682,7 @@ class VolcPlayer implements PlayerAdapter {
 
         final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource);
         if (vidSource == null) {
-            // TODO error
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new NullPointerException("vidSource is null!"));
             return;
         }
         mStrategySource = vidSource;
@@ -691,8 +692,33 @@ class VolcPlayer implements PlayerAdapter {
         if (volcConfig.enableSubtitle) {
             mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
         }
-        /** config in {@link  #prepareVid(MediaSource, Track)} which invoked in
-         * {@link  TTVideoEngineListenerAdapter#onFetchedVideoInfo(VideoModel)} */
+
+        if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+            VolcQualityStrategy.init(mPlayer, mediaSource, new VolcQualityStrategy.Listener() {
+                @Override
+                public void onStartupTrackSelected(VolcQualityStrategy.StartupTrackResult result) {
+                    @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
+                    final List<Track> tracks = VolcPlayer.this.getTracks(trackType);
+                    Track selected = result.track;
+                    if (selected == null) {
+                        selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY,
+                                trackType,
+                                tracks,
+                                mediaSource);
+                    }
+                    VolcPlayer.this.config(mediaSource, selected);
+                    VolcPlayer.this.setSelectedTrack(trackType, selected);
+                    VolcPlayer.this.setPendingTrack(trackType, selected);
+                    if (mListener != null) {
+                        mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
+                    }
+                }
+            });
+        }
+        /**
+         * config in {@link  #prepareVid(MediaSource, Track)} which invoked in
+         * {@link  TTVideoEngineListenerAdapter#onFetchedVideoInfo(VideoModel)}
+         */
         preparePlayer(mPlayer, mStartWhenPrepared);
     }
 
@@ -717,12 +743,57 @@ class VolcPlayer implements PlayerAdapter {
         setState(Player.STATE_PREPARING);
 
         Mapper.updateVideoModelMediaSource(mediaSource);
-        final Track playTrack = selectPlayTrack(mediaSource);
-        if (playTrack != null) {
-            prepareVideoModel(mediaSource, playTrack, isStartWhenPrepared());
-        } else {
-            moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception("Select Track return null!"));
+        @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
+        final List<Track> tracks = mediaSource.getTracks(trackType);
+        if (CollectionUtils.isEmpty(tracks)) {
+            // TODO error
+            return;
         }
+
+        final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(mediaSource, VolcPlayerInit.getCacheKeyFactory());
+        if (videoModelSource == null) {
+            // TODO error
+            return;
+        }
+
+        mStrategySource = videoModelSource;
+        mPlayer.setStrategySource(mStrategySource);
+
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        if (volcConfig.enableSubtitle) {
+            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
+            setSubtitleIds(videoModelSource.videoModel());
+        }
+
+        if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+            if (mListener != null) {
+                mListener.onTrackInfoReady(this, trackType, tracks);
+            }
+            VolcQualityStrategy.init(mPlayer, mediaSource, new VolcQualityStrategy.Listener() {
+                @Override
+                public void onStartupTrackSelected(VolcQualityStrategy.StartupTrackResult result) {
+                    Track selected = result.track;
+                    if (selected == null) {
+                        selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
+                    }
+                    VolcPlayer.this.setSelectedTrack(trackType, selected);
+                    VolcPlayer.this.setPendingTrack(trackType, selected);
+                    if (mListener != null) {
+                        mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
+                    }
+                    VolcPlayer.this.config(mediaSource, selected);
+                }
+            });
+        } else {
+            final Track playTrack = selectPlayTrack(mediaSource);
+            if (playTrack == null) {
+                moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception("Select Track return null!"));
+                return;
+            }
+            config(mediaSource, playTrack);
+        }
+
+        preparePlayer(mPlayer, isStartWhenPrepared());
     }
 
     @Nullable
@@ -797,33 +868,6 @@ class VolcPlayer implements PlayerAdapter {
                     selectSubtitle(subtitle);
                 }
             }
-        }
-
-        config(mediaSource, track);
-
-        preparePlayer(mPlayer, startWhenPrepared);
-    }
-
-    private void prepareVideoModel(MediaSource mediaSource, @NonNull Track track, boolean startWhenPrepared) {
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
-        final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(
-                mediaSource,
-                track,
-                VolcPlayerInit.getCacheKeyFactory()
-        );
-
-        if (videoModelSource == null) {
-            // TODO error
-            return;
-        }
-
-        mStrategySource = videoModelSource;
-        mPlayer.setStrategySource(mStrategySource);
-
-        if (volcConfig.enableSubtitle) {
-            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
-            setSubtitleIds(videoModelSource.videoModel());
         }
 
         config(mediaSource, track);
@@ -1460,18 +1504,31 @@ class VolcPlayer implements PlayerAdapter {
 
             // select start play subtitle
             player.setSubtitleIds(videoModel);
-            // select start play video/audio track
-            final Track playTrack = player.selectPlayTrack(mediaSource);
-            if (playTrack != null) {
-                player.config(mediaSource, playTrack);
-                return false;
+
+            final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+            if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+                @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
+                final List<Track> tracks = mediaSource.getTracks(trackType);
+                if (tracks != null && !tracks.isEmpty()) {
+                    if (listener != null) {
+                        listener.onTrackInfoReady(player, trackType, tracks);
+                    }
+                }
             } else {
-                new Handler().post(() -> {
-                    player.stop();
-                    player.moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception());
-                });
-                return true;
+                // select start play video/audio track
+                final Track playTrack = player.selectPlayTrack(mediaSource);
+                if (playTrack != null) {
+                    player.config(mediaSource, playTrack);
+                    return false;
+                } else {
+                    new Handler().post(() -> {
+                        player.stop();
+                        player.moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception());
+                    });
+                    return true;
+                }
             }
+            return false;
         }
 
         @Override

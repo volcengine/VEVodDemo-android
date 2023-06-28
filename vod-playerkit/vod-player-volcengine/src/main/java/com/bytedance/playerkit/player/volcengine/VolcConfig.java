@@ -49,6 +49,7 @@ public class VolcConfig implements Serializable {
         mediaSource.putExtra(EXTRA_VOLC_CONFIG, volcConfig);
     }
 
+
     public static final int CODEC_STRATEGY_DISABLE = 0;
     public static final int CODEC_STRATEGY_COST_SAVING_FIRST = Source.KEY_COST_SAVING_FIRST;
     public static final int CODEC_STRATEGY_HARDWARE_DECODE_FIRST = Source.KEY_HARDWARE_DECODE_FIRST;
@@ -68,6 +69,7 @@ public class VolcConfig implements Serializable {
     public static String ECDN_FILE_KEY_REGULAR_EXPRESSION;
     public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
     public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
+    public VolcQualityConfig qualityConfig;
     public boolean enableSubtitle = false;
     public List<Integer> subtitleLanguageIds;
 

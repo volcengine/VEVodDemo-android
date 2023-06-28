@@ -27,9 +27,14 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayer;
+import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.player.volcengine.VolcQuality;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 
 public class PlayerConfigLayer extends VideoLayer {
     @Nullable
@@ -56,10 +61,22 @@ public class PlayerConfigLayer extends VideoLayer {
 
     final Dispatcher.EventListener eventListener = event -> {
         switch (event.code()) {
+            case PlaybackEvent.Action.START_PLAYBACK:
+                if (player() != null) return;
+                syncStartupQualityConfig();
+                break;
             case PlayerEvent.Action.PREPARE:
                 Player player = event.owner(Player.class);
                 player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
                 break;
         }
     };
+
+    private void syncStartupQualityConfig() {
+        final MediaSource source = dataSource();
+        if (source != null) {
+            VolcConfig volcConfig = VolcConfig.get(source);
+            volcConfig.qualityConfig.userSelectedQuality = VolcQuality.quality(VideoQuality.getUserSelectedQualityRes(playScene()));
+        }
+    }
 }

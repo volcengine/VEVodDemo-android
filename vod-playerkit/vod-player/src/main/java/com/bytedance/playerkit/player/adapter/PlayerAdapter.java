@@ -46,21 +46,21 @@ public interface PlayerAdapter {
         /**
          * Unspecified media player info.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_UNKNOWN = MediaPlayer.MEDIA_INFO_UNKNOWN;
 
         /**
          * The player just pushed the very first video frame for rendering.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_VIDEO_RENDERING_START = MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START;
 
         /**
          * The player just pushed the very first audio frame for rendering.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_AUDIO_RENDERING_START = 4;
 
@@ -71,14 +71,14 @@ public interface PlayerAdapter {
          * MediaPlayer is temporarily pausing playback internally in order to
          * buffer more data.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_BUFFERING_START = MediaPlayer.MEDIA_INFO_BUFFERING_START;
 
         /**
          * MediaPlayer is resuming playback after filling buffers.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_BUFFERING_END = MediaPlayer.MEDIA_INFO_BUFFERING_END;
 
@@ -88,14 +88,14 @@ public interface PlayerAdapter {
          * simultaneously as {@link #MEDIA_INFO_BUFFERING_START} and {@link #MEDIA_INFO_BUFFERING_END}
          * when playing network files.
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_NETWORK_BANDWIDTH = 703;
 
         /**
          * The media cannot be seeked (e.g live stream)
          *
-         * @see Listener#onInfo(PlayerAdapter, int, int)
+         * @see Listener#onInfo(PlayerAdapter, int, Object)
          */
         public static final int MEDIA_INFO_NOT_SEEKABLE = MediaPlayer.MEDIA_INFO_NOT_SEEKABLE;
     }

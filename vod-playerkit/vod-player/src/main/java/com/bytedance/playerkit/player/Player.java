@@ -265,6 +265,41 @@ public interface Player {
     int FRAME_TYPE_VIDEO = 1;
     int FRAME_TYPE_AUDIO = 2;
 
+    /**
+     * Track change reason. One of
+     * {@link #TRACK_CHANGE_REASON_UNKNOWN},
+     * {@link #TRACK_CHANGE_REASON_USER_SELECT},
+     * {@link #TRACK_CHANGE_REASON_AUTO_SELECT}
+     * {@link #TRACK_CHANGE_REASON_DEFAULT_SELECT}
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({TRACK_CHANGE_REASON_UNKNOWN,
+            TRACK_CHANGE_REASON_USER_SELECT,
+            TRACK_CHANGE_REASON_AUTO_SELECT,
+            TRACK_CHANGE_REASON_DEFAULT_SELECT})
+    @interface TrackChangeReason {
+    }
+
+    int TRACK_CHANGE_REASON_UNKNOWN = 0;
+    int TRACK_CHANGE_REASON_USER_SELECT = 1;
+    int TRACK_CHANGE_REASON_AUTO_SELECT = 2;
+    int TRACK_CHANGE_REASON_DEFAULT_SELECT = 3;
+
+    static String mapTrackChangeReason(@TrackChangeReason int reason) {
+        switch (reason) {
+            case TRACK_CHANGE_REASON_UNKNOWN:
+                return "unknown";
+            case TRACK_CHANGE_REASON_USER_SELECT:
+                return "user";
+            case TRACK_CHANGE_REASON_AUTO_SELECT:
+                return "auto";
+            case TRACK_CHANGE_REASON_DEFAULT_SELECT:
+                return "default";
+            default:
+                throw new IllegalArgumentException("unsupported change reason:" + reason);
+        }
+    }
+
     interface Factory {
         class Default {
             private static Factory sInstance;
