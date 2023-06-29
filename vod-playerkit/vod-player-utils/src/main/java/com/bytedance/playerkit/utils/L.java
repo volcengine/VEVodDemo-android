@@ -24,8 +24,25 @@ import android.util.Log;
 public class L {
     private static final String TAG = "Player_Kit";
     public static boolean ENABLE_LOG = false;
+    public static final int BUFFER_SIZE = 3000;
 
     private L() {
+    }
+
+    public static void log(Object o, String method, String s) {
+        if (ENABLE_LOG) {
+            final int length = s.length();
+            if (length < BUFFER_SIZE) {
+                L.v(o, method, s);
+            } else {
+                int startIndex = 0;
+                while (startIndex < length) {
+                    int endIndex = Math.min(length, startIndex + BUFFER_SIZE);
+                    L.v(o, method, s.substring(startIndex, endIndex));
+                    startIndex = endIndex;
+                }
+            }
+        }
     }
 
     public static void v(Object o, String method, Object... messages) {
@@ -119,8 +136,8 @@ public class L {
         } else if (o.getClass().isAnonymousClass()) {
             String s = o.toString();
             return s.substring(s.lastIndexOf('.'));
-        } else if(o instanceof Class<?>) {
-            return ((Class<?>)o).getSimpleName();
+        } else if (o instanceof Class<?>) {
+            return ((Class<?>) o).getSimpleName();
         } else {
             return o.getClass().getSimpleName() + '@' + Integer.toHexString(o.hashCode());
         }

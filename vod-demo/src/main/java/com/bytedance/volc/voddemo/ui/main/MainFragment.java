@@ -34,6 +34,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.voddemo.impl.R;
@@ -52,6 +53,8 @@ public class MainFragment extends BaseFragment {
 
     private boolean mShowActionBar;
 
+    private RecyclerView mRecyclerView;
+
     public static MainFragment newInstance(Bundle bundle) {
         MainFragment fragment = new MainFragment();
         fragment.setArguments(bundle);
@@ -66,17 +69,6 @@ public class MainFragment extends BaseFragment {
         if (bundle != null) {
             mShowActionBar = bundle.getBoolean(EXTRA_SHOW_ACTION_BAR, false);
         }
-
-        mItems.add(new Item(R.string.vevod_short_video_with_desc, R.drawable.vevod_main_scene_list_item_short_ic, Item.TYPE_PLAY_SCENE,
-                PlayScene.SCENE_SHORT));
-        mItems.add(new Item(R.string.vevod_feed_video_with_desc, R.drawable.vevod_main_scene_list_item_feed_ic, Item.TYPE_PLAY_SCENE,
-                PlayScene.SCENE_FEED));
-        mItems.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
-                PlayScene.SCENE_LONG));
-//        mItems.add(new Item(R.string.vevod_input_source, R.drawable.ic_launcher_foreground, Item.TYPE_INPUT_SOURCE,
-//                PlayScene.SCENE_UNKNOWN));
-        mItems.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
-                PlayScene.SCENE_UNKNOWN));
     }
 
     @Nullable
@@ -99,9 +91,9 @@ public class MainFragment extends BaseFragment {
             }
         });
 
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
-        recyclerView.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        mRecyclerView = view.findViewById(R.id.recyclerView);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
+        mRecyclerView.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
             @NonNull
             @Override
@@ -119,7 +111,11 @@ public class MainFragment extends BaseFragment {
                 ImageView image = holder.itemView.findViewById(R.id.image);
 
                 title.setText(item.title);
-                image.setImageDrawable(ResourcesCompat.getDrawable(image.getResources(), item.drawable, null));
+                if (item.drawable != 0) {
+                    image.setImageDrawable(ResourcesCompat.getDrawable(image.getResources(), item.drawable, null));
+                } else {
+                    image.setImageDrawable(null);
+                }
                 holder.itemView.setOnClickListener(v -> {
                     switch (item.type) {
                         case Item.TYPE_PLAY_SCENE:
@@ -140,6 +136,31 @@ public class MainFragment extends BaseFragment {
                 return mItems.size();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mItems.clear();
+        mItems.addAll(createItems());
+        mRecyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    private static List<Item> createItems() {
+        final List<Item> items = new ArrayList<>();
+        items.add(new Item(R.string.vevod_short_video_with_desc, R.drawable.vevod_main_scene_list_item_short_ic, Item.TYPE_PLAY_SCENE,
+                PlayScene.SCENE_SHORT));
+        items.add(new Item(R.string.vevod_feed_video_with_desc, R.drawable.vevod_main_scene_list_item_feed_ic, Item.TYPE_PLAY_SCENE,
+                PlayScene.SCENE_FEED));
+        items.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
+                PlayScene.SCENE_LONG));
+        if (VideoSettings.booleanValue(VideoSettings.SAMPLE_TEST_ENABLE_ENTRANCE_SHOW)) {
+            items.add(new Item(R.string.vevod_input_source, 0, Item.TYPE_INPUT_SOURCE,
+                    PlayScene.SCENE_UNKNOWN));
+        }
+        items.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
+                PlayScene.SCENE_UNKNOWN));
+        return items;
     }
 
     static class Item {
