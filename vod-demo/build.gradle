@@ -71,7 +71,11 @@ dependencies {
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
+
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:${project.ext.okhttp}"))
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor")
+    implementation 'com.github.mrmike:ok2curl:0.8.0'
 
     compileOnly "com.bytedance.news.common:service-manager:1.0.9.3"
     annotationProcessor "com.bytedance.news.common:service-manager-processor:1.0.9"

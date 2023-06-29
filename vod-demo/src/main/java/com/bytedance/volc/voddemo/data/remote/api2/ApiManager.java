@@ -17,14 +17,17 @@
  */
 package com.bytedance.volc.voddemo.data.remote.api2;
 
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamResponse;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailResponse;
+import com.moczul.ok2curl.CurlInterceptor;
 
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -37,8 +40,13 @@ public class ApiManager {
     private final Api2 api2;
 
     private ApiManager() {
+        HttpLoggingInterceptor httpLog = new HttpLoggingInterceptor(s -> L.v("OKHttp", "httpLog", s));
+        httpLog.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        CurlInterceptor curlLog = new CurlInterceptor(s -> L.log("OKHttp", "curlLog", s));
         httpClient = new OkHttpClient
                 .Builder()
+                .addInterceptor(httpLog)
+                .addInterceptor(curlLog)
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)

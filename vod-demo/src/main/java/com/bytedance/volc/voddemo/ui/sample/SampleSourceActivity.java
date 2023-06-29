@@ -38,21 +38,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.bytedance.playerkit.player.cache.CacheLoader;
-import com.bytedance.playerkit.player.source.Subtitle;
-import com.bytedance.playerkit.player.volcengine.Mapper;
-import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.sample.utils.SampleSourceParser;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class SampleSourceActivity extends BaseActivity {
 
@@ -62,6 +54,7 @@ public class SampleSourceActivity extends BaseActivity {
     }
 
     private SharedPreferences mSp;
+    private EditText mEditText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,6 +91,8 @@ public class SampleSourceActivity extends BaseActivity {
                 false
         );
 
+        mEditText = findViewById(R.id.input);
+
         restore();
     }
 
@@ -128,80 +123,43 @@ public class SampleSourceActivity extends BaseActivity {
     }
 
     private void restore() {
-        EditText editText = findViewById(R.id.input);
-
         mSp = getSharedPreferences("vod_demo_media_source", Context.MODE_PRIVATE);
         String input = mSp.getString("input", null);
 
         if (!TextUtils.isEmpty(input)) {
-            editText.setText(input);
+            mEditText.setText(input);
         }
     }
 
-    public void onBuildSceneClick(View view) {
-        final EditText editText = findViewById(R.id.input);
-
-        final Editable editable = editText.getText();
-        if (TextUtils.isEmpty(editable)) {
-            editText.setError("Empty!");
-            return;
-        }
-
-        final String input = editable.toString();
-
-        ArrayList<VideoItem> videoItems = parse(input);
-
-        if (videoItems.isEmpty()) {
-            editText.setError("Url is not illegal!");
-            return;
-        }
+    public void onFeedVideoClick(View view) {
+        ArrayList<VideoItem> videoItems = buildVideoItemsWithInput();
+        if (videoItems == null) return;
         SampleFeedVideoActivity.intentInto(this, videoItems);
     }
 
-    private ArrayList<VideoItem> parse(String input) {
-        try {
-            JSONArray array = new JSONArray(input);
-            return createVideoItems(array);
-        } catch (JSONException e) {
-            return createVideoItems(input.split("\n"));
-        }
+    public void onShortVideoClick(View view) {
+        ArrayList<VideoItem> videoItems = buildVideoItemsWithInput();
+        if (videoItems == null) return;
+        SampleShortVideoActivity.intentInto(this, videoItems);
     }
 
-    public ArrayList<VideoItem> createVideoItems(JSONArray jsonArray) {
-        final ArrayList<VideoItem> videoItems = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject object = jsonArray.optJSONObject(i);
-            String vid = object.optString("vid");
-            String httpUrl = object.optString("httpUrl");
-            String title = object.optString("title");
-            String cover = object.optString("cover");
-            long duration = object.optLong("duration");
-            JSONObject subtitleModel = object.optJSONObject("subtitleModel");
-            List<Subtitle> subtitles = Mapper.subtitleModel2Subtitles(subtitleModel);
-            VideoItem videoItem = VideoItem.createUrlItem(vid, httpUrl, null, subtitles, duration, cover, title);
-            videoItems.add(videoItem);
+    @Nullable
+    private ArrayList<VideoItem> buildVideoItemsWithInput() {
+        final Editable editable = mEditText.getText();
+        if (TextUtils.isEmpty(editable)) {
+            mEditText.setError("Empty!");
+            return null;
+        }
+        final String input = editable.toString();
+
+        ArrayList<VideoItem> videoItems = SampleSourceParser.parse(input);
+        if (videoItems.isEmpty()) {
+            mEditText.setError("Url/JSON is not illegal!");
+            return null;
         }
         return videoItems;
     }
 
-
-    private ArrayList<VideoItem> createVideoItems(String[] urls) {
-        final ArrayList<VideoItem> videoItems = new ArrayList<>();
-        int index = 0;
-        for (String url : urls) {
-            if (TextUtils.isEmpty(url)) continue;
-            if (url.startsWith("/")) {
-                File file = new File(url);
-                if (!file.exists()) continue;
-            }
-            if (!url.startsWith("http") && !url.startsWith("file")) continue;
-
-            VideoItem videoItem = VideoItem.createUrlItem(MD5.getMD5(url), url, null, null, 0, null, index + ": " + url);
-            videoItems.add(videoItem);
-            index++;
-        }
-        return videoItems;
-    }
 
     public void onCleanCacheClick(View view) {
         Toast.makeText(this, "Cleaning cache...", Toast.LENGTH_SHORT).show();

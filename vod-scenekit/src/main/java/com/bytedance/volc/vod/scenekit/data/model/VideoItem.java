@@ -119,6 +119,7 @@ public class VideoItem implements Serializable {
     public static VideoItem createVideoModelItem(
             @NonNull String vid,
             @NonNull String videoModel,
+            @Nullable String subtitleAuthToken,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -126,6 +127,7 @@ public class VideoItem implements Serializable {
         videoItem.sourceType = SOURCE_TYPE_MODEL;
         videoItem.vid = vid;
         videoItem.videoModel = videoModel;
+        videoItem.subtitleAuthToken = subtitleAuthToken;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;

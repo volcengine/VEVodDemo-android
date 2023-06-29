@@ -18,7 +18,7 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.bytedance.playerkit.player.volcengine.VolcPlayer.*;
+import static com.bytedance.playerkit.player.volcengine.VolcPlayer.EngineParams;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.IMAGE_LAYOUT_TO_FILL;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.PLAYER_OPTION_SEGMENT_FORMAT_FLAG;
 import static com.ss.ttvideoengine.TTVideoEngineInterface.SEGMENT_FORMAT_FMP4;
@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.TTVideoEngine;
 
@@ -113,7 +114,8 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_P2P_CDN_TYPE, 2);
         }
 
-        if (volcConfig.enableSubtitle && (mediaSource.getSubtitles() != null || mediaSource.getSubtitleAuthToken() != null)) {
+        if (volcConfig.enableSubtitle && (!CollectionUtils.isEmpty(mediaSource.getSubtitles())
+                || !TextUtils.isEmpty(mediaSource.getSubtitleAuthToken()))) {
             // 字幕开关，启播或者播放过程中控制打开或者关闭字幕
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPEN_SUB, 1);
             // 字幕的线程是否开启，play之前调用

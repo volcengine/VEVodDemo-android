@@ -51,8 +51,9 @@ public class VideoSettings {
     public static final String CATEGORY_SHORT_VIDEO = "短视频";
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
-
     public static final String CATEGORY_DETAIL_VIDEO = "视频详情页";
+
+    public static final String CATEGORY_SAMPLE_TEST_VIDEO = "示例测试页";
 
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
     public static final String CATEGORY_DEBUG = "调试选项";
@@ -68,6 +69,8 @@ public class VideoSettings {
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
 
     public static final String DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY = "detail_video_scene_fragment_or_activity";
+
+    public static final String SAMPLE_TEST_ENABLE_ENTRANCE_SHOW = "sample_test_enable_entrance_show";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
@@ -160,6 +163,7 @@ public class VideoSettings {
         createFeedVideoSettings(settings);
         createLongVideoSettings(settings);
         createDetailVideoSettings(settings);
+        createSampleTestVideoSettings(settings);
         createCommonSettings(settings);
         return settings;
     }
@@ -298,6 +302,20 @@ public class VideoSettings {
                         String.class,
                         "Fragment",
                         Arrays.asList("Fragment", "Activity"))));
+    }
+
+    private static void createSampleTestVideoSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_SAMPLE_TEST_VIDEO));
+        settings.add(SettingItem.createOptionItem(CATEGORY_DETAIL_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_SAMPLE_TEST_VIDEO,
+                        SAMPLE_TEST_ENABLE_ENTRANCE_SHOW,
+                        "开启示例测试入口",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
     }
 
     private static void createCommonSettings(List<SettingItem> settings) {
