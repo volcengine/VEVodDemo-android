@@ -71,16 +71,18 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
                     player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_HARDWARE_DECODE, 0);
                     break;
             }
-            switch (volcConfig.sourceEncodeType) {
-                case Track.ENCODER_TYPE_H264:
-                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_H264);
-                    break;
-                case Track.ENCODER_TYPE_H265:
-                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h265);
-                    break;
-                case Track.ENCODER_TYPE_H266:
-                    player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h266);
-                    break;
+            if (mediaSource.getSourceType() == MediaSource.SOURCE_TYPE_ID) {
+                switch (volcConfig.sourceEncodeType) {
+                    case Track.ENCODER_TYPE_H264:
+                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_H264);
+                        break;
+                    case Track.ENCODER_TYPE_H265:
+                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h265);
+                        break;
+                    case Track.ENCODER_TYPE_H266:
+                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h266);
+                        break;
+                }
             }
         }
 
