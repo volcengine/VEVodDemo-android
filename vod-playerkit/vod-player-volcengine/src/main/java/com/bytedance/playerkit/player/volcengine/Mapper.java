@@ -107,12 +107,14 @@ public class Mapper {
         switch (trackType) {
             case TRACK_TYPE_AUDIO:
                 resolution = TTHelper.defaultAudioResolutionMap().get(definition);
+                if (resolution == null) {
+                    resolution = TTHelper.defaultVideoResolutionMap().get(definition);
+                }
                 break;
             case TRACK_TYPE_VIDEO:
                 resolution = TTHelper.defaultVideoResolutionMap().get(definition);
                 break;
         }
-        if (resolution == null) return null;
         return resolution2Quality(resolution);
     }
 
@@ -145,6 +147,9 @@ public class Mapper {
                 if (track.getBackupUrls() != null) {
                     urls.addAll(track.getBackupUrls());
                 }
+
+                Resolution resolution = track2Resolution(track);
+                resolution = resolution == null ? Resolution.Standard : resolution;
                 videoInfos.add(
                         new BareVideoInfo.Builder()
                                 .mediaType(trackType2VideoModelMediaType(track.getTrackType()))
@@ -154,7 +159,7 @@ public class Mapper {
                                 .size(track.getFileSize())
                                 .bitrate(track.getBitrate())
                                 .spadea(track.getEncryptedKey())
-                                .resolution(track2Resolution(track))
+                                .resolution(resolution/* can't be null*/)
                                 .vWidth(track.getVideoWidth())
                                 .vHeight(track.getVideoHeight())
                                 .format(trackFormat2VideoModelFormat(track.getFormat()))
@@ -166,6 +171,8 @@ public class Mapper {
         List<Track> audioTracks = source.getTracks(TRACK_TYPE_AUDIO);
         if (audioTracks != null && !audioTracks.isEmpty()) {
             for (Track track : audioTracks) {
+                Resolution resolution = track2Resolution(track);
+                resolution = resolution == null ? Resolution.Standard : resolution;
                 videoInfos.add(
                         new BareVideoInfo.Builder()
                                 .mediaType(trackType2VideoModelMediaType(track.getTrackType()))
@@ -175,7 +182,7 @@ public class Mapper {
                                 .size(track.getFileSize())
                                 .bitrate(track.getBitrate())
                                 .spadea(track.getEncryptedKey())
-                                .resolution(track2Resolution(track))
+                                .resolution(resolution /* can't be null*/)
                                 .format(trackFormat2VideoModelFormat(track.getFormat()))
                                 .codecType(trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
                                 .build()
