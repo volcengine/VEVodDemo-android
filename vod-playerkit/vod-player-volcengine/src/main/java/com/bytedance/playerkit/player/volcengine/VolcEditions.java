@@ -69,4 +69,16 @@ public class VolcEditions {
     public static boolean isSupportEngineLooper() {
         return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
     }
+
+    public static boolean isSupportDash() {
+        return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
+    }
+
+    public static boolean isSupportMp4SeamLessSwitch() {
+        return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
+    }
+
+    public static boolean isSupportHLSSeamLessSwitch() {
+        return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
+    }
 }

@@ -58,9 +58,9 @@ public class VolcConfig implements Serializable {
     @Track.EncoderType
     public int sourceEncodeType;
     public boolean enableAudioTrackVolume = false;
-    public boolean enableHlsSeamlessSwitch = true;
-    public boolean enableMP4SeamlessSwitch = true;
-    public boolean enableDash = true;
+    public boolean enableHlsSeamlessSwitch = VolcEditions.isSupportHLSSeamLessSwitch();
+    public boolean enableMP4SeamlessSwitch = VolcEditions.isSupportMp4SeamLessSwitch();
+    public boolean enableDash = VolcEditions.isSupportDash();
     public boolean enableEngineLooper = VolcEditions.isSupportEngineLooper();
     public boolean enableSeekEnd = true;
     public boolean enableFrameUpdateCallback = false;
