@@ -744,7 +744,9 @@ class VolcPlayer implements PlayerAdapter {
     private Subtitle selectPlaySubtitle(MediaSource mediaSource) {
         final List<Subtitle> subtitles = mediaSource.getSubtitles();
         if (subtitles != null && !subtitles.isEmpty()) {
-            mListener.onSubtitleInfoReady(this, subtitles);
+            if (mListener != null) {
+                mListener.onSubtitleInfoReady(this, subtitles);
+            }
         }
 
         Subtitle subtitle = getSelectedSubtitle();
