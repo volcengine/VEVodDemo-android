@@ -28,7 +28,7 @@ public class InfoFrameInfoUpdate extends Event {
     public long pts;
     public long clockTime;
 
-    protected InfoFrameInfoUpdate() {
+    public InfoFrameInfoUpdate() {
         super(PlayerEvent.Info.FRAME_INFO_UPDATE);
     }
 
