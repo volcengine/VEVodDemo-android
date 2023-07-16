@@ -931,6 +931,7 @@ class VolcPlayer implements PlayerAdapter {
     public void setStartWhenPrepared(boolean startWhenPrepared) {
         if (mStartWhenPrepared != startWhenPrepared) {
             mStartWhenPrepared = startWhenPrepared;
+            mPlayer.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, startWhenPrepared ? 1 : 0);
         }
     }
 
