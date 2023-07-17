@@ -86,9 +86,9 @@ public class VodSDK {
             }
         };
 
-        // 不使用 PCDN 无需关心
-        if (VolcConfigGlobal.ENABLE_PCDN) {
-            VolcConfig.PCDN_FILE_KEY_REGULAR_EXPRESSION = "[a-zA-z]+://[^/]*/[^/]*/[^/]*/(.*?)\\?.*";
+        // 不使用 ECDN 无需关心
+        if (VolcConfigGlobal.ENABLE_ECDN) {
+            VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION = "[a-zA-z]+://[^/]*/[^/]*/[^/]*/(.*?)\\?.*";
         }
         VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector, new VolcSubtitleSelector());
     }

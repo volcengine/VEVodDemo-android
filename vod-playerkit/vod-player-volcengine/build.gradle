@@ -70,8 +70,8 @@ dependencies {
             // + abr sdk
             implementation "com.bytedanceapi:ttsdk-ttabr:${project.ext.bytedance.ttsdkVersion}"
         }
-        if (project.ext.bytedance.ttsdkPlayerExtensions.contains("pcdn")) {
-            // pcdn
+        if (project.ext.bytedance.ttsdkPlayerExtensions.contains("ecdn")) {
+            // ecdn
             implementation "com.bytedanceapi:ttsdk-ttpcdn:${project.ext.bytedance.ttsdkVersion}"
         }
     }

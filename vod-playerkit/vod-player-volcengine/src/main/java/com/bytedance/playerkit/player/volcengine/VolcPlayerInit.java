@@ -136,10 +136,10 @@ public class VolcPlayerInit {
                 .setCacheDirPath(videoCacheDir.getAbsolutePath())
                 .setMaxCacheSize(300 * 1024 * 1024);
 
-        if (VolcConfigGlobal.ENABLE_PCDN &&
-                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_PCDN)) {
-            L.d(VolcPlayerInit.class, "initVOD", "pcdn fileKeyRegularExpression", VolcConfig.PCDN_FILE_KEY_REGULAR_EXPRESSION);
-            TTVideoEngine.setStringValue(DataLoaderHelper.DATALOADER_KEY_STRING_VDP_FILE_KEY_REGULAR_EXPRESSION, VolcConfig.PCDN_FILE_KEY_REGULAR_EXPRESSION);
+        if (VolcConfigGlobal.ENABLE_ECDN &&
+                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_ECDN)) {
+            L.d(VolcPlayerInit.class, "initVOD", "ecdn fileKeyRegularExpression", VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION);
+            TTVideoEngine.setStringValue(DataLoaderHelper.DATALOADER_KEY_STRING_VDP_FILE_KEY_REGULAR_EXPRESSION, VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION);
             vodBuilder.setLoaderType(2);
         }
 

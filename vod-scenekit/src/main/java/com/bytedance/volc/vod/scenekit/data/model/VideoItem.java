@@ -18,7 +18,6 @@
 
 package com.bytedance.volc.vod.scenekit.data.model;
 
-import android.os.Parcel;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -33,8 +32,6 @@ import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSR;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
-
-import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -251,7 +248,7 @@ public class VideoItem implements Serializable {
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
-        volcConfig.enablePCDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PCDN);
+        volcConfig.enableECDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_ECDN);
         volcConfig.enableSubtitle = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUBTITLE);
         volcConfig.subtitleLanguageIds = VideoSubtitle.createLanguageIds();
         volcConfig.tag = videoItem.tag;

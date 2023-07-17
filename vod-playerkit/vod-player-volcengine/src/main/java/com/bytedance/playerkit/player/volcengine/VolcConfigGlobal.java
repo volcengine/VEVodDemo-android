@@ -24,5 +24,5 @@ public class VolcConfigGlobal {
     public static final boolean ENABLE_BUFFER_START_MSG_OPT = true;
     public static final boolean ENABLE_SCENE_STRATEGY_INIT = true;
     public static final boolean ENABLE_SPEED_TEST_STRATEGY_INIT = true;
-    public static final boolean ENABLE_PCDN = false; // Not ready for now.
+    public static final boolean ENABLE_ECDN = false; // Not ready for now.
 }

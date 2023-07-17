@@ -110,9 +110,9 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
 
-        if (volcConfig.enablePCDN &&
-                VolcConfigGlobal.ENABLE_PCDN &&
-                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_PCDN)) {
+        if (volcConfig.enableECDN &&
+                VolcConfigGlobal.ENABLE_ECDN &&
+                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_ECDN)) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_P2P_CDN_TYPE, 2);
         }
 

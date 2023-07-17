@@ -82,7 +82,7 @@ public class VideoSettings {
     public static final String COMMON_SOURCE_VIDEO_FORMAT_TYPE = "common_source_video_format_type";
     public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
     public static final String COMMON_SUPER_RESOLUTION = "common_super_resolution";
-    public static final String COMMON_ENABLE_PCDN = "common_enable_pcdn";
+    public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
     public static final String COMMON_ENABLE_SUBTITLE = "common_enable_subtitle";
 
     private static Options sOptions;
@@ -461,8 +461,8 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
                         CATEGORY_COMMON_VIDEO,
-                        COMMON_ENABLE_PCDN,
-                        "开启 PCDN",
+                        COMMON_ENABLE_ECDN,
+                        "开启 ECDN",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.FALSE,
