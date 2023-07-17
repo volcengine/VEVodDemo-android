@@ -192,6 +192,16 @@ class VolcPlayer implements PlayerAdapter {
         mPlayer = player;
     }
 
+    protected void unbind() {
+        final TTVideoEngine player = mPlayer;
+        if (player == null) return;
+        player.setVideoEngineCallback(null);
+        player.setVideoEngineInfoListener(null);
+        player.setVideoInfoListener(null);
+        player.setPlayerEventListener(null);
+        player.setSubInfoCallBack(null);
+    }
+
     @Override
     public void setListener(Listener listener) {
         mListener = listener;
@@ -860,14 +870,6 @@ class VolcPlayer implements PlayerAdapter {
         VolcSuperResolutionStrategy.initSuperResolution(mContext, mPlayer, mediaSource, track);
     }
 
-    @Nullable
-    private static SubDesInfoModel createSubtitleSource(MediaSource mediaSource) {
-        List<Subtitle> subtitles = mediaSource.getSubtitles();
-        if (subtitles == null || subtitles.isEmpty()) return null;
-        final JSONObject jsonObject = Mapper.subtitles2SubtitleModel(subtitles);
-        return new SubDesInfoModel(jsonObject);
-    }
-
     @Override
     public void start() {
         Asserts.checkState(getState(), Player.STATE_PREPARED, Player.STATE_STARTED,
@@ -965,6 +967,8 @@ class VolcPlayer implements PlayerAdapter {
     private void resetSource() {
         L.d(this, "resetSource", MediaSource.dump(mMediaSource));
         mMediaSource = null;
+        mStrategySource = null;
+        mSubtitleSource = null;
         mCurrentTrack.clear();
         mPendingTrack.clear();
         mSelectedTrack.clear();
@@ -995,13 +999,12 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public void release() {
-        if (isInState(Player.STATE_RELEASED)) {
-            return;
-        }
+        if (isInState(Player.STATE_RELEASED)) return;
         L.d(this, "release", mPlayer, MediaSource.dump(mMediaSource));
         resetInner();
         mPlayer.setIsMute(true);
         mPlayer.releaseAsync();
+        unbind();
         setState(Player.STATE_RELEASED);
     }
 
