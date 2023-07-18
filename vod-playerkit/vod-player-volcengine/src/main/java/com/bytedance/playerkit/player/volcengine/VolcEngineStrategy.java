@@ -196,16 +196,25 @@ public class VolcEngineStrategy {
 
         final String key = key(mediaSource);
 
-        TTVideoEngine player = TTVideoEngine.getPreRenderEngine(key);
+        TTVideoEngine player = PRERENDER_ENGINE_MAP.get(key);
         if (player != null && player.isPrepared()) {
-            PRERENDER_ENGINE_MAP.put(key, player);
-            return player;
-        }
-        player = PRERENDER_ENGINE_MAP.get(key);
-        if (player != null && player.isPrepared()) {
+            final TTVideoEngine duplicated = TTVideoEngine.getPreRenderEngine(key);
+            if (duplicated != null && duplicated != player) {
+                L.e(VolcEngineStrategy.class, "getPreRenderEngine", "duplicated", key, player, duplicated);
+                duplicated.clearTextureRef();
+                duplicated.releaseAsync();
+            }
+            L.d(VolcEngineStrategy.class, "getPreRenderEngine", "cached", key, player);
             return player;
         }
         PRERENDER_ENGINE_MAP.remove(key);
+
+        player = TTVideoEngine.getPreRenderEngine(key);
+        if (player != null && player.isPrepared()) {
+            PRERENDER_ENGINE_MAP.put(key, player);
+            L.d(VolcEngineStrategy.class, "getPreRenderEngine", "get", key, player);
+            return player;
+        }
         return null;
     }
 
@@ -214,12 +223,21 @@ public class VolcEngineStrategy {
 
         final String key = key(mediaSource);
 
-        TTVideoEngine player = TTVideoEngine.getPreRenderEngine(key);
+        TTVideoEngine player = PRERENDER_ENGINE_MAP.remove(key);
         if (player != null && player.isPrepared()) {
+            final TTVideoEngine duplicated = TTVideoEngine.getPreRenderEngine(key);
+            if (duplicated != null && duplicated != player) {
+                L.e(VolcEngineStrategy.class, "removePreRenderEngine", "duplicated", key, player, duplicated);
+                duplicated.clearTextureRef();
+                duplicated.releaseAsync();
+            }
+            L.d(VolcEngineStrategy.class, "removePreRenderEngine", "cached", key, player);
             return player;
         }
-        player = PRERENDER_ENGINE_MAP.remove(key);
+
+        player = TTVideoEngine.getPreRenderEngine(key);
         if (player != null && player.isPrepared()) {
+            L.d(VolcEngineStrategy.class, "removePreRenderEngine", "get", key, player);
             return player;
         }
         return null;
