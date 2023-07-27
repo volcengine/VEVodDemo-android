@@ -113,24 +113,25 @@ import java.lang.ref.WeakReference;
  *    // create a media source
  *   MediaSource createSource() {
  *     MediaSource mediaSource = new MediaSource(UUID.randomUUID().toString(), MediaSource.SOURCE_TYPE_URL);
+ *
  *     Track track0 = new Track();
  *     track0.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track0.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4"); // 480x270
- *     track0.setQuality(new Quality(Quality.QUALITY_RES_240, "240P"));
+ *     track0.setUrl("http://example.com/video_360p.mp4");
+ *     track0.setQuality(new Quality(Quality.QUALITY_RES_360, "360P"));
  *
  *     Track track1 = new Track();
  *     track1.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track1.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_640_3MG.mp4"); // 640x360
- *     track1.setQuality(new Quality(Quality.QUALITY_RES_360, "360P"));
+ *     track1.setUrl("http://example.com/video_480p.mp4");
+ *     track1.setQuality(new Quality(Quality.QUALITY_RES_480, "480P"));
  *
  *     Track track2 = new Track();
  *     track2.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track2.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1280_10MG.mp4"); // 1280x720
+ *     track2.setUrl("http://example.com/video_720p.mp4");
  *     track2.setQuality(new Quality(Quality.QUALITY_RES_720, "720P"));
  *
  *     Track track3 = new Track();
  *     track3.setTrackType(Track.TRACK_TYPE_VIDEO);
- *     track3.setUrl("https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1920_18MG.mp4"); // 1920x1080
+ *     track3.setUrl("http://example.com/video_1080p.mp4"); // 1920x1080
  *     track3.setQuality(new Quality(Quality.QUALITY_RES_1080, "1080P"));
  *
  *     // You can switch quality of current playback by calling {@link Player#selectTrack(int, Track)}.
