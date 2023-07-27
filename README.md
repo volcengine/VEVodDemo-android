@@ -17,15 +17,13 @@ Demo 中实现了常见的三种播放场景：
 |--VEVodDemo-android
 |--|--app               // 主 app （壳工程）
 |--|--vod-demo-api      // vod-demo 模块与壳工程交互接口（组件化）
-|--|--vod-demo          // 业务层 demo 核心实现
+|--|--vod-demo          // 业务 demo 层
 |--|--vod-scenekit      // 场景控件层
 |--|--vod-playerkit     // 播放控件层
 |--|--vod-settingskit   // 播放设置模块
-
 ```
 
 # 编译运行
-
 1. 命令行编译
 ```shell
 git clone https://github.com/volcengine/VEVodDemo-android
@@ -37,9 +35,57 @@ cd VEVodDemo-android
 
 # 快速接入
 我们提供了三种接入方式，接入方可以根据自己使用场景，选择接入。
-1. [场景控件层接入](vod-scenekit/README.md)
-2. [播放控件层接入](vod-playerkit/README.md)
+1. [场景控件层接入](vod-scenekit)
+2. [播放控件层接入](vod-playerkit)
 3. [播放器 SDK 接入](https://www.volcengine.com/docs/4/65774)
+
+接入建议:
+1. 复用业务已有 短视频流 / Feed 流？
+   * 是 - 看问题 2
+   * 否 - 使用 [场景控件层接入](vod-scenekit)
+2. 复用业务已有视频控件 UI 代码和播放器封装层代码？
+   * 是 - 使用 [播放器 SDK 接入](https://www.volcengine.com/docs/4/65774)
+   * 否 - 使用 [播放控件层接入](vod-playerkit)
+
+
+# 依赖分层
+> Tips：依赖图 + 核心类的关系可以帮助开发者快速熟悉 Demo 工程结构！
+<img src="doc/res/image/project_dependency.png" width="400">
+
+### 业务 Demo 层（[vod-demo](vod-demo))
+#### 场景页面
+场景页面 = 场景控件 + 业务 API 数据获取 
+* 短视频页面 - [ShortVideoFragment](vod-demo/src/main/java/com/bytedance/volc/voddemo/ui/video/scene/shortvideo/ShortVideoFragment.java)
+* 中视频页面 - [FeedVideoFragment](vod-demo/src/main/java/com/bytedance/volc/voddemo/ui/video/scene/feedvideo/FeedVideoFragment.java)
+* 长视频页面 - [LongVideoFragment](vod-demo/src/main/java/com/bytedance/volc/voddemo/ui/video/scene/longvideo/LongVideoFragment.java)
+* 视频详情页面 - [DetailVideoFragment](vod-demo/src/main/java/com/bytedance/volc/voddemo/ui/video/scene/detail/DetailVideoFragment.java)
+
+### 场景控件层 （[vod-scenekit](vod-scenekit))
+#### 场景控件
+场景控件 = 页面控件 + 下拉刷新控件 + 上拉加载控件
+* 短视频场景控件 - [ShortVideoSceneView](vod-scenekit/src/main/java/com/bytedance/volc/vod/scenekit/ui/video/scene/shortvideo/ShortVideoSceneView.java) 
+* 中视频场景控件 - [FeedVideoSceneView](vod-scenekit/src/main/java/com/bytedance/volc/vod/scenekit/ui/video/scene/feedvideo/FeedVideoSceneView.java)
+#### 页面控件
+页面控件 = RecyclerView/ViewPager2 + 播放控件
+* 短视频页面控件 - [ShortVideoPageView](vod-scenekit/src/main/java/com/bytedance/volc/vod/scenekit/ui/video/scene/shortvideo/ShortVideoPageView.java)
+* 中视频页面控件 - [FeedVideoPageView](vod-scenekit/src/main/java/com/bytedance/volc/vod/scenekit/ui/video/scene/feedvideo/FeedVideoPageView.java) 
+
+### 播放控件层 （[vod-playerkit](vod-playerkit)）
+#### 播放器接口层 （[vod-player](vod-playerkit/vod-player)）
+* 播放源 - [MediaSource](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/source/MediaSource.java)
+* 播放器 - [Player](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/Player.java)
+* 播放器默认实现 - [AVPlayer](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/AVPlayer.java)
+* 视频控件 - [VideoView](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/playback/VideoView.java)
+* 播放流程 - [PlaybackController](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/playback/PlaybackController.java)
+* 播放浮层 - [VideoLayer](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/playback/VideoLayer.java)
+* 浮层管理 - [VideoLayerHost](vod-playerkit/vod-player/src/main/java/com/bytedance/playerkit/player/playback/VideoLayerHost.java)
+
+#### 火山引擎播放器实现层 ([vod-player-volcengine](vod-playerkit/vod-player-volcengine))
+* 火山播放内核封装 - [VolcPlayer](vod-playerkit/vod-player-volcengine/src/main/java/com/bytedance/playerkit/player/volcengine/VolcPlayer.java)
+* 火山播放内核工厂 - [TTVideoEngineFactory](vod-playerkit/vod-player-volcengine/src/main/java/com/bytedance/playerkit/player/volcengine/VolcPlayer.java)
+* SDK 初始化 - [VolcPlayerInit](vod-playerkit/vod-player-volcengine/src/main/java/com/bytedance/playerkit/player/volcengine/VolcPlayerInit.java)
+* 播放器全局配置 - [VolcConfigGlobal](vod-playerkit/vod-player-volcengine/src/main/java/com/bytedance/playerkit/player/volcengine/VolcConfigGlobal.java)
+* 播放器实例配置 - [VolcConfig](vod-playerkit/vod-player-volcengine/src/main/java/com/bytedance/playerkit/player/volcengine/VolcConfig.java)
 
 # Issue
 
