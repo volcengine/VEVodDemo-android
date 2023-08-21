@@ -95,7 +95,7 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
-    public void onInfo(@NonNull PlayerAdapter mp, int what, int extra) {
+    public void onInfo(@NonNull PlayerAdapter mp, int what, @Nullable Object extra) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onInfo,
                 new Object[]{what, extra},
                 () -> mListener.onInfo(mp, what, extra)));
