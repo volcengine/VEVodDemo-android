@@ -249,7 +249,7 @@ public interface PlayerAdapter {
 
         void onProgressUpdate(@NonNull PlayerAdapter mp, long position);
 
-        void onInfo(@NonNull PlayerAdapter mp, int what, int extra);
+        void onInfo(@NonNull PlayerAdapter mp, int what, @Nullable Object extra);
 
         void onCacheHint(PlayerAdapter mp, long cacheSize);
     }

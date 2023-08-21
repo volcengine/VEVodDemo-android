@@ -235,7 +235,7 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onInfo(@NonNull PlayerAdapter mp, int what, int extra) {
+        public void onInfo(@NonNull PlayerAdapter mp, int what, @Nullable Object extra) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
             switch (what) {
@@ -256,8 +256,27 @@ public class AVPlayer extends ExtraObject implements Player {
                 case PlayerAdapter.Info.MEDIA_INFO_BUFFERING_START: {
                     player.mIsBuffering = true;
                     player.mBufferIndex++;
-                    L.d(player, "onInfo", "buffering start", player.mBufferIndex);
-                    player.mDispatcher.obtain(InfoBufferingStart.class, player).init(player.mBufferIndex).dispatch();
+                    int bufferingType = 0;
+                    int bufferingStage = 0;
+                    int bufferingReason = 0;
+                    if (extra instanceof Object[]) {
+                        final Object[] params = (Object[]) extra;
+                        if (params.length >= 3) {
+                            bufferingType = (int) params[0];
+                            bufferingStage = (int) params[1];
+                            bufferingReason = (int) params[2];
+                        }
+                    }
+                    L.d(player, "onInfo", "buffering start", player.mBufferIndex,
+                            InfoBufferingStart.mapBufferingType(bufferingType),
+                            InfoBufferingStart.mapBufferingStage(bufferingStage),
+                            InfoBufferingStart.mapBufferingReason(bufferingReason));
+                    player.mDispatcher.obtain(InfoBufferingStart.class, player).init(
+                                    player.mBufferIndex,
+                                    bufferingType,
+                                    bufferingStage,
+                                    bufferingReason)
+                            .dispatch();
                     break;
                 }
                 case PlayerAdapter.Info.MEDIA_INFO_BUFFERING_END: {

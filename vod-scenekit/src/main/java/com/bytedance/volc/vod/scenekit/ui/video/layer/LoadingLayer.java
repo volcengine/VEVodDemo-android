@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
+import com.bytedance.playerkit.player.event.InfoBufferingStart;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -120,6 +121,13 @@ public class LoadingLayer extends AnimateLayer {
                     break;
                 }
                 case PlayerEvent.Info.BUFFERING_START: {
+                    InfoBufferingStart e = event.cast(InfoBufferingStart.class);
+
+                    int bufferNum = e.bufferId; // buffer 次数
+                    int bufferType = e.bufferingType; // buffer 类型
+                    int bufferStage = e.bufferingStage; // buffer 首帧前/后
+                    int bufferReason = e.bufferingReason; // buffer 原因
+
                     Player player = event.owner(Player.class);
                     if (player.isPlaying()) {
                         showOpt();
@@ -137,8 +145,12 @@ public class LoadingLayer extends AnimateLayer {
     }
 
     private void showOpt() {
+       showOpt(1000);
+    }
+
+    private void showOpt(long delayMills) {
         mHandler.removeCallbacks(mShowRunnable);
-        mHandler.postDelayed(mShowRunnable, 1000);
+        mHandler.postDelayed(mShowRunnable, delayMills);
     }
 
     private final Runnable mShowRunnable = new Runnable() {

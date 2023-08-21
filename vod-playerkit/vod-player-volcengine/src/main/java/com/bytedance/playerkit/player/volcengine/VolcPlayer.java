@@ -548,7 +548,7 @@ class VolcPlayer implements PlayerAdapter {
             public void onProgressUpdate(@NonNull PlayerAdapter mp, long position) { /**/ }
 
             @Override
-            public void onInfo(@NonNull PlayerAdapter mp, int what, int extra) {
+            public void onInfo(@NonNull PlayerAdapter mp, int what, @Nullable Object extra) {
                 switch (what) {
                     case Info.MEDIA_INFO_BUFFERING_START:
                     case Info.MEDIA_INFO_BUFFERING_END:
@@ -1312,7 +1312,7 @@ class VolcPlayer implements PlayerAdapter {
             if (listener == null) return;
 
             if (VolcConfigGlobal.ENABLE_BUFFER_START_MSG_OPT) {
-                if (!player.isPlaying()) {
+                if (!player.isPlaying() && afterFirstFrame == 1) {
                     L.w(player, "onBufferStart", "msg blocked", "reason",
                             "state not playing", mapState(player.getState()));
                     return;
@@ -1320,7 +1320,7 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             player.mBuffering = true;
-            listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_START, 0);
+            listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_START, new Object[]{reason, afterFirstFrame, action});
         }
 
         @Override
@@ -1336,7 +1336,7 @@ class VolcPlayer implements PlayerAdapter {
                 return;
             }
             player.mBuffering = false;
-            listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_END, 0);
+            listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_END, code);
         }
 
         @Override
@@ -1377,7 +1377,7 @@ class VolcPlayer implements PlayerAdapter {
             Listener listener = player.mListener;
             if (listener == null) return;
 
-            listener.onInfo(player, Info.MEDIA_INFO_VIDEO_RENDERING_START, 0/*TODO*/);
+            listener.onInfo(player, Info.MEDIA_INFO_VIDEO_RENDERING_START, null);
         }
 
         @Override
@@ -1387,7 +1387,7 @@ class VolcPlayer implements PlayerAdapter {
             Listener listener = player.mListener;
             if (listener == null) return;
 
-            listener.onInfo(player, Info.MEDIA_INFO_VIDEO_RENDERING_START_BEFORE_START, 0/*TODO*/);
+            listener.onInfo(player, Info.MEDIA_INFO_VIDEO_RENDERING_START_BEFORE_START, null);
         }
 
         @Override
@@ -1503,7 +1503,7 @@ class VolcPlayer implements PlayerAdapter {
             Listener listener = player.mListener;
             if (listener == null) return;
 
-            listener.onInfo(player, Info.MEDIA_INFO_AUDIO_RENDERING_START, 0);
+            listener.onInfo(player, Info.MEDIA_INFO_AUDIO_RENDERING_START, null);
         }
 
         @Override
