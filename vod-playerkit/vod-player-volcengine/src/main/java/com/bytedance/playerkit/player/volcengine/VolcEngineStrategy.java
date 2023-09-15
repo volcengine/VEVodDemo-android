@@ -46,20 +46,16 @@ import com.ss.ttvideoengine.strategy.source.StrategySource;
 
 import org.json.JSONObject;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class VolcEngineStrategy {
-    private static final Map<String, TTVideoEngine> PRERENDER_ENGINE_MAP = Collections.synchronizedMap(new HashMap<>());
     private static int sCurrentScene = VolcScene.SCENE_UNKNOWN;
     private static boolean sSceneStrategyEnabled = false;
 
     static void init() {
         if (!VolcConfigGlobal.ENABLE_SCENE_STRATEGY_INIT) return;
         // preRender
-        StrategyManager.instance().controlEngineRelease(false);
+        StrategyManager.instance().enableReleasePreRenderEngineInstanceByLRU(true);
         TTVideoEngine.setEngineStrategyListener(new EngineStrategyListener() {
             @Override
             public TTVideoEngine createPreRenderEngine(StrategySource strategySource) {
@@ -127,7 +123,6 @@ public class VolcEngineStrategy {
     }
 
     public static void clearSceneStrategy() {
-        releasePreReRenderEngines();
         TTVideoEngine.clearAllStrategy();
     }
 
@@ -190,29 +185,14 @@ public class VolcEngineStrategy {
         }
     }
 
-    @Nullable
     static TTVideoEngine getPreRenderEngine(MediaSource mediaSource) {
         if (mediaSource == null) return null;
 
         final String key = key(mediaSource);
 
-        TTVideoEngine player = PRERENDER_ENGINE_MAP.get(key);
+        TTVideoEngine player = StrategyManager.instance().getPreRenderEngine(key);
         if (player != null && player.isPrepared()) {
-            final TTVideoEngine duplicated = TTVideoEngine.getPreRenderEngine(key);
-            if (duplicated != null && duplicated != player) {
-                L.e(VolcEngineStrategy.class, "getPreRenderEngine", "duplicated", key, player, duplicated);
-                duplicated.clearTextureRef();
-                duplicated.releaseAsync();
-            }
-            L.d(VolcEngineStrategy.class, "getPreRenderEngine", "cached", key, player);
-            return player;
-        }
-        PRERENDER_ENGINE_MAP.remove(key);
-
-        player = TTVideoEngine.getPreRenderEngine(key);
-        if (player != null && player.isPrepared()) {
-            PRERENDER_ENGINE_MAP.put(key, player);
-            L.d(VolcEngineStrategy.class, "getPreRenderEngine", "get", key, player);
+            L.d(VolcEngineStrategy.class, "getPreRenderEngine", key, player);
             return player;
         }
         return null;
@@ -223,39 +203,12 @@ public class VolcEngineStrategy {
 
         final String key = key(mediaSource);
 
-        TTVideoEngine player = PRERENDER_ENGINE_MAP.remove(key);
+        TTVideoEngine player = StrategyManager.instance().removePreRenderEngine(key);
         if (player != null && player.isPrepared()) {
-            final TTVideoEngine duplicated = TTVideoEngine.getPreRenderEngine(key);
-            if (duplicated != null && duplicated != player) {
-                L.e(VolcEngineStrategy.class, "removePreRenderEngine", "duplicated", key, player, duplicated);
-                duplicated.clearTextureRef();
-                duplicated.releaseAsync();
-            }
-            L.d(VolcEngineStrategy.class, "removePreRenderEngine", "cached", key, player);
-            return player;
-        }
-
-        player = TTVideoEngine.getPreRenderEngine(key);
-        if (player != null && player.isPrepared()) {
-            L.d(VolcEngineStrategy.class, "removePreRenderEngine", "get", key, player);
+            L.e(VolcEngineStrategy.class, "removePreRenderEngine", key, player);
             return player;
         }
         return null;
-    }
-
-    static void releasePreReRenderEngines() {
-        Map<String, TTVideoEngine> copy = new HashMap<>();
-        synchronized (PRERENDER_ENGINE_MAP) {
-            copy.putAll(PRERENDER_ENGINE_MAP);
-            PRERENDER_ENGINE_MAP.clear();
-        }
-        for (Map.Entry<String, TTVideoEngine> entry : copy.entrySet()) {
-            TTVideoEngine engine = entry.getValue();
-            if (engine != null) {
-                engine.releaseAsync();
-            }
-        }
-        copy.clear();
     }
 
     private static String key(MediaSource mediaSource) {
