@@ -28,7 +28,6 @@ public class App extends Application {
     private static final String APP_ID = "";
     private static final String APP_NAME = "VOLCVodDemo";
     private static final String APP_CHANNEL = "VOLCVodDemoAndroid";
-    private static final String APP_REGION = "china";
     private static final String APP_VERSION = BuildConfig.VERSION_NAME;
     private static final String LICENSE_URI = "assets:///license2/l-103241-ch-vod-a--enterprise.lic";
 
@@ -44,7 +43,6 @@ public class App extends Application {
                 APP_NAME,
                 APP_CHANNEL,
                 APP_VERSION,
-                APP_REGION,
                 LICENSE_URI
         );
 

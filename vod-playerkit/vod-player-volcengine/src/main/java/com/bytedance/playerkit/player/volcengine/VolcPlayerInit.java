@@ -166,7 +166,6 @@ public class VolcPlayerInit {
     public static class AppInfo {
         public final String appId;
         public final String appName;
-        public final String appRegion;
         public final String appChannel;
         public final String appVersion;
         public final String licenseUri;
@@ -174,7 +173,6 @@ public class VolcPlayerInit {
         private AppInfo(Builder builder) {
             this.appId = builder.appId;
             this.appName = builder.appName;
-            this.appRegion = builder.appRegion;
             this.appChannel = builder.appChannel;
             this.appVersion = builder.appVersion;
             this.licenseUri = builder.licenseUri;
@@ -183,7 +181,6 @@ public class VolcPlayerInit {
         public static class Builder {
             private String appId;
             private String appName;
-            private String appRegion;
             private String appChannel;
             private String appVersion;
             private String licenseUri;
@@ -197,12 +194,6 @@ public class VolcPlayerInit {
             public Builder setAppName(@NonNull String appName) {
                 Asserts.checkNotNull(appName, "appName shouldn't be null");
                 this.appName = appName;
-                return this;
-            }
-
-            public Builder setAppRegion(@NonNull String appRegion) {
-                Asserts.checkNotNull(appRegion, "appRegion shouldn't be null");
-                this.appRegion = appRegion;
                 return this;
             }
 
@@ -226,7 +217,6 @@ public class VolcPlayerInit {
             public AppInfo build() {
                 Asserts.checkNotNull(appId, "appId shouldn't be null");
                 Asserts.checkNotNull(appName, "appName shouldn't be null");
-                Asserts.checkNotNull(appRegion, "appRegion shouldn't be null");
                 Asserts.checkNotNull(appVersion, "appVersion shouldn't be null");
                 Asserts.checkNotNull(licenseUri, "licenseUri shouldn't be null");
                 return new AppInfo(this);

@@ -30,7 +30,6 @@ public interface VodDemoApiService extends IService {
                     String appName,
                     String appChannel,
                     String appVersion,
-                    String appRegion,
                     String licenseUri);
 
     void intentInto(Activity activity, boolean showActionBar);
