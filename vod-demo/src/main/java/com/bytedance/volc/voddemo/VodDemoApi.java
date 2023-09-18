@@ -30,9 +30,8 @@ public class VodDemoApi {
                                   String appName,
                                   String appChannel,
                                   String appVersion,
-                                  String appRegion,
                                   String licenseUri) {
-        VodSDK.init(context, appId, appName, appChannel, appVersion, appRegion, licenseUri);
+        VodSDK.init(context, appId, appName, appChannel, appVersion, licenseUri);
     }
 
     public static void intentInto(Activity activity, boolean showActionBar) {

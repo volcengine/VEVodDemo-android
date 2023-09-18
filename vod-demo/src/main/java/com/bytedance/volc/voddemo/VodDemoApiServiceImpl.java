@@ -28,8 +28,8 @@ import com.bytedance.volc.voddemo.api.VodDemoApiService;
 public class VodDemoApiServiceImpl implements VodDemoApiService {
 
     @Override
-    public void initVodSDK(Context context, String appId, String appName, String appChannel, String appVersion, String appRegion, String licenseUri) {
-        VodDemoApi.initVodSDK(context, appId, appName, appChannel, appVersion, appRegion, licenseUri);
+    public void initVodSDK(Context context, String appId, String appName, String appChannel, String appVersion, String licenseUri) {
+        VodDemoApi.initVodSDK(context, appId, appName, appChannel, appVersion, licenseUri);
     }
 
     @Override

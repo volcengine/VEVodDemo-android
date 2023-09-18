@@ -51,7 +51,6 @@ public class VodSDK {
                             String appName,
                             String appChannel,
                             String appVersion,
-                            String appRegion,
                             String licenseUri) {
         sContext = context;
 
@@ -62,7 +61,6 @@ public class VodSDK {
         VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
                 .setAppId(appId)
                 .setAppName(appName)
-                .setAppRegion(appRegion)
                 .setAppChannel(appChannel)
                 .setAppVersion(appVersion)
                 .setLicenseUri(licenseUri)
