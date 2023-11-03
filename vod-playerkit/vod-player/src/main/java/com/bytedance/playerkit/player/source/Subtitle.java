@@ -108,7 +108,7 @@ public class Subtitle implements Serializable {
     }
 
     @Nullable
-    public static String dump(Subtitle subtitle) {
+    public static String dump(@Nullable Subtitle subtitle) {
         if (!L.ENABLE_LOG) return null;
         if (subtitle == null) return null;
 
@@ -117,6 +117,9 @@ public class Subtitle implements Serializable {
 
     @Nullable
     public static String dump(List<Subtitle> subtitles) {
+        if (!L.ENABLE_LOG) return null;
+        if (subtitles == null) return null;
+
         StringBuilder sb = new StringBuilder();
         for (Subtitle subtitle : subtitles) {
             sb.append(subtitle.dump()).append(", ");

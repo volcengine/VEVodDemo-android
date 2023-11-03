@@ -679,7 +679,10 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
-    public void selectSubtitle(Subtitle subtitle) {
+    public void selectSubtitle(@Nullable Subtitle subtitle) {
+        final Subtitle selected = mPlayer.getSelectedSubtitle();
+        L.d(this, "selectSubtitle", "selected:" + Subtitle.dump(selected),
+                "target:" + Subtitle.dump(subtitle));
         mPlayer.selectSubtitle(subtitle);
     }
 

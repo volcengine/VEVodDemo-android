@@ -64,6 +64,7 @@ import com.ss.ttvideoengine.utils.Error;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ class VolcPlayer implements PlayerAdapter {
     private final Context mContext;
     private final ListenerAdapter mListenerAdapter;
     private final boolean mPreCreatePlayer;
+    private final Handler mHandler;
     private boolean mPreRenderPlayer;
     private TTVideoEngine mPlayer;
 
@@ -93,6 +95,7 @@ class VolcPlayer implements PlayerAdapter {
     private boolean mPausedWhenChangeAVTrack;
     private long mPlaybackTimeWhenChangeAVTrack;
     private boolean mBuffering;
+    private boolean mCheckBuffering;
 
     private final SparseArray<Track> mSelectedTrack = new SparseArray<>();
     private final SparseArray<Track> mPendingTrack = new SparseArray<>();
@@ -151,7 +154,8 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private VolcPlayer(final Context context, MediaSource mediaSource, boolean preCreate) {
-        L.d(this, "constructor", "DEVICE_ID");
+        L.d(this, "constructor", "DEVICE_ID", getDeviceId());
+        this.mHandler = new Handler(Looper.myLooper() == null ? Looper.getMainLooper() : Looper.myLooper());
         this.mContext = context;
         this.mListenerAdapter = new ListenerAdapter(this);
         this.mPreCreatePlayer = preCreate;
@@ -899,6 +903,8 @@ class VolcPlayer implements PlayerAdapter {
         } else {
             player.prepare();
         }
+
+        startCheckBufferingTimeout();
     }
 
     private void config(MediaSource mediaSource, @Nullable Track track) {
@@ -933,6 +939,7 @@ class VolcPlayer implements PlayerAdapter {
             mPlayer.play();
         }
         setState(Player.STATE_STARTED);
+        startCheckBufferingTimeout();
     }
 
     @Override
@@ -946,9 +953,10 @@ class VolcPlayer implements PlayerAdapter {
     public void pause() throws IllegalStateException {
         Asserts.checkState(getState(), Player.STATE_PREPARING, Player.STATE_PREPARED, Player.STATE_STARTED,
                 Player.STATE_PAUSED, Player.STATE_COMPLETED);
-
         if (isInState(Player.STATE_PAUSED)) return;
 
+        L.d(this, "pause");
+        stopCheckBufferingTimeout();
         mPlayer.pause();
         setState(Player.STATE_PAUSED);
     }
@@ -957,16 +965,19 @@ class VolcPlayer implements PlayerAdapter {
     public void stop() throws IllegalStateException {
         Asserts.checkState(getState(), Player.STATE_PREPARING, Player.STATE_PREPARED,
                 Player.STATE_STARTED, Player.STATE_PAUSED, Player.STATE_COMPLETED, Player.STATE_STOPPED);
-
         if (isInState(Player.STATE_STOPPED)) return;
 
+        L.d(this, "stop");
+        stopCheckBufferingTimeout();
         mPlayer.stop();
+        mHandler.removeCallbacksAndMessages(null);
         mBuffering = false;
         setState(Player.STATE_STOPPED);
     }
 
     @Override
     public void setStartTime(long startTime) {
+        L.d(this, "setStartTime", startTime);
         mStartTime = startTime;
         if (!EngineParams.get(mPlayer).mPreRenderPlayer) {
             mPlayer.setStartTime((int) startTime);
@@ -976,6 +987,7 @@ class VolcPlayer implements PlayerAdapter {
     @Override
     public void setStartWhenPrepared(boolean startWhenPrepared) {
         if (mStartWhenPrepared != startWhenPrepared) {
+            L.d(this, "setStartWhenPrepared", startWhenPrepared);
             mStartWhenPrepared = startWhenPrepared;
             mPlayer.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_AUTOMATICALLY, startWhenPrepared ? 1 : 0);
         }
@@ -998,10 +1010,12 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public void reset() {
-        if (isInState(Player.STATE_IDLE)) return;
+        if (isInState(Player.STATE_IDLE, Player.STATE_RELEASED)) return;
 
         L.e(this, "reset", "unsupported reset method, stop instead");
         resetInner();
+        stopCheckBufferingTimeout();
+        mHandler.removeCallbacksAndMessages(null);
         if (mState != Player.STATE_STOPPED) {
             mPlayer.stop();
         }
@@ -1045,6 +1059,8 @@ class VolcPlayer implements PlayerAdapter {
     public void release() {
         if (isInState(Player.STATE_RELEASED)) return;
         L.d(this, "release", mPlayer, MediaSource.dump(mMediaSource));
+        stopCheckBufferingTimeout();
+        mHandler.removeCallbacksAndMessages(null);
         resetInner();
         mPlayer.setIsMute(true);
         mPlayer.releaseAsync();
@@ -1284,12 +1300,64 @@ class VolcPlayer implements PlayerAdapter {
 
     private void moveToErrorState(int code, Exception e) {
         L.e(this, "moveToErrorState", e, code);
+        stopCheckBufferingTimeout();
         EngineParams.get(mPlayer).mPlayerException = e;
         setState(Player.STATE_ERROR);
         if (mListener != null) {
             mListener.onError(this, code, String.valueOf(e));
         }
     }
+
+    private void startCheckBufferingTimeout() {
+        synchronized (this) {
+            if (mCheckBuffering) return;
+
+            final VolcConfig config = VolcConfig.get(mMediaSource);
+            if (mState == Player.STATE_PREPARING) {
+                if (config.firstFrameBufferingTimeoutMS >= 5000) {
+                    L.d(this,"startCheckBufferingTimeout", "firstFrame");
+                    mCheckBuffering = true;
+                    mHandler.postDelayed(mBufferingTimeoutRunnable, config.firstFrameBufferingTimeoutMS);
+                }
+            } else if (mState == Player.STATE_STARTED && mBuffering) {
+                if (config.playbackBufferingTimeoutMS >= 10000) {
+                    L.d(this,"startCheckBufferingTimeout", "playback");
+                    mCheckBuffering = true;
+                    mHandler.postDelayed(mBufferingTimeoutRunnable, config.playbackBufferingTimeoutMS);
+                }
+            }
+        }
+    }
+
+    private void stopCheckBufferingTimeout() {
+        synchronized (this) {
+            if (mCheckBuffering) {
+                L.d(this,"stopCheckBufferingTimeout");
+                mCheckBuffering = false;
+                mHandler.removeCallbacks(mBufferingTimeoutRunnable);
+            }
+        }
+    }
+
+    private void notifyBufferingTimeout() {
+        L.d(this,"notifyBufferingTimeout");
+        stop();
+        moveToErrorState(PlayerException.CODE_BUFFERING_TIME_OUT, new IOException("Player buffering timeout!"));
+    }
+
+    private final Runnable mBufferingTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            synchronized (VolcPlayer.this) {
+                if (!mCheckBuffering) return;
+                mCheckBuffering = false;
+                if (!(mState == Player.STATE_PREPARING || (mState == Player.STATE_STARTED && mBuffering))) {
+                    return;
+                }
+            }
+            notifyBufferingTimeout();
+        }
+    };
 
     private static class ListenerAdapter extends TTVideoEngineListenerAdapter {
 
@@ -1313,9 +1381,10 @@ class VolcPlayer implements PlayerAdapter {
             if (player.mState != Player.STATE_PREPARING) return;
 
             player.setState(Player.STATE_PREPARED);
-
             final String enginePlayerType = VolcEditions.dumpEngineCoreType(engine);
             L.d(player, "onPrepared", "enginePlayerType", engine, enginePlayerType);
+
+            player.stopCheckBufferingTimeout();
 
             @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
 
@@ -1364,6 +1433,7 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             player.mBuffering = true;
+            player.startCheckBufferingTimeout();
             listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_START, new Object[]{reason, afterFirstFrame, action});
         }
 
@@ -1379,7 +1449,9 @@ class VolcPlayer implements PlayerAdapter {
                         "not pair with buffering start", mapState(player.getState()));
                 return;
             }
+
             player.mBuffering = false;
+            player.stopCheckBufferingTimeout();
             listener.onInfo(player, Info.MEDIA_INFO_BUFFERING_END, code);
         }
 
@@ -1521,7 +1593,7 @@ class VolcPlayer implements PlayerAdapter {
                     player.config(mediaSource, playTrack);
                     return false;
                 } else {
-                    new Handler().post(() -> {
+                    player.mHandler.post(() -> {
                         player.stop();
                         player.moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception());
                     });
