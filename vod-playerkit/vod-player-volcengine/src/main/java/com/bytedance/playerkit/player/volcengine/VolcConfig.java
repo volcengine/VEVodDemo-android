@@ -65,6 +65,8 @@ public class VolcConfig implements Serializable {
     public boolean enableEngineLooper = VolcEditions.isSupportEngineLooper();
     public boolean enableSeekEnd = true;
     public boolean enableFrameUpdateCallback = false;
+    public int firstFrameBufferingTimeoutMS = 0;
+    public int playbackBufferingTimeoutMS = 0;
     public boolean enableECDN = false;
     public static String ECDN_FILE_KEY_REGULAR_EXPRESSION;
     public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
