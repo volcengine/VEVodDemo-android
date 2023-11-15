@@ -18,6 +18,9 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.layer;
 
+import static com.bytedance.volc.vod.scenekit.ui.video.layer.Layers.VisibilityRequestReason.REQUEST_DISMISS_REASON_DIALOG_SHOW;
+
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -98,6 +101,13 @@ public class SubtitleLayer extends AnimateLayer {
     public void show() {
         super.show();
         applyTheme();
+    }
+
+    @Override
+    public void requestDismiss(@NonNull String reason) {
+        if (!TextUtils.equals(reason, REQUEST_DISMISS_REASON_DIALOG_SHOW)) {
+            super.requestDismiss(reason);
+        }
     }
 
     public void applyVisible() {
