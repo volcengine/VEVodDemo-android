@@ -43,11 +43,11 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-def innerRepo = new File(".dev/.inner_repo.gradle")
+def innerRepo = new File(rootProject.rootDir, ".dev/.inner_repo.gradle")
 if (innerRepo.exists()) {
     apply from: innerRepo
 }
-def localRepo = new File(".dev/.local_repo.gradle")
+def localRepo = new File(rootProject.rootDir, ".dev/.local_repo.gradle")
 if (localRepo.exists()) {
     apply from: localRepo
 }
