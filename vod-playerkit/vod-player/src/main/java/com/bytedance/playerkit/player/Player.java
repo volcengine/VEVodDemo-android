@@ -254,6 +254,41 @@ public interface Player {
         }
     }
 
+    /**
+     * Codec ID. One of
+     * {@link #CODEC_ID_UNKNOWN},
+     * {@link #CODEC_ID_H264},
+     * {@link #CODEC_ID_H265},
+     * {@link #CODEC_ID_H266}
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({CODEC_ID_UNKNOWN,
+            CODEC_ID_H264,
+            CODEC_ID_H265,
+            CODEC_ID_H266})
+    @interface CodecId {
+    }
+
+    int CODEC_ID_UNKNOWN = 0;
+    int CODEC_ID_H264 = 1;
+    int CODEC_ID_H265 = 2;
+    int CODEC_ID_H266 = 3;
+
+    static String mapCodecID(@CodecId int codecId) {
+        switch (codecId) {
+            case CODEC_ID_UNKNOWN:
+                return "unknown";
+            case CODEC_ID_H264:
+                return "H264";
+            case CODEC_ID_H265:
+                return "H265";
+            case CODEC_ID_H266:
+                return "H266";
+            default:
+                throw new IllegalArgumentException("Unsupported codecType " + codecId);
+        }
+    }
+
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({FRAME_TYPE_UNKNOWN,
             FRAME_TYPE_VIDEO,
@@ -736,6 +771,12 @@ public interface Player {
     void setSubtitleEnabled(boolean enabled);
 
     boolean isSubtitleEnabled();
+
+    @DecoderType
+    int getVideoDecoderType();
+
+    @CodecId
+    int getVideoCodecId();
 
     /**
      * @return true: IO buffering. Otherwise, false.

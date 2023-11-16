@@ -227,6 +227,12 @@ public interface PlayerAdapter {
 
     boolean isSubtitleEnabled();
 
+    @Player.DecoderType
+    int getVideoDecoderType();
+
+    @Player.CodecId
+    int getVideoCodecId();
+
     String dump();
 
     interface Listener extends PlayerListener, MediaSourceListener, TrackListener, SubtitleListener, FrameInfoListener {

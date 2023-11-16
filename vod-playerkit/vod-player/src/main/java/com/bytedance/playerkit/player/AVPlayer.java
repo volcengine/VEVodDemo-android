@@ -1011,6 +1011,18 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
+    public int getVideoDecoderType() {
+        if (checkIsRelease("getDecoderType")) return Player.DECODER_TYPE_UNKNOWN;
+        return mPlayer.getVideoDecoderType();
+    }
+
+    @Override
+    public int getVideoCodecId() {
+        if (checkIsRelease("getCodecId")) return Player.CODEC_ID_UNKNOWN;
+        return mPlayer.getVideoCodecId();
+    }
+
+    @Override
     public boolean isBuffering() {
         return mIsBuffering;
     }
