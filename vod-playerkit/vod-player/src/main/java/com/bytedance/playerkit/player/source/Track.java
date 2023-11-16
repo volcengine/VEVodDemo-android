@@ -23,6 +23,7 @@ import android.media.MediaPlayer;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.utils.L;
 
 import java.io.Serializable;
@@ -59,28 +60,17 @@ public class Track implements Serializable {
      */
     @Documented
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ENCODE_TYPE_UNKNOWN, ENCODER_TYPE_H264, ENCODER_TYPE_H265, ENCODER_TYPE_H266})
+    @IntDef({ENCODER_TYPE_UNKNOWN, ENCODER_TYPE_H264, ENCODER_TYPE_H265, ENCODER_TYPE_H266})
     public @interface EncoderType {
     }
 
-    public static final int ENCODE_TYPE_UNKNOWN = 0;
-    public static final int ENCODER_TYPE_H264 = 1;
-    public static final int ENCODER_TYPE_H265 = 2;
-    public static final int ENCODER_TYPE_H266 = 3;
+    public static final int ENCODER_TYPE_UNKNOWN = Player.CODEC_ID_UNKNOWN;
+    public static final int ENCODER_TYPE_H264 = Player.CODEC_ID_H264;
+    public static final int ENCODER_TYPE_H265 = Player.CODEC_ID_H265;
+    public static final int ENCODER_TYPE_H266 = Player.CODEC_ID_H266;
 
     public static String mapEncoderType(@EncoderType int encodeType) {
-        switch (encodeType) {
-            case ENCODE_TYPE_UNKNOWN:
-                return "unknown";
-            case ENCODER_TYPE_H264:
-                return "H264";
-            case ENCODER_TYPE_H265:
-                return "H265";
-            case ENCODER_TYPE_H266:
-                return "H266";
-            default:
-                throw new IllegalArgumentException("Unsupported encodeType " + encodeType);
-        }
+        return Player.mapCodecID(encodeType);
     }
 
     /**

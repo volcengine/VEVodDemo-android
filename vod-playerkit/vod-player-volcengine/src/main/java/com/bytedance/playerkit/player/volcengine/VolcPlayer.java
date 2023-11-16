@@ -45,6 +45,7 @@ import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttm.player.PlaybackParams;
+import com.ss.ttvideoengine.AppInfo;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
@@ -150,7 +151,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private VolcPlayer(final Context context, MediaSource mediaSource, boolean preCreate) {
-        L.d(this, "constructor", "DEVICE_ID", getDeviceId());
+        L.d(this, "constructor", "APP_ID", AppInfo.mAppID, "DEVICE_ID", getDeviceId());
         this.mHandler = new Handler(Looper.myLooper() == null ? Looper.getMainLooper() : Looper.myLooper());
         this.mContext = context;
         this.mListenerAdapter = new ListenerAdapter(this);
@@ -1249,10 +1250,40 @@ class VolcPlayer implements PlayerAdapter {
         return VolcConfig.get(mMediaSource).enableSubtitle && EngineParams.get(mPlayer).mSubtitleEnabled;
     }
 
+    @Player.DecoderType
+    @Override
+    public int getVideoDecoderType() {
+        final int videoDecoderType = mPlayer.getIntOption(TTVideoEngine.PLAYER_OPTION_GET_VIDEO_CODEC_TYPE);
+        if (videoDecoderType == -1) {
+            return Player.DECODER_TYPE_UNKNOWN;
+        } else if (videoDecoderType == TTVideoEngine.PLAY_CODEC_NAME_AN_HW) {
+            return Player.DECODER_TYPE_HARDWARE;
+        } else {
+            return Player.DECODER_TYPE_SOFTWARE;
+        }
+    }
+
+    @Player.CodecId
+    @Override
+    public int getVideoCodecId() {
+        final int videoCodecId = mPlayer.getIntOption(TTVideoEngine.PLAYER_OPTION_GET_VIDEO_CODEC_ID);
+        switch (videoCodecId) {
+            case 0:
+                return Player.CODEC_ID_H264;
+            case 1:
+                return Player.CODEC_ID_H265;
+            case 33:
+                return Player.CODEC_ID_H266;
+            default:
+                return Player.CODEC_ID_UNKNOWN;
+        }
+    }
+
     @Override
     public String dump() {
         return L.obj2String(this)
-                + " " + resolvePlayerDecoderType(mPlayer)
+                + " " + Player.mapCodecID(getVideoCodecId())
+                + " " + Player.mapDecoderType(getVideoDecoderType())
                 + " " + VolcEditions.dumpEngineCoreType(mPlayer)
                 + (mPreCreatePlayer ? "preCreate" : mPreRenderPlayer ? " preRender" : "");
     }
@@ -1312,13 +1343,13 @@ class VolcPlayer implements PlayerAdapter {
                 if (mPreRenderPlayer) return;
 
                 if (config.firstFrameBufferingTimeoutMS >= 5000) {
-                    L.d(this,"startCheckBufferingTimeout", "firstFrame");
+                    L.d(this, "startCheckBufferingTimeout", "firstFrame");
                     mCheckBuffering = true;
                     mHandler.postDelayed(mBufferingTimeoutRunnable, config.firstFrameBufferingTimeoutMS);
                 }
             } else if (isInState(Player.STATE_STARTED) && mBuffering) {
                 if (config.playbackBufferingTimeoutMS >= 10000) {
-                    L.d(this,"startCheckBufferingTimeout", "playback");
+                    L.d(this, "startCheckBufferingTimeout", "playback");
                     mCheckBuffering = true;
                     mHandler.postDelayed(mBufferingTimeoutRunnable, config.playbackBufferingTimeoutMS);
                 }
@@ -1329,7 +1360,7 @@ class VolcPlayer implements PlayerAdapter {
     private void stopCheckBufferingTimeout() {
         synchronized (this) {
             if (mCheckBuffering) {
-                L.d(this,"stopCheckBufferingTimeout");
+                L.d(this, "stopCheckBufferingTimeout");
                 mCheckBuffering = false;
                 mHandler.removeCallbacks(mBufferingTimeoutRunnable);
             }
@@ -1337,7 +1368,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void notifyBufferingTimeout() {
-        L.d(this,"notifyBufferingTimeout");
+        L.d(this, "notifyBufferingTimeout");
         stop();
         moveToErrorState(PlayerException.CODE_BUFFERING_TIME_OUT, new IOException("Player buffering timeout!"));
     }
@@ -1379,7 +1410,7 @@ class VolcPlayer implements PlayerAdapter {
 
             player.setState(Player.STATE_PREPARED);
             final String enginePlayerType = VolcEditions.dumpEngineCoreType(engine);
-            L.d(player, "onPrepared", "enginePlayerType", engine, enginePlayerType);
+            L.d(player, "onPrepared", engine, enginePlayerType);
 
             player.stopCheckBufferingTimeout();
 
@@ -1745,16 +1776,6 @@ class VolcPlayer implements PlayerAdapter {
 
             L.v(player, "onFrameAboutToBeRendered", type, pts, wallClockTime);
             listener.onFrameInfoUpdate(player, type == 0 ? Player.FRAME_TYPE_VIDEO : Player.FRAME_TYPE_AUDIO, pts, wallClockTime);
-        }
-    }
-
-    private static String resolvePlayerDecoderType(TTVideoEngine engine) {
-        if (engine == null) return "unknown";
-        int videoCodecType = engine.getIntOption(TTVideoEngine.PLAYER_OPTION_GET_VIDEO_CODEC_TYPE);
-        if (videoCodecType == TTVideoEngine.PLAY_CODEC_NAME_AN_HW) {
-            return "hw";
-        } else {
-            return "sw";
         }
     }
 }
