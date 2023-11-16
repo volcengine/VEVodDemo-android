@@ -74,9 +74,8 @@ public class MediaSeekBar extends RelativeLayout {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 final float percent = progress / (float) seekBar.getMax();
                 final long currentPosition = (int) (percent * mDuration);
-                final long remaining = mDuration - currentPosition;
                 text1.setText(time2String(currentPosition));
-                text2.setText(time2String(remaining));
+                text2.setText(time2String(mDuration));
 
                 if (!mTouchSeeking) return;
                 if (mOnUserSeekListener != null && fromUser) {
@@ -117,6 +116,7 @@ public class MediaSeekBar extends RelativeLayout {
     public void setDuration(long duration) {
         this.mDuration = duration;
         this.seekBar.setMax(Math.max((int) (mDuration / 1000), 100));
+        text2.setText(time2String(mDuration));
     }
 
     public void setCurrentPosition(long currentPosition) {
