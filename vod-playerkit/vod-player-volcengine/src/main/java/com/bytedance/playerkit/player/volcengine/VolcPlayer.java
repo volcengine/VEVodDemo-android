@@ -18,10 +18,6 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.bytedance.playerkit.player.Player.FRAME_TYPE_AUDIO;
-import static com.bytedance.playerkit.player.Player.FRAME_TYPE_VIDEO;
-import static com.bytedance.playerkit.player.Player.mapState;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
@@ -944,9 +940,7 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public boolean isPlaying() {
-        synchronized (this) {
-            return mState == Player.STATE_STARTED;
-        }
+        return isInState(Player.STATE_STARTED);
     }
 
     @Override
@@ -1260,7 +1254,7 @@ class VolcPlayer implements PlayerAdapter {
         return L.obj2String(this)
                 + " " + resolvePlayerDecoderType(mPlayer)
                 + " " + VolcEditions.dumpEngineCoreType(mPlayer)
-                + (mPreRenderPlayer ? " pre" : "");
+                + (mPreCreatePlayer ? "preCreate" : mPreRenderPlayer ? " preRender" : "");
     }
 
     @SuppressLint("SwitchIntDef")
@@ -1295,7 +1289,7 @@ class VolcPlayer implements PlayerAdapter {
             state = this.mState;
             this.mState = newState;
         }
-        L.d(this, "setState", mapState(state), mapState(newState));
+        L.d(this, "setState", Player.mapState(state), Player.mapState(newState));
     }
 
     private void moveToErrorState(int code, Exception e) {
@@ -1310,16 +1304,19 @@ class VolcPlayer implements PlayerAdapter {
 
     private void startCheckBufferingTimeout() {
         synchronized (this) {
+            if (mPreCreatePlayer) return;
             if (mCheckBuffering) return;
 
             final VolcConfig config = VolcConfig.get(mMediaSource);
-            if (mState == Player.STATE_PREPARING) {
+            if (isInState(Player.STATE_PREPARING)) {
+                if (mPreRenderPlayer) return;
+
                 if (config.firstFrameBufferingTimeoutMS >= 5000) {
                     L.d(this,"startCheckBufferingTimeout", "firstFrame");
                     mCheckBuffering = true;
                     mHandler.postDelayed(mBufferingTimeoutRunnable, config.firstFrameBufferingTimeoutMS);
                 }
-            } else if (mState == Player.STATE_STARTED && mBuffering) {
+            } else if (isInState(Player.STATE_STARTED) && mBuffering) {
                 if (config.playbackBufferingTimeoutMS >= 10000) {
                     L.d(this,"startCheckBufferingTimeout", "playback");
                     mCheckBuffering = true;
@@ -1378,7 +1375,7 @@ class VolcPlayer implements PlayerAdapter {
             MediaSource mediaSource = player.mMediaSource;
             if (mediaSource == null) return;
 
-            if (player.mState != Player.STATE_PREPARING) return;
+            if (!player.isInState(Player.STATE_PREPARING)) return;
 
             player.setState(Player.STATE_PREPARED);
             final String enginePlayerType = VolcEditions.dumpEngineCoreType(engine);
@@ -1427,7 +1424,7 @@ class VolcPlayer implements PlayerAdapter {
             if (VolcConfigGlobal.ENABLE_BUFFER_START_MSG_OPT) {
                 if (!player.isPlaying() && afterFirstFrame == 1) {
                     L.w(player, "onBufferStart", "msg blocked", "reason",
-                            "state not playing", mapState(player.getState()));
+                            "state not playing", Player.mapState(player.getState()));
                     return;
                 }
             }
@@ -1446,7 +1443,7 @@ class VolcPlayer implements PlayerAdapter {
 
             if (!player.mBuffering) {
                 L.w(player, "onBufferEnd", "msg blocked", "reason",
-                        "not pair with buffering start", mapState(player.getState()));
+                        "not pair with buffering start", Player.mapState(player.getState()));
                 return;
             }
 
@@ -1747,7 +1744,7 @@ class VolcPlayer implements PlayerAdapter {
             if (listener == null) return;
 
             L.v(player, "onFrameAboutToBeRendered", type, pts, wallClockTime);
-            listener.onFrameInfoUpdate(player, type == 0 ? FRAME_TYPE_VIDEO : FRAME_TYPE_AUDIO, pts, wallClockTime);
+            listener.onFrameInfoUpdate(player, type == 0 ? Player.FRAME_TYPE_VIDEO : Player.FRAME_TYPE_AUDIO, pts, wallClockTime);
         }
     }
 
