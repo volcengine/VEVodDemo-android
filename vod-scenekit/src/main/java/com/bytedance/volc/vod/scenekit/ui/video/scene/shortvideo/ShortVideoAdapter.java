@@ -154,7 +154,13 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
                     mediaSource = VideoItem.toMediaSource(videoItem, false);
                     videoView.bindDataSource(mediaSource);
                 } else {
-                    // do nothing
+                    // vid is same
+                    if (videoView.player() == null) {
+                        mediaSource = VideoItem.toMediaSource(videoItem, false);
+                        videoView.bindDataSource(mediaSource);
+                    } else {
+                        // do nothing
+                    }
                 }
             }
         }

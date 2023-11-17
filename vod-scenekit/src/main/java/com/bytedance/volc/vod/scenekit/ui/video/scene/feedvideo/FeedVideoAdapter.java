@@ -270,7 +270,13 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
                 videoView.bindDataSource(mediaSource);
             } else {
                 if (TextUtils.equals(videoItem.getVid(), mediaSource.getMediaId())) {
-                    // do nothing
+                    // vid is same
+                    if (videoView.player() == null) {
+                        mediaSource = VideoItem.toMediaSource(videoItem, false);
+                        videoView.bindDataSource(mediaSource);
+                    } else {
+                        // do nothing
+                    }
                 } else {
                     videoView.stopPlayback();
                     mediaSource = VideoItem.toMediaSource(videoItem, true);
