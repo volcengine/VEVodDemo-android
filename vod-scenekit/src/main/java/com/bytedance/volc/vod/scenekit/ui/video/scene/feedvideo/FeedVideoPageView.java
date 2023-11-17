@@ -38,6 +38,7 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
@@ -210,21 +211,49 @@ public class FeedVideoPageView extends FrameLayout {
     }
 
     public void setItems(List<VideoItem> videoItems) {
+        L.d(this, "setItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.setItems(videoItems);
         FeedVideoStrategy.setItems(videoItems);
     }
 
     public void prependItems(List<VideoItem> videoItems) {
+        L.d(this, "prependItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.prependItems(videoItems);
         FeedVideoStrategy.setItems(mFeedVideoAdapter.getItems());
     }
 
     public void appendItems(List<VideoItem> videoItems) {
+        L.d(this, "appendItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_FEED);
         mFeedVideoAdapter.appendItems(videoItems);
         FeedVideoStrategy.appendItems(videoItems);
+    }
+
+    public void deleteItem(int position) {
+        if (position >= mFeedVideoAdapter.getItemCount() || position < 0) return;
+
+        VideoItem videoItem = mFeedVideoAdapter.getItem(position);
+        L.d(this, "deleteItem", position, VideoItem.dump(videoItem));
+
+        mFeedVideoAdapter.deleteItem(position);
+        FeedVideoStrategy.setItems(mFeedVideoAdapter.getItems());
+    }
+
+    public void replaceItem(int position, VideoItem videoItem) {
+        if (videoItem == null) return;
+
+        VideoItem.playScene(videoItem, PlayScene.SCENE_FEED);
+
+        if (position >= mFeedVideoAdapter.getItemCount() || position < 0) return;
+        L.d(this, "replaceItem", position, VideoItem.dump(videoItem));
+
+        mFeedVideoAdapter.replaceItem(position, videoItem);
+        FeedVideoStrategy.setItems(mFeedVideoAdapter.getItems());
     }
 
     public void play() {

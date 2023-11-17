@@ -116,6 +116,8 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void setItems(List<VideoItem> videoItems) {
+        L.d(this, "setItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.setItems(videoItems);
         ShortVideoStrategy.setItems(videoItems);
@@ -124,12 +126,16 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void prependItems(List<VideoItem> videoItems) {
+        L.d(this, "prependItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.prependItems(videoItems);
         ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
     }
 
     public void appendItems(List<VideoItem> videoItems) {
+        L.d(this, "appendItems", VideoItem.dump(videoItems));
+
         VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
         mShortVideoAdapter.appendItems(videoItems);
         ShortVideoStrategy.appendItems(videoItems);
@@ -139,6 +145,9 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
 
         final int currentPosition = getCurrentItem();
+        VideoItem videoItem = mShortVideoAdapter.getItem(position);
+        L.d(this, "deleteItem", position, VideoItem.dump(videoItem));
+
         mShortVideoAdapter.deleteItem(position);
         ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
         if (currentPosition == position) {
@@ -147,9 +156,13 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void replaceItem(int position, VideoItem videoItem) {
+        if (videoItem == null) return;
+
         VideoItem.playScene(videoItem, PlayScene.SCENE_SHORT);
 
         if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
+        L.d(this, "replaceItem", position, VideoItem.dump(videoItem));
+
         final int currentPosition = getCurrentItem();
         if (currentPosition == position) {
             stop();
@@ -166,6 +179,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void setCurrentItem(int position, boolean smoothScroll) {
+        L.d(this, "setCurrentItem", position, smoothScroll);
         mViewPager.setCurrentItem(position, smoothScroll);
     }
 
@@ -182,7 +196,8 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         if (!mLifeCycle.getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             return;
         }
-        L.d(this, "togglePlayback", currentPosition);
+        final VideoItem videoItem = mShortVideoAdapter.getItem(currentPosition);
+        L.d(this, "togglePlayback", currentPosition, VideoItem.dump(videoItem));
         final VideoView videoView = (VideoView) findItemViewByPosition(mViewPager, currentPosition);
         if (mController.videoView() == null) {
             if (videoView != null) {

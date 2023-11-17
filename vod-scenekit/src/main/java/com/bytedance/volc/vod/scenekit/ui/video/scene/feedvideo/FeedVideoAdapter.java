@@ -118,6 +118,20 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
         }
     }
 
+    public void deleteItem(int position) {
+        if (position >= 0 && position < mItems.size()) {
+            mItems.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    public void replaceItem(int position, VideoItem videoItem) {
+        if (0 <= position && position < mItems.size()) {
+            mItems.set(position, videoItem);
+            notifyItemChanged(position);
+        }
+    }
+
     public VideoItem getItem(int position) {
         return mItems.get(position);
     }

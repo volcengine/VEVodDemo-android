@@ -28,6 +28,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
@@ -42,9 +43,9 @@ import java.util.List;
 public class VideoItem implements Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
-    public static final int SOURCE_TYPE_VID = 0;
-    public static final int SOURCE_TYPE_URL = 1;
-    public static final int SOURCE_TYPE_MODEL = 2;
+    public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
+    public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
+    public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
 
     private VideoItem() {
     }
@@ -75,7 +76,11 @@ public class VideoItem implements Serializable {
     }
 
     public static VideoItem createUrlItem(@NonNull String url, @Nullable String cover) {
-        return createUrlItem(MD5.getMD5(url), url, null, null, 0, cover, null);
+        return createUrlItem(MD5.getMD5(url), url, cover);
+    }
+
+    public static VideoItem createUrlItem(@NonNull String vid, @NonNull String url, @Nullable String cover) {
+        return createUrlItem(vid, url, null, null, 0, cover, null);
     }
 
     public static VideoItem createUrlItem(
@@ -304,5 +309,26 @@ public class VideoItem implements Serializable {
     public static void playScene(VideoItem videoItem, int playScene) {
         if (videoItem == null) return;
         videoItem.playScene = playScene;
+    }
+
+    public String dump() {
+        return L.obj2String(this) + " " + vid + " " + MediaSource.mapSourceType(sourceType);
+    }
+
+    @Nullable
+    public static String dump(VideoItem videoItem) {
+        if (!L.ENABLE_LOG) return null;
+
+        return videoItem.dump();
+    }
+
+    @Nullable
+    public static String dump(List<VideoItem> videoItems) {
+        if (!L.ENABLE_LOG) return null;
+        StringBuilder sb = new StringBuilder();
+        for (VideoItem videoItem : videoItems) {
+            sb.append(videoItem.dump()).append("\n");
+        }
+        return sb.toString();
     }
 }
