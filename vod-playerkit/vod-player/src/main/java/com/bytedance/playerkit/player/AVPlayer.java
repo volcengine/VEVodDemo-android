@@ -683,6 +683,7 @@ public class AVPlayer extends ExtraObject implements Player {
         final Subtitle selected = mPlayer.getSelectedSubtitle();
         L.d(this, "selectSubtitle", "selected:" + Subtitle.dump(selected),
                 "target:" + Subtitle.dump(subtitle));
+        if (subtitle == null || Objects.equals(selected, subtitle)) return;
         mPlayer.selectSubtitle(subtitle);
     }
 
@@ -1012,13 +1013,13 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Override
     public int getVideoDecoderType() {
-        if (checkIsRelease("getDecoderType")) return Player.DECODER_TYPE_UNKNOWN;
+        if (checkIsRelease("getVideoDecoderType")) return Player.DECODER_TYPE_UNKNOWN;
         return mPlayer.getVideoDecoderType();
     }
 
     @Override
     public int getVideoCodecId() {
-        if (checkIsRelease("getCodecId")) return Player.CODEC_ID_UNKNOWN;
+        if (checkIsRelease("getVideoCodecId")) return Player.CODEC_ID_UNKNOWN;
         return mPlayer.getVideoCodecId();
     }
 
