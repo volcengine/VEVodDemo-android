@@ -96,9 +96,9 @@ public class SampleSourceParser {
             if (url.startsWith("/")) {
                 File file = new File(url);
                 if (!file.exists()) continue;
+            } else {
+                if (!url.startsWith("http") && !url.startsWith("file")) continue;
             }
-            if (!url.startsWith("http") && !url.startsWith("file")) continue;
-
             VideoItem videoItem = VideoItem.createUrlItem(MD5.getMD5(url), url, null, null, 0, null, index + ": " + url);
             videoItems.add(videoItem);
             index++;
