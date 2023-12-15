@@ -21,15 +21,16 @@ package com.bytedance.volc.voddemo;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.text.TextUtils;
 
 
 public class App extends Application {
 
     private static final String APP_ID = "";
+    private static final String LICENSE_URI = "";
     private static final String APP_NAME = "VOLCVodDemo";
     private static final String APP_CHANNEL = "VOLCVodDemoAndroid";
     private static final String APP_VERSION = BuildConfig.VERSION_NAME;
-    private static final String LICENSE_URI = "assets:///license2/l-103241-ch-vod-a--enterprise.lic";
 
     @SuppressLint("StaticFieldLeak")
     private static Context sContext;
@@ -37,6 +38,10 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (TextUtils.isEmpty(APP_ID) || TextUtils.isEmpty(LICENSE_URI)) {
+            throw new IllegalArgumentException("请联系火山引擎商务获取体验 Demo AppId 与 License. 联系方式：https://www.volcengine.com/product/vod");
+        }
 
         VodDemoApi.initVodSDK(this,
                 APP_ID,

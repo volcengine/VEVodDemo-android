@@ -24,11 +24,17 @@ Demo 中实现了常见的三种播放场景：
 ```
 
 # 编译运行
-1. 命令行编译
-```shell
-git clone https://github.com/volcengine/VEVodDemo-android
-cd VEVodDemo-android
-./gradlew :app:installdebug
+1. <b>Demo 需要设置 AppId 和 License 才能成功运行，否则会抛出异常。</b> 请联系火山引擎商务获取体验 License 文件和 AppId。获取到 License 文件后请将 License 放置在 app 的 assets 文件夹中。
+
+设置方式：
+> 修改 VEVodDemo-android/app/src/main/java/com/bytedance/volc/voddemo/App.java
+```java
+public class App extends Application {
+   private static final String APP_ID = "your app id";
+   // 比如：VEVodDemo-android/app/assets/license2/vod.lic 路径下的 assets uri 对应为：assets//:/license2/vod.lic
+   private static final String LICENSE_URI = "your license assets uri";
+   // ... 省略
+}
 ```
 
 2. Android Studio 打开 `VEVodDemo-android` 文件夹，点击运行 `app`.
