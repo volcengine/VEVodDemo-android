@@ -106,6 +106,12 @@ public class SampleSourceActivity extends BaseActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        save();
+    }
+
+    @Override
     protected void onDestroy() {
         save();
         super.onDestroy();
@@ -154,7 +160,7 @@ public class SampleSourceActivity extends BaseActivity {
 
         ArrayList<VideoItem> videoItems = SampleSourceParser.parse(input);
         if (videoItems.isEmpty()) {
-            mEditText.setError("Url/JSON is not illegal!");
+            mEditText.setError("Url/JSON is illegal!");
             return null;
         }
         return videoItems;
