@@ -20,6 +20,7 @@ package com.bytedance.volc.vod.settingskit;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class SettingItem {
@@ -32,6 +33,7 @@ public class SettingItem {
     public final int type;
     public String category;
     public String title;
+    public String id;
     public Getter getter;
     public Option option;
     public ValueMapper mapper;
@@ -63,8 +65,9 @@ public class SettingItem {
         return item;
     }
 
-    public static SettingItem createClickableItem(String category, String title, Getter getter, OnEventListener listener) {
+    public static SettingItem createClickableItem(String category, String id, String title, Getter getter, @Nullable OnEventListener listener) {
         SettingItem item = new SettingItem(SettingItem.TYPE_CLICKABLE_ITEM);
+        item.id = id;
         item.category = category;
         item.title = title;
         item.getter = getter;

@@ -34,11 +34,9 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.ui.settings.SettingsActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 
@@ -98,8 +96,7 @@ public class MainFragment extends BaseFragment {
             @NonNull
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View rootView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.vevod_main_fragment_item, parent, false);
+                View rootView = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_main_fragment_item, parent, false);
                 return new RecyclerView.ViewHolder(rootView) { /* ignore */
                 };
             }
@@ -120,9 +117,6 @@ public class MainFragment extends BaseFragment {
                     switch (item.type) {
                         case Item.TYPE_PLAY_SCENE:
                             VideoActivity.intentInto(getActivity(), item.playScene);
-                            break;
-                        case Item.TYPE_INPUT_SOURCE:
-                            SampleSourceActivity.intentInto(getActivity());
                             break;
                         case Item.TYPE_SETTINGS:
                             SettingsActivity.intentInto(getActivity());
@@ -154,10 +148,6 @@ public class MainFragment extends BaseFragment {
                 PlayScene.SCENE_FEED));
         items.add(new Item(R.string.vevod_long_video, R.drawable.vevod_main_scene_list_item_long_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_LONG));
-        if (VideoSettings.booleanValue(VideoSettings.SAMPLE_TEST_ENABLE_ENTRANCE_SHOW)) {
-            items.add(new Item(R.string.vevod_input_source, 0, Item.TYPE_INPUT_SOURCE,
-                    PlayScene.SCENE_UNKNOWN));
-        }
         items.add(new Item(R.string.vevod_settings, R.drawable.vevod_main_list_item_settings, Item.TYPE_SETTINGS,
                 PlayScene.SCENE_UNKNOWN));
         return items;
@@ -165,7 +155,6 @@ public class MainFragment extends BaseFragment {
 
     static class Item {
         static final int TYPE_PLAY_SCENE = 0;
-        static final int TYPE_INPUT_SOURCE = 1;
         static final int TYPE_SETTINGS = 2;
 
         @StringRes

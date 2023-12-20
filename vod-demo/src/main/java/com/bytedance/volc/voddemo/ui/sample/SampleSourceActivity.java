@@ -48,9 +48,12 @@ import java.util.ArrayList;
 
 public class SampleSourceActivity extends BaseActivity {
 
-    public static void intentInto(Activity activity) {
-        Intent intent = new Intent(activity, SampleSourceActivity.class);
-        activity.startActivity(intent);
+    public static void intentInto(Context context) {
+        Intent intent = new Intent(context, SampleSourceActivity.class);
+        if (!(context instanceof Activity)) {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
     }
 
     private SharedPreferences mSp;
