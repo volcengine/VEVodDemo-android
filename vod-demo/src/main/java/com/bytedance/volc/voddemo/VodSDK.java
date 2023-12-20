@@ -20,8 +20,10 @@ package com.bytedance.volc.voddemo;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -33,19 +35,21 @@ import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
 import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
-import com.bytedance.playerkit.player.volcengine.VolcQualityConfig;
 import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
+import com.bytedance.volc.vod.settingskit.SettingItem;
+import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VodSDK {
 
     @SuppressLint("StaticFieldLeak")
     private static Context sContext;
+    private static final AtomicBoolean sInited = new AtomicBoolean();
 
     public static Context context() {
         return sContext;
@@ -57,11 +61,23 @@ public class VodSDK {
                             String appChannel,
                             String appVersion,
                             String licenseUri) {
+
+        if (sInited.getAndSet(true)) return;
+
         sContext = context;
 
         L.ENABLE_LOG = true;
 
-        VideoSettings.init(context);
+        VideoSettings.init(context, new SettingItem.OnEventListener() {
+            @Override
+            public void onEvent(int eventType, Context context1, SettingItem settingItem, RecyclerView.ViewHolder holder) {
+                if (settingItem.type == SettingItem.TYPE_CLICKABLE_ITEM) {
+                    if (TextUtils.equals(settingItem.id, VideoSettings.ClickableItemId.INPUT_SOURCE)) {
+                        SampleSourceActivity.intentInto(context);
+                    }
+                }
+            }
+        });
 
         VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
                 .setAppId(appId)

@@ -482,7 +482,9 @@ public class SettingsFragment extends Fragment {
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        item.listener.onEvent(SettingItem.OnEventListener.EVENT_TYPE_CLICK, v.getContext(), item, ClickableViewHolder.this);
+                        if (item.listener != null) {
+                            item.listener.onEvent(SettingItem.OnEventListener.EVENT_TYPE_CLICK, v.getContext(), item, ClickableViewHolder.this);
+                        }
                     }
                 });
             }
