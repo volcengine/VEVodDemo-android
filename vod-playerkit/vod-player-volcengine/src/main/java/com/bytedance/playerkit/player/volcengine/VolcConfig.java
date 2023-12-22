@@ -70,6 +70,7 @@ public class VolcConfig implements Serializable {
     public boolean enableECDN = false;
     public static String ECDN_FILE_KEY_REGULAR_EXPRESSION;
     public boolean enableTextureRender = VolcEditions.isSupportTextureRender();
+    public boolean enableTextureRenderUsingNativeWindow = true;
     public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
     public VolcQualityConfig qualityConfig;
     public boolean enableSubtitle = false;

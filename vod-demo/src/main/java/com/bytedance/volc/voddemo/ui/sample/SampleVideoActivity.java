@@ -34,6 +34,7 @@ import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.FullScreenLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
@@ -121,7 +122,12 @@ public class SampleVideoActivity extends AppCompatActivity {
         layerHost.attachToVideoView(videoView);
 
         // 4. config VideoView
-        videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+        if (VideoSettings.intValue(VideoSettings.COMMON_RENDER_VIEW_TYPE) == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
+            // 推荐使用 TextureView, 兼容性更好
+            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+        } else {
+            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW);
+        }
         videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT);
 
         // 5. create PlaybackController and bind VideoView

@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
@@ -88,6 +89,7 @@ public class VideoSettings {
     public static final String COMMON_ENABLE_SUPER_RESOLUTION = "common_enable_super_resolution";
     public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
     public static final String COMMON_ENABLE_SUBTITLE = "common_enable_subtitle";
+    public static final String COMMON_RENDER_VIEW_TYPE = "common_render_view_type";
 
 
     private static Options sOptions;
@@ -125,7 +127,6 @@ public class VideoSettings {
         public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
         public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
     }
-
 
     public static void init(Context context, @Nullable SettingItem.OnEventListener eventListener) {
         sContext = context;
@@ -530,6 +531,29 @@ public class VideoSettings {
                         Boolean.class,
                         Boolean.FALSE,
                         null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_RENDER_VIEW_TYPE,
+                        "渲染 View 类型",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW,
+                        Arrays.asList(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW, DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW:
+                                return "TextureView";
+                            case  DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW:
+                                return "SurfaceView(不推荐)";
+                        }
+                        return null;
+                    }
+                }));
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,
                 "Device ID",

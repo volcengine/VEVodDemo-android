@@ -238,7 +238,12 @@ public class FeedVideoAdapter extends RecyclerView.Adapter<FeedVideoAdapter.View
 
             sharedVideoView.setBackgroundColor(itemView.getResources().getColor(android.R.color.black));
             sharedVideoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT);
-            sharedVideoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+            if (VideoSettings.intValue(VideoSettings.COMMON_RENDER_VIEW_TYPE) == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
+                // 推荐使用 TextureView, 兼容性更好
+                sharedVideoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+            } else {
+                sharedVideoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW);
+            }
             sharedVideoView.setPlayScene(PlayScene.SCENE_FEED);
 
             controller = new PlaybackController();
