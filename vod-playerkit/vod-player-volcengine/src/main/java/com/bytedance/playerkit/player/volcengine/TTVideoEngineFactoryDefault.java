@@ -89,6 +89,9 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         if (volcConfig.enableTextureRender) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_TEXTURE_RENDER, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_IMAGE_LAYOUT, IMAGE_LAYOUT_TO_FILL);
+            if (volcConfig.enableTextureRenderUsingNativeWindow) {
+                player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_TEXTURERENDER_NATIVEWINDOW, 1);
+            }
         }
 
         if (volcConfig.enableHlsSeamlessSwitch) {

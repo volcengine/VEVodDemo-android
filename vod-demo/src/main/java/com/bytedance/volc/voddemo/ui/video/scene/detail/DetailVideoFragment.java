@@ -284,7 +284,12 @@ public class DetailVideoFragment extends BaseFragment {
         layerHost.attachToVideoView(videoView);
         videoView.setBackgroundColor(getResources().getColor(android.R.color.black));
         videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT);
-        videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+        if (VideoSettings.intValue(VideoSettings.COMMON_RENDER_VIEW_TYPE) == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
+            // 推荐使用 TextureView, 兼容性更好
+            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
+        } else {
+            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW);
+        }
         new PlaybackController().bind(videoView);
         return videoView;
     }
