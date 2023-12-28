@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
@@ -132,6 +133,7 @@ public class PauseLayer extends AnimateLayer {
         @Override
         public void onEvent(Event event) {
             switch (event.code()) {
+                case PlaybackEvent.Action.START_PLAYBACK:
                 case PlayerEvent.Action.START:
                 case PlayerEvent.Info.VIDEO_RENDERING_START:
                     animateDismiss();

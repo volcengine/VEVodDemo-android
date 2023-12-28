@@ -18,24 +18,36 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene.shortvideo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.SimpleProgressBarLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
+import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 
 import java.util.List;
 
@@ -47,6 +59,7 @@ public class ShortVideoFragment extends BaseFragment {
 
     private final Book<VideoItem> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
+    private OrientationHelper mOrientationHelper;
 
     public ShortVideoFragment() {
         // Required empty public constructor
@@ -62,6 +75,9 @@ public class ShortVideoFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         mRemoteApi = new GetFeedStreamApi();
         mAccount = VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID);
+        mOrientationHelper = new OrientationHelper(requireActivity(), null);
+        mOrientationHelper.setOrientationDelta(45);
+        mOrientationHelper.enable();
     }
 
     @Override
@@ -84,9 +100,22 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        registerBroadcast();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterBroadcast();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         mRemoteApi.cancel();
+        mOrientationHelper.disable();
     }
 
     private void refresh() {
@@ -141,5 +170,55 @@ public class ShortVideoFragment extends BaseFragment {
             mSceneView.finishLoadingMore();
             L.d(this, "loadMore", "end");
         }
+    }
+
+
+    private void enterFullScreen() {
+        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemView();
+        if (videoView == null) return;
+
+        MediaSource mediaSource = videoView.getDataSource();
+        if (mediaSource == null) return;
+
+        final PlaybackController controller = videoView.controller();
+
+        boolean continuesPlayback = false;
+        if (controller != null) {
+            continuesPlayback = controller.player() != null;
+            controller.unbindPlayer();
+        }
+
+        VideoActivity.intentInto(requireActivity(),
+                PlayScene.SCENE_FULLSCREEN,
+                FullScreenVideoFragment.createBundle(mediaSource, continuesPlayback, mOrientationHelper.getOrientation()));
+    }
+
+    private BroadcastReceiver mBroadcastReceiver;
+    private void registerBroadcast() {
+        if (mBroadcastReceiver != null) return;
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if (action == null) return;
+
+                switch (action) {
+                    case SimpleProgressBarLayer.ACTION_ENTER_FULLSCREEN:
+                        enterFullScreen();
+                        break;
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SimpleProgressBarLayer.ACTION_ENTER_FULLSCREEN);
+        LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
+    }
+
+    private void unregisterBroadcast() {
+        if (mBroadcastReceiver == null) return;
+
+        LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
+        mBroadcastReceiver = null;
     }
 }

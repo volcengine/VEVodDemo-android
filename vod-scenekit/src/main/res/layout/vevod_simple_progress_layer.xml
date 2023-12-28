@@ -27,12 +27,30 @@
         android:layout_width="match_parent"
         android:layout_height="60dp" />
 
-    <com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar
-        android:id="@+id/mediaSeekBar"
+
+    <LinearLayout
+        android:id="@+id/progressContainer"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar
+            android:id="@+id/mediaSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/fullScreen"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginRight="2dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/vevod_time_progress_bar_layer_fullscreen" />
+    </LinearLayout>
 
 </FrameLayout>

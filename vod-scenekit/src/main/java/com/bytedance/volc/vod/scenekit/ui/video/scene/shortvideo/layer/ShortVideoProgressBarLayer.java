@@ -26,9 +26,6 @@ public class ShortVideoProgressBarLayer extends SimpleProgressBarLayer {
     @Override
     public void show() {
         // PM: Only show progress bar when duration > 1 Min
-        final Player player = player();
-        if (player != null && player.getDuration() > 60 * 1000) {
-            super.show();
-        }
+        super.show();
     }
 }

@@ -35,6 +35,7 @@ import com.bytedance.playerkit.player.volcengine.VolcQuality;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 
 public class PlayerConfigLayer extends VideoLayer {
     @Nullable
@@ -71,6 +72,17 @@ public class PlayerConfigLayer extends VideoLayer {
                 break;
         }
     };
+
+    @Override
+    public void onVideoViewPlaySceneChanged(int fromScene, int toScene) {
+        final Player player = player();
+        if (player == null) return;
+        if (toScene == PlayScene.SCENE_FULLSCREEN) {
+            player.setLooping(false);
+        } else if (toScene == PlayScene.SCENE_SHORT) {
+            player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
+        }
+    }
 
     private void syncStartupQualityConfig() {
         final MediaSource source = dataSource();
