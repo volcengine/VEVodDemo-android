@@ -18,12 +18,14 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.layer;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
@@ -31,6 +33,7 @@ import com.bytedance.playerkit.player.event.InfoBufferingUpdate;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 
+import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -38,8 +41,10 @@ import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.R;
 
 public class SimpleProgressBarLayer extends AnimateLayer {
-
+    public static final String ACTION_ENTER_FULLSCREEN = "com.bytedance.volc.vod.scenekit.ui.video.layer/enter_full_screen";
+    public static final String EXTRA_MEDIA_SOURCE = "extra_media_source";
     private MediaSeekBar mSeekBar;
+    private View mFullScreenView;
 
     @Override
     public String tag() {
@@ -78,9 +83,22 @@ public class SimpleProgressBarLayer extends AnimateLayer {
                 }
             }
         });
+
+        mFullScreenView = view.findViewById(R.id.fullScreen);
+        mFullScreenView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onFullScreenClick(v);
+            }
+        });
         return view;
     }
 
+    private void onFullScreenClick(View v) {
+        Intent intent = new Intent();
+        intent.setAction(ACTION_ENTER_FULLSCREEN);
+        LocalBroadcastManager.getInstance(v.getContext()).sendBroadcast(intent);
+    }
 
     private void syncProgress() {
         final PlaybackController controller = this.controller();
@@ -142,7 +160,6 @@ public class SimpleProgressBarLayer extends AnimateLayer {
                     break;
                 }
                 case PlayerEvent.State.ERROR:
-                case PlayerEvent.State.PAUSED:
                 case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED: {
                     dismiss();

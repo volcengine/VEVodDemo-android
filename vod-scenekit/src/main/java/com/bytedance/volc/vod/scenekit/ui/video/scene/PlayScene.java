@@ -25,6 +25,7 @@ public class PlayScene {
     public static final int SCENE_FEED = 2;
     public static final int SCENE_LONG = 3;
     public static final int SCENE_DETAIL = 4;
+
     public static final int SCENE_FULLSCREEN = 5;
 
     public static String map(int scene) {

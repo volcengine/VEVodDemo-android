@@ -32,7 +32,6 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
-import com.bytedance.playerkit.player.event.InfoSubtitleStateChanged;
 import com.bytedance.playerkit.player.event.InfoSubtitleTextUpdate;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;

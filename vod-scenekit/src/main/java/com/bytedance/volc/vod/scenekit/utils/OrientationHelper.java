@@ -36,9 +36,9 @@ public class OrientationHelper extends OrientationEventListener {
     public static final int ORIENTATION_270 = 270;
     public static final int ORIENTATION_360 = 360;
 
-    public static final int DEFAULT_ORIENTATION_DELTA = 10;
+    public static final int DEFAULT_ORIENTATION_DELTA = 15;
 
-    private final int mOrientationDelta = DEFAULT_ORIENTATION_DELTA;
+    private int mOrientationDelta = DEFAULT_ORIENTATION_DELTA;
     private final WeakReference<Activity> mActivityRef;
     private int mOrientation = -1;
 
@@ -49,6 +49,10 @@ public class OrientationHelper extends OrientationEventListener {
         super(activity);
         this.mActivityRef = new WeakReference<>(activity);
         this.mListener = listener;
+    }
+
+    public void setOrientationDelta(int orientationDelta) {
+        this.mOrientationDelta = orientationDelta;
     }
 
     @Override

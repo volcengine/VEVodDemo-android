@@ -20,6 +20,7 @@ package com.bytedance.volc.voddemo.ui.video.scene;
 
 import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_DETAIL;
 import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_FEED;
+import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_FULLSCREEN;
 import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_LONG;
 import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_SHORT;
 
@@ -44,6 +45,7 @@ import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.feedvideo.FeedVideoFragment;
+import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.shortvideo.ShortVideoFragment;
 
@@ -136,6 +138,9 @@ public class VideoActivity extends BaseActivity {
             case SCENE_DETAIL: {
                 return DetailVideoFragment.newInstance(bundle);
             }
+            case SCENE_FULLSCREEN: {
+                return FullScreenVideoFragment.newInstance(bundle);
+            }
         }
         throw new IllegalArgumentException("unsupported " + scene);
     }
@@ -150,6 +155,8 @@ public class VideoActivity extends BaseActivity {
                 return LongVideoFragment.class.getName();
             case SCENE_DETAIL:
                 return DetailVideoFragment.class.getName();
+            case SCENE_FULLSCREEN:
+                return FullScreenVideoFragment.class.getName();
         }
         throw new IllegalArgumentException("unsupported " + scene);
     }
@@ -250,6 +257,23 @@ public class VideoActivity extends BaseActivity {
                         true,
                         false
                 );
+                break;
+            }
+            case SCENE_FULLSCREEN: {
+                setActionBarTheme(
+                        false,
+                        true,
+                        null,
+                        0,
+                        0);
+                UIUtils.setSystemBarTheme(
+                        this,
+                        Color.BLACK,
+                        false,
+                        true,
+                        Color.TRANSPARENT,
+                        true,
+                        true);
                 break;
             }
         }
