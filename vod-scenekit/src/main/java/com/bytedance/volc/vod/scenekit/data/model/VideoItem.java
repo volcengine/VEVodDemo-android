@@ -264,6 +264,7 @@ public class VideoItem implements Serializable {
         volcConfig.subtitleLanguageIds = VideoSubtitle.createLanguageIds();
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.qualityConfig = VideoQuality.sceneGearConfig(videoItem.playScene);
+        volcConfig.enable403SourceRefreshStrategy = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SOURCE_403_REFRESH);
 
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;

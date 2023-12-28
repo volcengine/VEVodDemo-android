@@ -18,6 +18,8 @@
 
 package com.bytedance.playerkit.utils;
 
+import android.text.TextUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -65,13 +67,15 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static void setStaticFiledValue(Class<?> owner, Class<?> filedClass, Object staticFiled) {
+    public static void setStaticFiledValue(Class<?> owner, Class<?> filedClass, String filedName, Object staticFiled) {
         Field targetField = null;
         Field[] fields = owner.getDeclaredFields();
         for (Field field : fields) {
             if (field.getType() == filedClass && Modifier.isStatic(field.getModifiers())) {
-                targetField = field;
-                break;
+                if (TextUtils.equals(field.getName(), filedName)) {
+                    targetField = field;
+                    break;
+                }
             }
         }
         if (targetField != null) {

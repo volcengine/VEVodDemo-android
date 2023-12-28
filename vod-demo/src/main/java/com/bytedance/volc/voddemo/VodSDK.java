@@ -41,6 +41,7 @@ import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.settingskit.SettingItem;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
+import com.bytedance.volc.voddemo.video.AppUrlRefreshFetcher;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -126,11 +127,19 @@ public class VodSDK {
         if (VolcConfigGlobal.ENABLE_ECDN) {
             VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION = "[a-zA-z]+://[^/]*/[^/]*/[^/]*/(.*?)\\?.*";
         }
+
+        // 播放源刷新策略
+        AppUrlRefreshFetcher.Factory urlRefresherFactory = null;
+        if (VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SOURCE_403_REFRESH)) {
+            urlRefresherFactory = new AppUrlRefreshFetcher.Factory();
+        }
+
         VolcPlayerInit.init(context,
                 appInfo,
                 CacheKeyFactory.DEFAULT,
                 trackSelector,
                 new VolcSubtitleSelector(),
-                configUpdater);
+                configUpdater,
+                urlRefresherFactory);
     }
 }

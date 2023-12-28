@@ -33,10 +33,9 @@ import com.bytedance.playerkit.utils.L;
 import com.pandora.common.env.Env;
 import com.pandora.common.env.config.Config;
 import com.pandora.common.env.config.VodConfig;
-import com.pandora.ttlicense2.LicenseManager;
+import com.pandora.vod.VodSDK;
 import com.ss.ttvideoengine.DataLoaderHelper;
 import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.utils.TTVideoEngineLog;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,6 +52,8 @@ public class VolcPlayerInit {
 
     public static VolcConfigUpdater sConfigUpdater;
 
+    public static VolcSourceRefreshStrategy.VolcUrlRefreshFetcher.Factory sUrlRefreshFetcherFactory;
+
 
     public static String getDeviceId() {
         return VolcPlayer.getDeviceId();
@@ -68,15 +69,17 @@ public class VolcPlayerInit {
                 CacheKeyFactory.DEFAULT,
                 TrackSelector.DEFAULT,
                 new VolcSubtitleSelector(),
-                VolcConfigUpdater.DEFAULT);
+                VolcConfigUpdater.DEFAULT,
+                null);
     }
 
-    public static void init(Context context,
-                            AppInfo appInfo,
-                            CacheKeyFactory cacheKeyFactory,
-                            TrackSelector trackSelector,
-                            SubtitleSelector subtitleSelector,
-                            VolcConfigUpdater configUpdater) {
+    public static void init(@NonNull Context context,
+                            @NonNull AppInfo appInfo,
+                            @Nullable CacheKeyFactory cacheKeyFactory,
+                            @Nullable TrackSelector trackSelector,
+                            @Nullable SubtitleSelector subtitleSelector,
+                            @Nullable VolcConfigUpdater configUpdater,
+                            @Nullable VolcSourceRefreshStrategy.VolcUrlRefreshFetcher.Factory urlRefreshFetcherFactory) {
 
         if (sInited.getAndSet(true)) return;
 
@@ -102,6 +105,9 @@ public class VolcPlayerInit {
         } else {
             sConfigUpdater = VolcConfigUpdater.DEFAULT;
         }
+
+        sUrlRefreshFetcherFactory = urlRefreshFetcherFactory;
+
         initVOD(context, appInfo);
 
         CacheLoader.Default.set(new VolcCacheLoader(context, new VolcCacheTask.Factory(context)));
@@ -135,8 +141,7 @@ public class VolcPlayerInit {
 
     private static void initVOD(Context context, AppInfo appInfo) {
         if (L.ENABLE_LOG) {
-            TTVideoEngineLog.turnOn(TTVideoEngineLog.LOG_DEBUG, 1);
-            LicenseManager.turnOnLogcat(true);
+            VodSDK.openAllVodLog();
         }
 
         if (VolcConfigGlobal.ENABLE_HLS_CACHE_MODULE) {
@@ -177,6 +182,7 @@ public class VolcPlayerInit {
         VolcNetSpeedStrategy.init();
         VolcSuperResolutionStrategy.init();
         VolcQualityStrategy.init();
+        VolcSourceRefreshStrategy.init(sUrlRefreshFetcherFactory);
     }
 
 
