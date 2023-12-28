@@ -99,7 +99,9 @@ public class SampleSourceParser {
             } else {
                 if (!url.startsWith("http") && !url.startsWith("file")) continue;
             }
-            VideoItem videoItem = VideoItem.createUrlItem(MD5.getMD5(url), url, null, null, 0, null, index + ": " + url);
+            String cacheKey = MD5.getMD5(url);
+            String videoId = cacheKey;
+            VideoItem videoItem = VideoItem.createUrlItem(videoId, url, cacheKey, null, 0, null, index + ": " + url);
             videoItems.add(videoItem);
             index++;
         }

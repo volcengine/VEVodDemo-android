@@ -51,19 +51,16 @@ import java.util.List;
 public class VideoSettings {
     public static final String KEY = "AppSettings";
 
+    public static final String CATEGORY_DEBUG = "调试选项";
     public static final String CATEGORY_SHORT_VIDEO = "短视频";
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
     public static final String CATEGORY_DETAIL_VIDEO = "视频详情页";
-
     public static final String CATEGORY_QUALITY = "清晰度设置";
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
-    public static final String CATEGORY_DEBUG = "调试选项";
 
     public static final String SHORT_VIDEO_SCENE_ACCOUNT_ID = "short_video_scene_account_id";
     public static final String SHORT_VIDEO_ENABLE_STRATEGY = "short_video_enable_strategy";
-
-
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
     public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
 
@@ -89,6 +86,7 @@ public class VideoSettings {
     public static final String COMMON_ENABLE_SUPER_RESOLUTION = "common_enable_super_resolution";
     public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
     public static final String COMMON_ENABLE_SUBTITLE = "common_enable_subtitle";
+    public static final String COMMON_ENABLE_SOURCE_403_REFRESH = "common_enable_source_403_refresh";
     public static final String COMMON_RENDER_VIEW_TYPE = "common_render_view_type";
 
 
@@ -524,10 +522,21 @@ public class VideoSettings {
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
                         Option.TYPE_RATIO_BUTTON,
-                        CATEGORY_QUALITY,
+                        CATEGORY_COMMON_VIDEO,
                         COMMON_ENABLE_SUBTITLE,
                         "开启字幕",
                         Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_ENABLE_SOURCE_403_REFRESH,
+                        "开启播放源过期刷新",
+                        Option.STRATEGY_RESTART_APP,
                         Boolean.class,
                         Boolean.FALSE,
                         null)));
@@ -548,7 +557,7 @@ public class VideoSettings {
                         switch ((Integer) value) {
                             case DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW:
                                 return "TextureView";
-                            case  DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW:
+                            case DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW:
                                 return "SurfaceView(不推荐)";
                         }
                         return null;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 bytedance
+ * Copyright (C) 2024 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2022/9/13
+ * Create Date : 2024/1/13
  */
 
-rootProject.name = "VEVodDemo-android"
-include ':app'
+package com.bytedance.volc.voddemo.data.remote.api2.model;
 
-println("rootDir -> " + getRootDir())
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
-apply from: file("gradle-config/vod_playerkit_library_settings.gradle")
-apply from: file("gradle-config/vod_scenekit_library_settings.gradle")
-
-include ':vod-demo'
-include ':vod-demo-api'
-
-def sourceSettings = file(".dev/.source_settings.gradle")
-if (sourceSettings.exists()) {
-    apply from: sourceSettings
+public class GetRefreshUrlResponse extends BaseResponse {
+    public Result result;
+    public static class Result {
+        public String url;
+        @SerializedName("expire")
+        public long expireInS;
+    }
 }

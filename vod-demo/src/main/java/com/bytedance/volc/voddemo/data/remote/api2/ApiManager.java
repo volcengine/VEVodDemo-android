@@ -20,6 +20,8 @@ package com.bytedance.volc.voddemo.data.remote.api2;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetFeedStreamResponse;
+import com.bytedance.volc.voddemo.data.remote.api2.model.GetRefreshUrlRequest;
+import com.bytedance.volc.voddemo.data.remote.api2.model.GetRefreshUrlResponse;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailRequest;
 import com.bytedance.volc.voddemo.data.remote.api2.model.GetVideoDetailResponse;
 import com.moczul.ok2curl.CurlInterceptor;
@@ -80,5 +82,8 @@ public class ApiManager {
 
         @POST("/api/general/v1/getFeedStreamWithVideoModel")
         Call<GetFeedStreamResponse> getFeedVideoStreamWithVideoModel(@Body GetFeedStreamRequest request);
+
+        @POST("/api/cdn/v1/refreshUrl")
+        Call<GetRefreshUrlResponse> getRefreshUrl(@Body GetRefreshUrlRequest request);
     }
 }

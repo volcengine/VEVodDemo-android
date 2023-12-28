@@ -207,7 +207,7 @@ public class Mapper {
                 .vid(source.getMediaId())
                 .setVideoInfos(videoInfos)
                 .adaptive(source.isSupportABR())
-                .duration(source.getDuration())
+                .duration(source.getDuration() / 1000)
                 .dynamicType(segmentType2DynamicType(source.getSegmentType()))
                 .build();
     }

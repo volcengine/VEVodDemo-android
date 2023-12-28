@@ -11,5 +11,8 @@ local.properties
 build-publish
 
 .idea/bytedance_as_plugin.xml
+.idea/gradle.xml
+.idea/deploymentTargetDropDown.xml
+.idea/migrations.xml
 
 .dev

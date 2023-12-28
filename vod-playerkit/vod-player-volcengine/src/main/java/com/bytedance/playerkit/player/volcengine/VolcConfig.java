@@ -75,6 +75,7 @@ public class VolcConfig implements Serializable {
     public VolcQualityConfig qualityConfig;
     public boolean enableSubtitle = false;
     public List<Integer> subtitleLanguageIds;
+    public boolean enable403SourceRefreshStrategy;
 
     public String tag;
     public String subTag;

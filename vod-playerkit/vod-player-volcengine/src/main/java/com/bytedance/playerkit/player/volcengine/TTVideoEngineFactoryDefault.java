@@ -135,6 +135,10 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_VIDEO_FRAME_META_CALLBACK, 1);
         }
 
+        if (volcConfig.enable403SourceRefreshStrategy) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_INT_ENABLE_SOURCE_REFRESH_STRATEGY, 1);
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEG_ERROR, 1);
+        }
         // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUXER_RW_LOCK, 1);
         // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_INTERRUPT, 1);
 
