@@ -237,6 +237,10 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
     }
 
+    public void setInterceptStartPlaybackOnResume(boolean interceptStartPlay) {
+        this.mInterceptStartPlaybackOnResume = interceptStartPlay;
+    }
+
     public void stop() {
         mController.stopPlayback();
     }

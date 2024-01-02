@@ -49,6 +49,7 @@ import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 
 import java.util.ArrayList;
@@ -246,7 +247,7 @@ public class LogLayer extends BaseLayer {
     private String videoViewState() {
         VideoView videoView = videoView();
         if (videoView == null) return "unbind videoView";
-        return videoView.dump();
+        return videoView.dump() + " " + PlayScene.map(videoView.getPlayScene());
     }
 
     @Override

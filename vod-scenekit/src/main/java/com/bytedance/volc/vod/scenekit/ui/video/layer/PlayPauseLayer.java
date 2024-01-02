@@ -142,6 +142,7 @@ public class PlayPauseLayer extends AnimateLayer {
         public void onEvent(Event event) {
             switch (event.code()) {
                 case PlaybackEvent.Action.START_PLAYBACK:
+                case PlaybackEvent.Action.PREPARE_PLAYBACK:
                     if (player() == null) {
                         dismiss();
                     }

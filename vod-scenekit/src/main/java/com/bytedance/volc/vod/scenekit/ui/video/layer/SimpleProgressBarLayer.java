@@ -33,6 +33,8 @@ import com.bytedance.playerkit.player.event.InfoBufferingUpdate;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 
+import com.bytedance.playerkit.player.playback.PlaybackEvent;
+import com.bytedance.playerkit.player.playback.event.StateBindPlayer;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
@@ -95,8 +97,12 @@ public class SimpleProgressBarLayer extends AnimateLayer {
     }
 
     private void onFullScreenClick(View v) {
+        MediaSource mediaSource = dataSource();
+        if (mediaSource == null) return;
+
         Intent intent = new Intent();
         intent.setAction(ACTION_ENTER_FULLSCREEN);
+        intent.putExtra(EXTRA_MEDIA_SOURCE, mediaSource);
         LocalBroadcastManager.getInstance(v.getContext()).sendBroadcast(intent);
     }
 
@@ -142,6 +148,11 @@ public class SimpleProgressBarLayer extends AnimateLayer {
         @Override
         public void onEvent(Event event) {
             switch (event.code()) {
+                case PlaybackEvent.State.BIND_PLAYER:
+                    if (player() != null) {
+                        syncProgress();
+                    }
+                    break;
                 case PlayerEvent.Action.START:
                     if (event.owner(Player.class).isPaused()) {
                         animateShow(false);

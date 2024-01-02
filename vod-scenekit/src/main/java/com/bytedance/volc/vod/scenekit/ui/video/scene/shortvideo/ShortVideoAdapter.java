@@ -169,12 +169,12 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
     static VideoView createVideoView(ViewGroup parent) {
         VideoView videoView = new VideoView(parent.getContext());
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
+        layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new ShortVideoCoverLayer());
         layerHost.addLayer(new LoadingLayer());
         layerHost.addLayer(new PauseLayer());
         layerHost.addLayer(new ShortVideoProgressBarLayer());
         layerHost.addLayer(new PlayErrorLayer());
-        layerHost.addLayer(new PlayerConfigLayer());
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
             layerHost.addLayer(new LogLayer());
         }

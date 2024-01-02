@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -97,17 +98,12 @@ public class ShortVideoFragment extends BaseFragment {
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
         refresh();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         registerBroadcast();
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroyView() {
+        super.onDestroyView();
         unregisterBroadcast();
     }
 
@@ -173,12 +169,13 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
 
-    private void enterFullScreen() {
+    private void enterFullScreen(MediaSource mediaSource) {
         VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemView();
         if (videoView == null) return;
 
-        MediaSource mediaSource = videoView.getDataSource();
-        if (mediaSource == null) return;
+        if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;
+
+        L.d(this, "enterFullScreen", MediaSource.dump(mediaSource));
 
         final PlaybackController controller = videoView.controller();
 
@@ -193,6 +190,29 @@ public class ShortVideoFragment extends BaseFragment {
                 FullScreenVideoFragment.createBundle(mediaSource, continuesPlayback, mOrientationHelper.getOrientation()));
     }
 
+    /**
+     * Sync playback states in FullScreenFragment
+     */
+    private void onExitFullScreen(MediaSource mediaSource, boolean continuesPlayback) {
+        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemView();
+        if (videoView == null) return;
+
+        if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;
+
+        L.d(this, "exitFullScreen", MediaSource.dump(mediaSource), continuesPlayback);
+
+        if (continuesPlayback) {
+            final PlaybackController controller = videoView.controller();
+            if (controller != null) {
+                controller.preparePlayback();
+            }
+            final Player player = controller.player();
+            if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+                mSceneView.pageView().setInterceptStartPlaybackOnResume(true);
+            }
+        }
+    }
+
     private BroadcastReceiver mBroadcastReceiver;
     private void registerBroadcast() {
         if (mBroadcastReceiver != null) return;
@@ -203,15 +223,25 @@ public class ShortVideoFragment extends BaseFragment {
                 if (action == null) return;
 
                 switch (action) {
-                    case SimpleProgressBarLayer.ACTION_ENTER_FULLSCREEN:
-                        enterFullScreen();
+                    case SimpleProgressBarLayer.ACTION_ENTER_FULLSCREEN: {
+                        MediaSource mediaSource = (MediaSource) intent.getSerializableExtra(SimpleProgressBarLayer.EXTRA_MEDIA_SOURCE);
+                        if (mediaSource == null) return;
+                        enterFullScreen(mediaSource);
                         break;
+                    }
+                    case FullScreenVideoFragment.ACTION_USER_EXIT_FULLSCREEN: {
+                        MediaSource mediaSource = (MediaSource) intent.getSerializableExtra(FullScreenVideoFragment.EXTRA_MEDIA_SOURCE);
+                        boolean continuesPlayback = intent.getBooleanExtra(FullScreenVideoFragment.EXTRA_CONTINUES_PLAYBACK, false);
+                        if (mediaSource == null) return;
+                        onExitFullScreen(mediaSource, continuesPlayback);
+                    }
                 }
             }
         };
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimpleProgressBarLayer.ACTION_ENTER_FULLSCREEN);
+        filter.addAction(FullScreenVideoFragment.ACTION_USER_EXIT_FULLSCREEN);
         LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
     }
 

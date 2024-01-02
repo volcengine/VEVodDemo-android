@@ -214,6 +214,10 @@ public class PlaybackController {
         return mPlayerFactory;
     }
 
+    public PlayerPool playerPool() {
+        return mPlayerPool;
+    }
+
     @MainThread
     @Nullable
     public VideoView videoView() {
