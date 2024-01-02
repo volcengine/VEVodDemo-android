@@ -29,12 +29,9 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayer;
-import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.playerkit.player.volcengine.VolcConfig;
-import com.bytedance.playerkit.player.volcengine.VolcQuality;
+import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 
 public class PlayerConfigLayer extends VideoLayer {
@@ -62,33 +59,26 @@ public class PlayerConfigLayer extends VideoLayer {
 
     final Dispatcher.EventListener eventListener = event -> {
         switch (event.code()) {
-            case PlaybackEvent.Action.START_PLAYBACK:
-                if (player() != null) return;
-                syncStartupQualityConfig();
-                break;
-            case PlayerEvent.Action.PREPARE:
-                Player player = event.owner(Player.class);
-                player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
+            case PlaybackEvent.State.BIND_PLAYER:
+                VideoView videoView = videoView();
+                if (videoView == null) return;
+                syncConfigByScene(videoView.getPlayScene());
                 break;
         }
     };
 
     @Override
     public void onVideoViewPlaySceneChanged(int fromScene, int toScene) {
-        final Player player = player();
-        if (player == null) return;
-        if (toScene == PlayScene.SCENE_FULLSCREEN) {
-            player.setLooping(false);
-        } else if (toScene == PlayScene.SCENE_SHORT) {
-            player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
-        }
+        syncConfigByScene(toScene);
     }
 
-    private void syncStartupQualityConfig() {
-        final MediaSource source = dataSource();
-        if (source != null) {
-            VolcConfig volcConfig = VolcConfig.get(source);
-            volcConfig.qualityConfig.userSelectedQuality = VolcQuality.quality(VideoQuality.getUserSelectedQualityRes(playScene()));
+    private void syncConfigByScene(int scene) {
+        final Player player = player();
+        if (player == null) return;
+        if (scene == PlayScene.SCENE_FULLSCREEN) {
+            player.setLooping(false);
+        } else if (scene == PlayScene.SCENE_SHORT) {
+            player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
         }
     }
 }

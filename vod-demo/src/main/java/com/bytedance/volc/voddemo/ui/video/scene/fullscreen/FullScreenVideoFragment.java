@@ -19,6 +19,7 @@
 package com.bytedance.volc.voddemo.ui.video.scene.fullscreen;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,11 +30,13 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.PlayerPool;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -48,6 +51,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayCompleteLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayPauseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SyncStartTimeLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.TimeProgressBarLayer;
@@ -67,7 +71,7 @@ import com.bytedance.volc.voddemo.impl.R;
 
 public class FullScreenVideoFragment extends BaseFragment {
 
-    public static final String EXTRA_FULL_SCREEN_TYPE = "extra_fullscreen_type";
+    public static final String ACTION_USER_EXIT_FULLSCREEN = " com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment/userExit";
     public static final String EXTRA_MEDIA_SOURCE = "extra_media_source";
     public static final String EXTRA_CONTINUES_PLAYBACK = "extra_continues_playback";
     public static final String EXTRA_SCREEN_ORIENTATION_DEGREE = "extra_screen_orientation";
@@ -126,7 +130,17 @@ public class FullScreenVideoFragment extends BaseFragment {
             }
         }
         restorePirateMode();
+        sendUserExitBroadcast();
         return super.onBackPressed();
+    }
+
+    private void sendUserExitBroadcast() {
+        if (mMediaSource == null) return;
+
+        Intent intent = new Intent(ACTION_USER_EXIT_FULLSCREEN);
+        intent.putExtra(EXTRA_MEDIA_SOURCE, mMediaSource);
+        intent.putExtra(EXTRA_CONTINUES_PLAYBACK, mContinuesPlayback);
+        LocalBroadcastManager.getInstance(requireActivity()).sendBroadcast(intent);
     }
 
     @Override
@@ -171,19 +185,27 @@ public class FullScreenVideoFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         mVideoViewContainer = view.findViewById(R.id.videoViewContainer);
         mVideoView = createVideoView(view);
-        new PlaybackController().bind(mVideoView);
+        PlaybackController controller = new PlaybackController();
+        controller.bind(mVideoView);
         mVideoView.bindDataSource(mMediaSource);
         mVideoView.setPlayScene(PlayScene.SCENE_FULLSCREEN);
         mVideoViewContainer.addView(mVideoView,
                 new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+
+        controller.preparePlayback();
+        final Player player = controller.player();
+        if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+            mInterceptStartPlaybackOnResume = true;
+        }
     }
 
     @NonNull
-    private VideoView createVideoView(@NonNull View view) {
+    private static VideoView createVideoView(@NonNull View view) {
         VideoView videoView = new VideoView(view.getContext());
 
         VideoLayerHost layerHost = new VideoLayerHost(view.getContext());
+        layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new GestureLayer());
         layerHost.addLayer(new SubtitleLayer());
         layerHost.addLayer(new CoverLayer());
@@ -209,7 +231,7 @@ public class FullScreenVideoFragment extends BaseFragment {
         }
 
         layerHost.attachToVideoView(videoView);
-        videoView.setBackgroundColor(getResources().getColor(android.R.color.black));
+        videoView.setBackgroundColor(view.getResources().getColor(android.R.color.black));
         videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT);
         if (VideoSettings.intValue(VideoSettings.COMMON_RENDER_VIEW_TYPE) == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
             // 推荐使用 TextureView, 兼容性更好

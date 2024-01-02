@@ -37,6 +37,7 @@ import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoTrackChanged;
 import com.bytedance.playerkit.player.event.InfoTrackWillChange;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
@@ -391,6 +392,12 @@ public class TimeProgressBarLayer extends AnimateLayer {
         @Override
         public void onEvent(Event event) {
             switch (event.code()) {
+                case PlaybackEvent.State.BIND_PLAYER: {
+                    if (player() != null) {
+                        sync();
+                    }
+                    break;
+                }
                 case PlayerEvent.State.STARTED:
                 case PlayerEvent.Info.SEEKING_START: {
                     syncProgress();
