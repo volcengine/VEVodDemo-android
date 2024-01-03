@@ -234,6 +234,7 @@ public class ShortVideoFragment extends BaseFragment {
                         boolean continuesPlayback = intent.getBooleanExtra(FullScreenVideoFragment.EXTRA_CONTINUES_PLAYBACK, false);
                         if (mediaSource == null) return;
                         onExitFullScreen(mediaSource, continuesPlayback);
+                        break;
                     }
                 }
             }
