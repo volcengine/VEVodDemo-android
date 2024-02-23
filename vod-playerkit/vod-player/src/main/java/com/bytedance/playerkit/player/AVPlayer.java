@@ -673,6 +673,7 @@ public class AVPlayer extends ExtraObject implements Player {
         mPlayer.selectTrack(trackType, target);
     }
 
+    @Nullable
     @Override
     public List<Subtitle> getSubtitles() {
         return mPlayer.getSubtitles();
@@ -687,16 +688,19 @@ public class AVPlayer extends ExtraObject implements Player {
         mPlayer.selectSubtitle(subtitle);
     }
 
+    @Nullable
     @Override
     public Subtitle getSelectedSubtitle() {
         return mPlayer.getSelectedSubtitle();
     }
 
+    @Nullable
     @Override
     public Subtitle getPendingSubtitle() {
         return mPlayer.getPendingSubtitle();
     }
 
+    @Nullable
     @Override
     public Subtitle getCurrentSubtitle() {
         return mPlayer.getCurrentSubtitle();
@@ -879,8 +883,9 @@ public class AVPlayer extends ExtraObject implements Player {
             case STATE_PREPARED:
                 return mPlayer.getCurrentPosition();
             case STATE_ERROR:
-                if (mMediaSource != null) {
-                    return ProgressRecorder.getProgress(mMediaSource.getSyncProgressId());
+                final MediaSource mediaSource = mMediaSource;
+                if (mediaSource != null) {
+                    return ProgressRecorder.getProgress(mediaSource.getSyncProgressId());
                 } else {
                     return 0L;
                 }
@@ -1146,16 +1151,20 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     private void recordProgress() {
+        final MediaSource mediaSource = mMediaSource;
+        if (mediaSource == null) return;
         if (isInPlaybackState() && !isCompleted() || isError()) {
             long position = getCurrentPosition();
             long duration = getDuration();
             if (position > 1000 && duration > 0 && position < duration - 1000) {
-                ProgressRecorder.recordProgress(mMediaSource.getSyncProgressId(), position);
+                ProgressRecorder.recordProgress(mediaSource.getSyncProgressId(), position);
             }
         }
     }
 
     private void clearProgress() {
-        ProgressRecorder.removeProgress(mMediaSource.getSyncProgressId());
+        final MediaSource mediaSource = mMediaSource;
+        if (mediaSource == null) return;
+        ProgressRecorder.removeProgress(mediaSource.getSyncProgressId());
     }
 }
