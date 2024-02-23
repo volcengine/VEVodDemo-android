@@ -562,14 +562,18 @@ public interface Player {
     void selectTrack(@TrackType int trackType, @Nullable Track track)
             throws UnsupportedOperationException;
 
+    @Nullable
     List<Subtitle> getSubtitles();
 
     void selectSubtitle(@Nullable Subtitle subtitle);
 
+    @Nullable
     Subtitle getSelectedSubtitle();
 
+    @Nullable
     Subtitle getPendingSubtitle();
 
+    @Nullable
     Subtitle getCurrentSubtitle();
 
     /**

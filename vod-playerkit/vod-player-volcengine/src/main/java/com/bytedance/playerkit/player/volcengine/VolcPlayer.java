@@ -409,12 +409,20 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public List<Track> getTracks(@Track.TrackType int trackType) {
-        return mMediaSource.getTracks(trackType);
+        final MediaSource mediaSource = mMediaSource;
+        if (mediaSource != null) {
+            return mediaSource.getTracks(trackType);
+        }
+        return null;
     }
 
     @Override
     public List<Subtitle> getSubtitles() {
-        return mMediaSource.getSubtitles();
+        final MediaSource mediaSource = mMediaSource;
+        if (mediaSource != null) {
+            return mediaSource.getSubtitles();
+        }
+        return null;
     }
 
     @Override
