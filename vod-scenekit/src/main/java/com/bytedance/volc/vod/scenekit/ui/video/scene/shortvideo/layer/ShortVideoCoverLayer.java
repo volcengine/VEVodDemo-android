@@ -22,6 +22,7 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
@@ -90,6 +91,14 @@ public class ShortVideoCoverLayer extends CoverLayer {
                     dismiss();
                     break;
                 }
+                case PlayerEvent.Action.SET_SURFACE:
+                    final Player player = player();
+                    if (player != null && player.isInPlaybackState()) {
+                        dismiss();
+                    } else {
+                        show();
+                    }
+                    break;
             }
         }
     };

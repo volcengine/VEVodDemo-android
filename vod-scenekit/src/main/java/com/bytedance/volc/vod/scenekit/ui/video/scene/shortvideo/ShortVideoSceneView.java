@@ -70,7 +70,7 @@ public class ShortVideoSceneView extends FrameLayout implements RefreshAble, Loa
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         addView(mRefreshLayout, new LayoutParams(LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         // load more
         mLoadMoreHelper = new ViewPager2LoadMoreHelper(mPageView.viewPager());
         mLoadMoreHelper.setOnLoadMoreListener(() -> {
@@ -81,9 +81,7 @@ public class ShortVideoSceneView extends FrameLayout implements RefreshAble, Loa
         mLoadMoreProgressBar = (ContentLoadingProgressBar) LayoutInflater.from(context)
                 .inflate(R.layout.vevod_short_video_loading_more, this, false);
         mLoadMoreProgressBar.setVisibility(GONE);
-        addView(mLoadMoreProgressBar, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM));
+        //addView(mLoadMoreProgressBar, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
     }
 
     @Override
@@ -156,5 +154,9 @@ public class ShortVideoSceneView extends FrameLayout implements RefreshAble, Loa
 
     public ShortVideoPageView pageView() {
         return mPageView;
+    }
+
+    public boolean onBackPressed() {
+        return mPageView.onBackPressed();
     }
 }

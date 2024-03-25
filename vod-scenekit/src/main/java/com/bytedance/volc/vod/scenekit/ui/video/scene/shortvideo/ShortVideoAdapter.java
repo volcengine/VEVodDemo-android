@@ -22,25 +22,17 @@ import android.annotation.SuppressLint;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.AdapterListUpdateCallback;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bytedance.playerkit.player.playback.DisplayModeHelper;
-import com.bytedance.playerkit.player.playback.DisplayView;
-import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoProgressBarLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +42,46 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
 
     private final List<VideoItem> mItems = new ArrayList<>();
 
+    private VideoViewFactory mVideoViewFactory;
+
+    public void setVideoViewFactory(VideoViewFactory videoViewFactory) {
+        this.mVideoViewFactory = videoViewFactory;
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     public void setItems(List<VideoItem> videoItems) {
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return mItems.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return videoItems.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                VideoItem oldOne = mItems.get(oldItemPosition);
+                VideoItem newOne = videoItems.get(newItemPosition);
+                return VideoItem.mediaEquals(oldOne, newOne);
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                return true;
+            }
+
+            @Override
+            public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+                return new Object();
+            }
+        }, false);
+
+        diffResult.dispatchUpdatesTo(new AdapterListUpdateCallback(this));
         mItems.clear();
         mItems.addAll(videoItems);
-        notifyDataSetChanged();
     }
 
     public void prependItems(List<VideoItem> videoItems) {
@@ -87,7 +114,7 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
     public void replaceItem(int position, VideoItem videoItem) {
         if (0 <= position && position < mItems.size()) {
             mItems.set(position, videoItem);
-            notifyItemChanged(position);
+            notifyItemChanged(position, new Object() /*Prevent Adapter calling onCreateViewHolder}*/);
         }
     }
 
@@ -102,7 +129,7 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return ViewHolder.create(parent);
+        return ViewHolder.create(parent, mVideoViewFactory);
     }
 
     @Override
@@ -126,37 +153,43 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         return mItems.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final VideoView videoView;
+        public final FrameLayout videoViewContainer;
 
-        public static ViewHolder create(ViewGroup parent) {
-            VideoView videoView = createVideoView(parent);
-            videoView.setLayoutParams(new RecyclerView.LayoutParams(
-                    RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT));
-            return new ViewHolder(videoView);
+        public static ViewHolder create(ViewGroup parent, VideoViewFactory videoViewFactory) {
+            FrameLayout frameLayout = new FrameLayout(parent.getContext());
+            frameLayout.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT));
+            return new ViewHolder(frameLayout, videoViewFactory);
         }
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView, VideoViewFactory videoViewFactory) {
             super(itemView);
-            videoView = (VideoView) itemView;
-            videoView.setLayoutParams(new RecyclerView.LayoutParams(
-                    RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.MATCH_PARENT));
+            itemView.setTag(this);
+            videoViewContainer = (FrameLayout) itemView;
+            videoView = videoViewFactory.createVideoView(videoViewContainer, null);
         }
 
         public void bind(int position, VideoItem videoItem) {
             MediaSource mediaSource = videoView.getDataSource();
             if (mediaSource == null) {
-                mediaSource = VideoItem.toMediaSource(videoItem, false);
+                mediaSource = VideoItem.toMediaSource(videoItem);
                 videoView.bindDataSource(mediaSource);
             } else {
                 if (!TextUtils.equals(videoItem.getVid(), mediaSource.getMediaId())) {
                     videoView.stopPlayback();
-                    mediaSource = VideoItem.toMediaSource(videoItem, false);
+                    mediaSource = VideoItem.toMediaSource(videoItem);
                     videoView.bindDataSource(mediaSource);
                 } else {
                     // vid is same
                     if (videoView.player() == null) {
-                        mediaSource = VideoItem.toMediaSource(videoItem, false);
+                        mediaSource = VideoItem.toMediaSource(videoItem);
                         videoView.bindDataSource(mediaSource);
                     } else {
                         // do nothing
@@ -164,32 +197,6 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
                 }
             }
         }
-    }
-
-    static VideoView createVideoView(ViewGroup parent) {
-        VideoView videoView = new VideoView(parent.getContext());
-        VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
-        layerHost.addLayer(new PlayerConfigLayer());
-        layerHost.addLayer(new ShortVideoCoverLayer());
-        layerHost.addLayer(new LoadingLayer());
-        layerHost.addLayer(new PauseLayer());
-        layerHost.addLayer(new ShortVideoProgressBarLayer());
-        layerHost.addLayer(new PlayErrorLayer());
-        if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
-            layerHost.addLayer(new LogLayer());
-        }
-        layerHost.attachToVideoView(videoView);
-        videoView.setBackgroundColor(parent.getResources().getColor(android.R.color.black));
-        //videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FIT); // fit mode
-        videoView.setDisplayMode(DisplayModeHelper.DISPLAY_MODE_ASPECT_FILL); // immersive mode
-        if (VideoSettings.intValue(VideoSettings.COMMON_RENDER_VIEW_TYPE) == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
-            // 推荐使用 TextureView, 兼容性更好
-            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW);
-        } else {
-            videoView.selectDisplayView(DisplayView.DISPLAY_VIEW_TYPE_SURFACE_VIEW);
-        }
-        videoView.setPlayScene(PlayScene.SCENE_SHORT);
-        return videoView;
     }
 }
 

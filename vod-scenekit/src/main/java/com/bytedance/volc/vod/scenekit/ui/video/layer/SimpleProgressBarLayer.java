@@ -45,8 +45,8 @@ import com.bytedance.volc.vod.scenekit.R;
 public class SimpleProgressBarLayer extends AnimateLayer {
     public static final String ACTION_ENTER_FULLSCREEN = "com.bytedance.volc.vod.scenekit.ui.video.layer/enter_full_screen";
     public static final String EXTRA_MEDIA_SOURCE = "extra_media_source";
-    private MediaSeekBar mSeekBar;
-    private View mFullScreenView;
+    protected MediaSeekBar mSeekBar;
+    protected View mFullScreenView;
 
     @Override
     public String tag() {

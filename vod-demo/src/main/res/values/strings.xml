@@ -17,14 +17,13 @@
   -->
 
 <resources>
-    <string name="vevod_app_name">VOLC Vod</string>
+    <string name="vevod_app_name">VE Vod</string>
 
     <string name="vevod_vod_solutions">Video solutions in one station</string>
 
     <string name="vevod_short_video_with_desc">Short Video</string>
     <string name="vevod_long_video">Long Video</string>
     <string name="vevod_feed_video_with_desc">Feed Video</string>
-    <string name="vevod_input_source">Input Source</string>
 
     <string name="vevod_short_video">Short Video</string>
     <string name="vevod_feed_video">Feed Video</string>
@@ -36,5 +35,16 @@
     <string name="vevod_long_video_title_today_recommend">Today Recommend</string>
     <string name="vevod_long_video_title_recommend_for_you">Recommend For You</string>
     <string name="vevod_settings_activity_title">Settings</string>
+
+    <string name="vevod_mini_drama">Mini Drama</string>
+    <string name="vevod_mini_drama_grid_cover_item_total_desc">Total %d Episodes</string>
+    <string name="vevod_mini_drama_recommend_video_continue_play_more_btn_text">Continue</string>
+    <string name="vevod_mini_drama_detail_video_episode_number_desc">Episode %d</string>
+    <string name="vevod_mini_drama_video_detail_select_episode_number_desc">Select Episode（Total %d）</string>
+    <string name="vevod_mini_drama_main_tab_title_theater">Theater</string>
+    <string name="vevod_mini_drama_main_tab_title_recommend">Recommends</string>
+    <string name="vevod_mini_drama_video_layer_continue_play_more_desc">Watch full drama · Total %d episodes</string>
+    <string name="vevod_mini_drama_video_layer_bottom_desc">Episode %d | %s</string>
+    <string name="vevod_mini_drama_episode_select_dialog_title_desc">Total %d episodes｜29.3w</string>
 
 </resources>

@@ -56,15 +56,15 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:${project.ext.androidxTestEspressoCore}"
 
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
+    implementation "androidx.activity:activity:${project.ext.androidxActivity}"
     implementation "androidx.recyclerview:recyclerview:${project.ext.androidxRecyclerview}"
-
     implementation "androidx.constraintlayout:constraintlayout:${project.ext.androidxConstraintlayout}"
-    implementation "androidx.cardview:cardview:1.0.0"
-    implementation "androidx.viewpager2:viewpager2:1.0.0"
-    implementation "com.google.android.material:material:${project.ext.material}"
+    implementation "androidx.cardview:cardview:${project.ext.androidxCardView}"
+    implementation "androidx.viewpager2:viewpager2:${project.ext.androidxViewPager2}"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:${project.ext.androidxSwiperefreshlayout}"
 
-    implementation "com.google.code.gson:gson:2.8.9"
+    implementation "com.google.android.material:material:${project.ext.material}"
+    implementation "com.google.code.gson:gson:${project.ext.gson}"
 
     implementation "com.github.bumptech.glide:glide:${project.ext.glide}"
     annotationProcessor "com.github.bumptech.glide:compiler:${project.ext.glide}"

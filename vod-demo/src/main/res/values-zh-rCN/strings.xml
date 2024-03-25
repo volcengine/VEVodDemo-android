@@ -23,7 +23,6 @@
     <string name="vevod_feed_video_with_desc">中视频（横屏）</string>
     <string name="vevod_long_video">长视频</string>
 
-    <string name="vevod_input_source">输入播放源</string>
     <string name="vevod_short_video">短视频</string>
     <string name="vevod_feed_video">中视频</string>
 
@@ -34,4 +33,14 @@
     <string name="vevod_long_video_title_recommend_for_you">为你推荐</string>
     <string name="vevod_home">Home</string>
     <string name="vevod_settings_activity_title">设置</string>
+    <string name="vevod_mini_drama">短剧</string>
+    <string name="vevod_mini_drama_grid_cover_item_total_desc">全%d集</string>
+    <string name="vevod_mini_drama_recommend_video_continue_play_more_btn_text">连续看</string>
+    <string name="vevod_mini_drama_detail_video_episode_number_desc">第%d集</string>
+    <string name="vevod_mini_drama_video_detail_select_episode_number_desc">选集（%d集）</string>
+    <string name="vevod_mini_drama_main_tab_title_theater">剧场</string>
+    <string name="vevod_mini_drama_main_tab_title_recommend">推荐</string>
+    <string name="vevod_mini_drama_video_layer_continue_play_more_desc">观看完整短剧 · 全%d集</string>
+    <string name="vevod_mini_drama_video_layer_bottom_desc">第%d集 | %s</string>
+    <string name="vevod_mini_drama_episode_select_dialog_title_desc">全%d集｜29.3w</string>
 </resources>

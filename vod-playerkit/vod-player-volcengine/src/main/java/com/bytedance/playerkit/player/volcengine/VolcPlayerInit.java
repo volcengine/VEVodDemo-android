@@ -34,6 +34,7 @@ import com.pandora.common.env.Env;
 import com.pandora.common.env.config.Config;
 import com.pandora.common.env.config.VodConfig;
 import com.pandora.vod.VodSDK;
+import com.ss.ttvideoengine.BaseAppInfo;
 import com.ss.ttvideoengine.DataLoaderHelper;
 import com.ss.ttvideoengine.TTVideoEngine;
 

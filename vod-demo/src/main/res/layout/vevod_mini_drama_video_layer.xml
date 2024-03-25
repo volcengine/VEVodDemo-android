@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2024 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2024/3/22
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/accent">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/vevod_mini_drama_top_shadow" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/vevod_mini_drama_bottom_shadow" />
+
+    <LinearLayout
+        android:id="@+id/infoCards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="21dp"
+        android:layout_marginBottom="12dp"
+        android:layout_toLeftOf="@+id/actions"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineHeight="24sp"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="做梦吧晶晶" />
+
+        <TextView
+            android:id="@+id/desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:lineHeight="21sp"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            tools:text="第1集 | 今日盲盒男友：运动男友木子洋，男孩子间奇奇怪怪的胜负欲" />
+
+        <include layout="@layout/vevod_mini_drama_recommend_video_continue_play_more_card" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/actions"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/likeView"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="14dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/likeIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/vevod_mini_drama_video_like_selector" />
+
+            <TextView
+                android:id="@+id/likeNum"
+                android:layout_width="56dp"
+                android:layout_height="18dp"
+                android:gravity="center"
+                android:shadowColor="#26000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="13.0万"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/collectView"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/collectIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/vevod_mini_drama_video_collect_selector" />
+
+            <TextView
+                android:id="@+id/collectNum"
+                android:layout_width="56dp"
+                android:layout_height="18dp"
+                android:gravity="center"
+                android:shadowColor="#26000000"
+                android:shadowDx="0"
+                android:shadowDy="1"
+                android:shadowRadius="1"
+                android:text="3.7万"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

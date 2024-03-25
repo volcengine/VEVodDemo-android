@@ -50,7 +50,8 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.LoadMoreAble;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.impl.RecycleViewLoadMoreHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
@@ -60,7 +61,7 @@ import java.util.List;
 
 public class LongVideoFragment extends BaseFragment {
 
-    private RemoteApi.GetFeedStream mRemoteApi;
+    private GetFeedStreamApi mRemoteApi;
     private String mAccount;
 
     private final Book<VideoItem> mBook = new Book<>(12);
@@ -101,7 +102,7 @@ public class LongVideoFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetFeedStreamApi();
+        mRemoteApi = new GetFeedStream();
         mAccount = VideoSettings.stringValue(VideoSettings.LONG_VIDEO_SCENE_ACCOUNT_ID);
         mDataTrans = new LongVideoDataTrans(requireActivity());
         mAdapter = new LongVideoAdapter(new OnItemClickListener() {
@@ -120,7 +121,7 @@ public class LongVideoFragment extends BaseFragment {
     }
 
     private void enterDetail(VideoItem item) {
-        final MediaSource source = VideoItem.toMediaSource(item, true);
+        final MediaSource source = VideoItem.toMediaSource(item);
         final Bundle bundle = DetailVideoFragment.createBundle(source, false);
 
         final String pageType = VideoSettings.stringValue(VideoSettings.DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY);
@@ -208,6 +209,7 @@ public class LongVideoFragment extends BaseFragment {
                 if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
+                VideoItem.syncProgress(videoItems, true);
                 dismissRefreshing();
                 mDataTrans.setList(mAdapter, videoItems);
             }
@@ -262,6 +264,7 @@ public class LongVideoFragment extends BaseFragment {
                     if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
+                    VideoItem.syncProgress(videoItems, true);
                     dismissLoadingMore();
                     mDataTrans.append(mAdapter, videoItems);
                 }

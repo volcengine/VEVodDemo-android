@@ -56,6 +56,7 @@ public class VideoSettings {
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
     public static final String CATEGORY_DETAIL_VIDEO = "视频详情页";
+    public static final String CATEGORY_MINI_DRAMA_VIDEO = "短剧";
     public static final String CATEGORY_QUALITY = "清晰度设置";
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
 
@@ -70,6 +71,9 @@ public class VideoSettings {
     public static final String LONG_VIDEO_SCENE_ACCOUNT_ID = "long_video_scene_account_id";
 
     public static final String DETAIL_VIDEO_SCENE_FRAGMENT_OR_ACTIVITY = "detail_video_scene_fragment_or_activity";
+
+    public static final String DRAMA_VIDEO_SCENE_ACCOUNT_ID = "drama_video_scene_account_id";
+    public static final String DRAMA_VIDEO_PREVENT_SCREEN_SHOT = "drama_video_prevent_screen_shot";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
@@ -176,6 +180,7 @@ public class VideoSettings {
         createFeedVideoSettings(settings);
         createLongVideoSettings(settings);
         createDetailVideoSettings(settings);
+        createDramaSettings(settings);
         createQualitySettings(settings);
         createCommonSettings(settings);
         return settings;
@@ -321,6 +326,30 @@ public class VideoSettings {
                         String.class,
                         "Fragment",
                         Arrays.asList("Fragment", "Activity"))));
+    }
+
+    private static void createDramaSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_MINI_DRAMA_VIDEO));
+        settings.add(SettingItem.createOptionItem(CATEGORY_MINI_DRAMA_VIDEO,
+                new Option(
+                        Option.TYPE_EDITABLE_TEXT,
+                        CATEGORY_MINI_DRAMA_VIDEO,
+                        DRAMA_VIDEO_SCENE_ACCOUNT_ID,
+                        "短剧账号",
+                        Option.STRATEGY_IMMEDIATELY,
+                        String.class,
+                        "mini-drama-video",
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_MINI_DRAMA_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_MINI_DRAMA_VIDEO,
+                        DRAMA_VIDEO_PREVENT_SCREEN_SHOT,
+                        "禁止截屏",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
     }
 
     private static void createQualitySettings(List<SettingItem> settings) {

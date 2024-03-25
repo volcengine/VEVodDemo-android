@@ -17,4 +17,5 @@
   -->
 
 <resources>
+    <dimen name="vevod_dimen_actionbar_size">44dp</dimen>
 </resources>

@@ -24,4 +24,7 @@
     <color name="vevod_background">#ffffff</color>
     <color name="vevod_transparent">#00000000</color>
 
+    <color name="vevod_mini_drama_main_tab_indicator_light">#161823</color>
+    <color name="vevod_mini_drama_main_tab_indicator_dark">#FFFFFF</color>
+
 </resources>

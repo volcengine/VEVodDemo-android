@@ -28,6 +28,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.utils.ExtraObject;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.MD5;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
@@ -38,9 +39,11 @@ import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 
-public class VideoItem implements Serializable {
+public class VideoItem extends ExtraObject implements Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
     public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
@@ -104,7 +107,7 @@ public class VideoItem implements Serializable {
     }
 
     public static VideoItem createMultiStreamUrlItem(
-            @Nullable String vid,
+            @NonNull String vid,
             @NonNull MediaSource mediaSource,
             long duration,
             @Nullable String cover,
@@ -161,14 +164,13 @@ public class VideoItem implements Serializable {
 
     private int sourceType;
 
-
     private String tag;
 
     private String subTag;
 
     private int playScene;
 
-    private int userSelectedQualityRes;
+    private boolean syncProgress;
 
     public String getVid() {
         return vid;
@@ -210,6 +212,11 @@ public class VideoItem implements Serializable {
         return playScene;
     }
 
+    public static boolean mediaEquals(VideoItem item1, VideoItem item2) {
+        if (item1 == null || item2 == null) return false;
+        return TextUtils.equals(item1.vid, item2.vid);
+    }
+
     private static MediaSource createMediaSource(VideoItem videoItem) {
         if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
             MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
@@ -230,24 +237,24 @@ public class VideoItem implements Serializable {
     }
 
     @NonNull
-    public static MediaSource toMediaSource(VideoItem videoItem, boolean syncProgress) {
+    public static MediaSource toMediaSource(VideoItem videoItem) {
         if (videoItem.mediaSource == null) {
             videoItem.mediaSource = createMediaSource(videoItem);
         }
         final MediaSource mediaSource = videoItem.mediaSource;
         VideoItem.set(mediaSource, videoItem);
         VolcConfig.set(mediaSource, createVolcConfig(videoItem));
-        if (syncProgress) {
+        if (videoItem.syncProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
         }
         return mediaSource;
     }
 
-    public static List<MediaSource> toMediaSources(List<VideoItem> videoItems, boolean syncProgress) {
+    public static List<MediaSource> toMediaSources(List<VideoItem> videoItems) {
         List<MediaSource> sources = new ArrayList<>();
         if (videoItems != null) {
             for (VideoItem videoItem : videoItems) {
-                sources.add(VideoItem.toMediaSource(videoItem, syncProgress));
+                sources.add(VideoItem.toMediaSource(videoItem));
             }
         }
         return sources;
@@ -310,6 +317,17 @@ public class VideoItem implements Serializable {
     public static void playScene(VideoItem videoItem, int playScene) {
         if (videoItem == null) return;
         videoItem.playScene = playScene;
+    }
+
+    public static void syncProgress(List<VideoItem> videoItems, boolean syncProgress) {
+        for (VideoItem videoItem : videoItems) {
+            syncProgress(videoItem, syncProgress);
+        }
+    }
+
+    public static void syncProgress(VideoItem videoItem, boolean syncProgress) {
+        if (videoItem == null) return;
+        videoItem.syncProgress = syncProgress;
     }
 
     public String dump() {

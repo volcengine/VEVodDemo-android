@@ -21,9 +21,6 @@ package com.bytedance.volc.voddemo.data.remote;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.page.Page;
-
 public interface RemoteApi {
 
     class HandlerCallback<T> implements Callback<T> {
@@ -67,9 +64,5 @@ public interface RemoteApi {
         void onError(Exception e);
     }
 
-    interface GetFeedStream {
-        void getFeedStream(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback);
 
-        void cancel();
-    }
 }

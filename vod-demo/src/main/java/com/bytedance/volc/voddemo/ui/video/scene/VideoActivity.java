@@ -41,9 +41,9 @@ import com.bytedance.playerkit.player.volcengine.VolcDebugTools;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
-import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.feedvideo.FeedVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 import com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoFragment;
@@ -306,10 +306,10 @@ public class VideoActivity extends BaseActivity {
                 toolbar.setElevation(UIUtils.dip2Px(this, 1));
                 ((ViewGroup.MarginLayoutParams) findViewById(R.id.container)
                         .getLayoutParams())
-                        .topMargin = (int) UIUtils.dip2Px(this, 40);
+                        .topMargin = getResources().getDimensionPixelSize(R.dimen.vevod_dimen_actionbar_size);
                 ((ViewGroup.MarginLayoutParams) findViewById(R.id.debugTool)
                         .getLayoutParams())
-                        .topMargin = (int) UIUtils.dip2Px(this, 40);
+                        .topMargin = getResources().getDimensionPixelSize(R.dimen.vevod_dimen_actionbar_size);
             }
         } else {
             actionBar.hide();

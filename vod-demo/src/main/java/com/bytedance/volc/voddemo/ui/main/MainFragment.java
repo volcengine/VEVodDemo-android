@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.main.DramaMainActivity;
 import com.bytedance.volc.voddemo.ui.settings.SettingsActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 
@@ -121,6 +122,9 @@ public class MainFragment extends BaseFragment {
                         case Item.TYPE_SETTINGS:
                             SettingsActivity.intentInto(getActivity());
                             break;
+                        case Item.TYPE_MINI_DRAMA:
+                            DramaMainActivity.intentInto(getActivity());
+                            break;
                     }
                 });
             }
@@ -130,11 +134,6 @@ public class MainFragment extends BaseFragment {
                 return mItems.size();
             }
         });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         mItems.clear();
         mItems.addAll(createItems());
         mRecyclerView.getAdapter().notifyDataSetChanged();
@@ -142,6 +141,8 @@ public class MainFragment extends BaseFragment {
 
     private static List<Item> createItems() {
         final List<Item> items = new ArrayList<>();
+        items.add(new Item(R.string.vevod_mini_drama, R.drawable.vevod_main_list_item_mini_drama_ic, Item.TYPE_MINI_DRAMA,
+                PlayScene.SCENE_UNKNOWN));
         items.add(new Item(R.string.vevod_short_video_with_desc, R.drawable.vevod_main_scene_list_item_short_ic, Item.TYPE_PLAY_SCENE,
                 PlayScene.SCENE_SHORT));
         items.add(new Item(R.string.vevod_feed_video_with_desc, R.drawable.vevod_main_scene_list_item_feed_ic, Item.TYPE_PLAY_SCENE,
@@ -155,6 +156,7 @@ public class MainFragment extends BaseFragment {
 
     static class Item {
         static final int TYPE_PLAY_SCENE = 0;
+        static final int TYPE_MINI_DRAMA = 1;
         static final int TYPE_SETTINGS = 2;
 
         @StringRes

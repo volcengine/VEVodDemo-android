@@ -83,6 +83,10 @@ public class TimeProgressDialogLayer extends DialogLayer {
         }
     }
 
+    public long getCurrentPosition() {
+        return mCurrentPosition;
+    }
+
     private void syncPosition() {
         Player player = player();
         if (player == null || !player.isInPlaybackState()) return;
@@ -96,10 +100,5 @@ public class TimeProgressDialogLayer extends DialogLayer {
     public void show() {
         super.show();
         syncPosition();
-    }
-
-    public long getCurrentPosition() {
-
-        return mCurrentPosition;
     }
 }
