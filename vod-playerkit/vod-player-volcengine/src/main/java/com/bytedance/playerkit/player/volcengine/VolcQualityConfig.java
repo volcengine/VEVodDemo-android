@@ -31,7 +31,7 @@ public class VolcQualityConfig implements Serializable {
     public VolcDisplaySizeConfig displaySizeConfig;
     public boolean enableSupperResolutionDowngrade;
 
-    public static class VolcDisplaySizeConfig {
+    public static class VolcDisplaySizeConfig implements Serializable {
         public int screenWidth;
         public int screenHeight;
         public int displayWidth;

@@ -31,10 +31,12 @@ import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
@@ -45,8 +47,9 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 
@@ -55,7 +58,7 @@ import java.util.List;
 
 public class ShortVideoFragment extends BaseFragment {
 
-    private RemoteApi.GetFeedStream mRemoteApi;
+    private GetFeedStreamApi mRemoteApi;
     private String mAccount;
 
     private final Book<VideoItem> mBook = new Book<>(10);
@@ -67,14 +70,17 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     public static ShortVideoFragment newInstance() {
-        ShortVideoFragment fragment = new ShortVideoFragment();
-        return fragment;
+        return new ShortVideoFragment();
+    }
+
+    @Override
+    protected void initBackPressedHandler() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetFeedStreamApi();
+        mRemoteApi = new GetFeedStream();
         mAccount = VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID);
         mOrientationHelper = new OrientationHelper(requireActivity(), null);
         mOrientationHelper.setOrientationDelta(45);
@@ -82,7 +88,10 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     @Override
-    protected void initBackPressedHandler() {
+    public void onDestroy() {
+        super.onDestroy();
+        mRemoteApi.cancel();
+        mOrientationHelper.disable();
     }
 
     @Override
@@ -95,6 +104,11 @@ public class ShortVideoFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         mSceneView = (ShortVideoSceneView) view;
         mSceneView.pageView().setLifeCycle(getLifecycle());
+        mSceneView.pageView().addPlaybackListener(event -> {
+            if (event.code() == PlayerEvent.State.COMPLETED) {
+                onPlayerStateCompleted(event);
+            }
+        });
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
         refresh();
@@ -107,11 +121,16 @@ public class ShortVideoFragment extends BaseFragment {
         unregisterBroadcast();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mRemoteApi.cancel();
-        mOrientationHelper.disable();
+    private void onPlayerStateCompleted(Event event) {
+        final Player player = event.owner(Player.class);
+        if (player != null && !player.isLooping() &&
+                VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
+            final int currentPosition = mSceneView.pageView().getCurrentItem();
+            final int nextPosition = currentPosition + 1;
+            if (nextPosition < mSceneView.pageView().getItemCount()) {
+                mSceneView.pageView().setCurrentItem(nextPosition, true);
+            }
+        }
     }
 
     private void refresh() {
@@ -133,7 +152,7 @@ public class ShortVideoFragment extends BaseFragment {
                 L.d(this, "refresh", e, "error");
                 if (getActivity() == null) return;
                 mSceneView.dismissRefreshing();
-                Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), String.valueOf(e), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -158,7 +177,7 @@ public class ShortVideoFragment extends BaseFragment {
                     L.d(this, "loadMore", "error", mBook.nextPageIndex());
                     if (getActivity() == null) return;
                     mSceneView.dismissLoadingMore();
-                    Toast.makeText(getActivity(), e.getMessage() + "", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), String.valueOf(e), Toast.LENGTH_LONG).show();
                 }
             });
         } else {
@@ -170,7 +189,7 @@ public class ShortVideoFragment extends BaseFragment {
 
 
     private void enterFullScreen(MediaSource mediaSource) {
-        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemView();
+        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemVideoView();
         if (videoView == null) return;
 
         if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;
@@ -194,7 +213,7 @@ public class ShortVideoFragment extends BaseFragment {
      * Sync playback states in FullScreenFragment
      */
     private void onExitFullScreen(MediaSource mediaSource, boolean continuesPlayback) {
-        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemView();
+        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemVideoView();
         if (videoView == null) return;
 
         if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;
@@ -206,7 +225,7 @@ public class ShortVideoFragment extends BaseFragment {
             if (controller != null) {
                 controller.preparePlayback();
             }
-            final Player player = controller.player();
+            final Player player = videoView.player();
             if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
                 mSceneView.pageView().setInterceptStartPlaybackOnResume(true);
             }
@@ -214,6 +233,7 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     private BroadcastReceiver mBroadcastReceiver;
+
     private void registerBroadcast() {
         if (mBroadcastReceiver != null) return;
         mBroadcastReceiver = new BroadcastReceiver() {

@@ -22,9 +22,9 @@ import androidx.annotation.NonNull;
 
 import com.bytedance.playerkit.player.volcengine.VolcSourceRefreshStrategy.VolcUrlRefreshFetcher;
 import com.bytedance.playerkit.utils.L;
-import com.bytedance.volc.voddemo.data.remote.api2.ApiManager;
-import com.bytedance.volc.voddemo.data.remote.api2.model.GetRefreshUrlRequest;
-import com.bytedance.volc.voddemo.data.remote.api2.model.GetRefreshUrlResponse;
+import com.bytedance.volc.voddemo.data.remote.AppServer;
+import com.bytedance.volc.voddemo.data.remote.model.general.GetRefreshUrlRequest;
+import com.bytedance.volc.voddemo.data.remote.model.general.GetRefreshUrlResponse;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -50,7 +50,7 @@ public class AppUrlRefreshFetcher implements VolcUrlRefreshFetcher {
                 request.cacheKey,
                 request.url);
 
-        final Call<GetRefreshUrlResponse> call = ApiManager.api2().getRefreshUrl(new GetRefreshUrlRequest(request.url));
+        final Call<GetRefreshUrlResponse> call = AppServer.generalApi().getRefreshUrl(new GetRefreshUrlRequest(request.url));
         call.enqueue(new retrofit2.Callback<GetRefreshUrlResponse>() {
             @Override
             public void onResponse(@NonNull Call<GetRefreshUrlResponse> call,

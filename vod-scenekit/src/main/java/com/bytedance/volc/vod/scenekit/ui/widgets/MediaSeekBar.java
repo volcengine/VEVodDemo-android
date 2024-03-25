@@ -115,7 +115,7 @@ public class MediaSeekBar extends RelativeLayout {
 
     public void setDuration(long duration) {
         this.mDuration = duration;
-        this.seekBar.setMax(Math.max((int) (mDuration / 1000), 100));
+        this.seekBar.setMax((int) Math.max(mDuration, 100));
         text2.setText(time2String(mDuration));
     }
 

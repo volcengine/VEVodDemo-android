@@ -45,7 +45,8 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.api2.GetFeedStreamApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
@@ -55,7 +56,7 @@ import java.util.List;
 
 public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView.DetailPageNavigator {
 
-    private RemoteApi.GetFeedStream mRemoteApi;
+    private GetFeedStreamApi mRemoteApi;
     private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private FeedVideoSceneView mSceneView;
@@ -81,7 +82,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetFeedStreamApi();
+        mRemoteApi = new GetFeedStream();
         mAccount = VideoSettings.stringValue(VideoSettings.FEED_VIDEO_SCENE_ACCOUNT_ID);
     }
 
@@ -121,6 +122,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
                 if (getActivity() == null) return;
                 List<VideoItem> videoItems = mBook.firstPage(page);
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
+                VideoItem.syncProgress(videoItems, true);
                 mSceneView.dismissRefreshing();
                 if (!videoItems.isEmpty()) {
                     mSceneView.pageView().setItems(videoItems);
@@ -149,6 +151,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
                     if (getActivity() == null) return;
                     List<VideoItem> videoItems = mBook.addPage(page);
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
+                    VideoItem.syncProgress(videoItems, true);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
                 }

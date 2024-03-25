@@ -24,18 +24,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
@@ -43,12 +43,13 @@ import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.OnPageChangeCallbackCompat;
+import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.ViewPager2Helper;
 
 import java.util.List;
 
 public class ShortVideoPageView extends FrameLayout implements LifecycleEventObserver {
-
     private final ViewPager2 mViewPager;
     private final ShortVideoAdapter mShortVideoAdapter;
     private final PlaybackController mController = new PlaybackController();
@@ -67,8 +68,10 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         super(context, attrs, defStyleAttr);
 
         mViewPager = new ViewPager2(context);
+        ViewPager2Helper.setup(mViewPager);
         mViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         mShortVideoAdapter = new ShortVideoAdapter();
+        mShortVideoAdapter.setVideoViewFactory(new ShortVideoViewFactory());
         mViewPager.setAdapter(mShortVideoAdapter);
         mViewPager.registerOnPageChangeCallback(new OnPageChangeCallbackCompat(mViewPager) {
             @Override
@@ -78,25 +81,6 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         });
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        mController.addPlaybackListener(new Dispatcher.EventListener() {
-            @Override
-            public void onEvent(Event event) {
-                switch (event.code()) {
-                    case PlayerEvent.State.COMPLETED: {
-                        final Player player = event.owner(Player.class);
-                        if (player != null && !player.isLooping() &&
-                                VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
-                            final int currentPosition = getCurrentItem();
-                            final int nextPosition = currentPosition + 1;
-                            if (nextPosition < mShortVideoAdapter.getItemCount()) {
-                                setCurrentItem(nextPosition, true);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        });
     }
 
     public ViewPager2 viewPager() {
@@ -115,6 +99,20 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
     }
 
+    public void setVideoViewFactory(VideoViewFactory videoViewFactory) {
+        mShortVideoAdapter.setVideoViewFactory(videoViewFactory);
+    }
+
+    @MainThread
+    public void addPlaybackListener(Dispatcher.EventListener listener) {
+        mController.addPlaybackListener(listener);
+    }
+
+    @MainThread
+    public void removePlaybackListener(Dispatcher.EventListener listener) {
+        mController.removePlaybackListener(listener);
+    }
+
     public void setItems(List<VideoItem> videoItems) {
         L.d(this, "setItems", VideoItem.dump(videoItems));
 
@@ -122,7 +120,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         mShortVideoAdapter.setItems(videoItems);
         ShortVideoStrategy.setItems(videoItems);
 
-        mViewPager.getChildAt(0).post(this::play);
+        mViewPager.post(this::play);
     }
 
     public void prependItems(List<VideoItem> videoItems) {
@@ -174,6 +172,14 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
     }
 
+    public List<VideoItem> getItems() {
+        return mShortVideoAdapter.getItems();
+    }
+
+    public VideoItem getItem(int position) {
+        return mShortVideoAdapter.getItem(position);
+    }
+
     public int getItemCount() {
         return mShortVideoAdapter.getItemCount();
     }
@@ -189,7 +195,17 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
 
     public View getCurrentItemView() {
         final int currentPosition = mViewPager.getCurrentItem();
-        return findItemViewByPosition(mViewPager, currentPosition);
+        return ViewPager2Helper.findItemViewByPosition(mViewPager, currentPosition);
+    }
+
+    public VideoView getCurrentItemVideoView() {
+        final int currentPosition = mViewPager.getCurrentItem();
+        return findVideoViewByPosition(mViewPager, currentPosition);
+    }
+
+    public VideoItem getCurrentItemModel() {
+        final int currentPosition = mViewPager.getCurrentItem();
+        return mShortVideoAdapter.getItem(currentPosition);
     }
 
     private void togglePlayback(int currentPosition) {
@@ -198,7 +214,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
         final VideoItem videoItem = mShortVideoAdapter.getItem(currentPosition);
         L.d(this, "togglePlayback", currentPosition, VideoItem.dump(videoItem));
-        final VideoView videoView = (VideoView) findItemViewByPosition(mViewPager, currentPosition);
+        final VideoView videoView = (VideoView) findVideoViewByPosition(mViewPager, currentPosition);
         if (mController.videoView() == null) {
             if (videoView != null) {
                 mController.bind(videoView);
@@ -248,18 +264,16 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     @Override
     public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
         switch (event) {
-            case ON_CREATE:
-                ShortVideoStrategy.setEnabled(true);
-                break;
             case ON_RESUME:
+                ShortVideoStrategy.setEnabled(true);
                 ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
                 resume();
                 break;
             case ON_PAUSE:
+                ShortVideoStrategy.setEnabled(false);
                 pause();
                 break;
             case ON_DESTROY:
-                ShortVideoStrategy.setEnabled(false);
                 mLifeCycle.removeObserver(this);
                 mLifeCycle = null;
                 stop();
@@ -267,14 +281,28 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
     }
 
-    @Nullable
-    private static View findItemViewByPosition(ViewPager2 pager, int position) {
-        final RecyclerView recyclerView = (RecyclerView) pager.getChildAt(0);
-        if (recyclerView != null) {
-            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-            if (layoutManager != null) {
-                return layoutManager.findViewByPosition(position);
+    public boolean onBackPressed() {
+        final VideoView videoView = mController != null ? mController.videoView() : null;
+
+        if (videoView != null) {
+            final VideoLayerHost layerHost = videoView.layerHost();
+            if (layerHost != null && layerHost.onBackPressed()) {
+                return true;
             }
+        }
+        return false;
+    }
+
+    @Nullable
+    private static VideoView findVideoViewByPosition(ViewPager2 pager, int position) {
+        ShortVideoAdapter.ViewHolder viewHolder = findItemViewHolderByPosition(pager, position);
+        return viewHolder == null ? null : viewHolder.videoView;
+    }
+
+    private static ShortVideoAdapter.ViewHolder findItemViewHolderByPosition(ViewPager2 pager, int position) {
+        View itemView = ViewPager2Helper.findItemViewByPosition(pager, position);
+        if (itemView != null) {
+            return (ShortVideoAdapter.ViewHolder) itemView.getTag();
         }
         return null;
     }

@@ -29,11 +29,14 @@ import com.bytedance.playerkit.utils.L;
 
 import java.lang.ref.WeakReference;
 
+/**
+ * 解决 ViewPager2 onPageSelected 回调了，但是通过 position 找不到 ItemView 的问题。
+ */
 public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChangeCallback {
 
     public static final int RETRY_COUNT = 10;
 
-    public WeakReference<ViewPager2> mViewPagerRef;
+    private final WeakReference<ViewPager2> mViewPagerRef;
     private final SparseIntArray mPageSelectedTryInvokeCounts = new SparseIntArray();
 
     public OnPageChangeCallbackCompat(ViewPager2 viewPager) {

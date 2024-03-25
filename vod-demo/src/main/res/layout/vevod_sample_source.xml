@@ -28,7 +28,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingTop="20dp">
@@ -39,7 +39,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:layout_weight="0"
             android:hint="input Url"
             android:minHeight="56dp"
             android:textSize="11sp" />

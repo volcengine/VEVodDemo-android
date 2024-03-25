@@ -42,6 +42,7 @@ import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoAdapter.OnItemViewListener;
 
 import java.util.List;
@@ -117,6 +118,7 @@ public class FeedVideoPageView extends FrameLayout {
                 }
             }
         };
+        mFeedVideoAdapter.setVideoViewFactory(new FeedVideoViewFactory());
 
         mRecyclerView = new RecyclerView(context);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -205,6 +207,10 @@ public class FeedVideoPageView extends FrameLayout {
             }
         }
     };
+
+    public void setVideoViewFactory(VideoViewFactory videoViewFactory) {
+        mFeedVideoAdapter.setVideoViewFactory(videoViewFactory);
+    }
 
     public void setDetailPageNavigator(DetailPageNavigator navigator) {
         mNavigator = navigator;

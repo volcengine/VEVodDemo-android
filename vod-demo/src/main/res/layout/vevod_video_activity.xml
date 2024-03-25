@@ -16,24 +16,22 @@
   ~ Create Date : 2021/12/28
   -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context="com.bytedance.volc.voddemo.ui.video.scene.VideoActivity">
 
     <FrameLayout
         android:id="@+id/container"
-        android:background="@android:color/white"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="@android:color/white" />
 
     <FrameLayout
         android:id="@+id/debugTool"
-        android:layout_gravity="left"
         android:layout_width="300dp"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="left" />
 
-    <include layout="@layout/vevod_layout_toolbar"/>
+    <include layout="@layout/vevod_layout_toolbar" />
 </FrameLayout>

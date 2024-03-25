@@ -76,12 +76,17 @@ public abstract class DialogLayer extends AnimateLayer implements VideoLayerHost
     }
 
     private void dismissLayers() {
-        for (int i = 0; i < layerHost().layerSize(); i++) {
-            VideoLayer layer = layerHost().findLayer(i);
-            if (layer instanceof AnimateLayer) {
-                ((AnimateLayer) layer).requestAnimateDismiss(REQUEST_DISMISS_REASON_DIALOG_SHOW);
-            } else if (layer instanceof BaseLayer) {
-                ((BaseLayer) layer).requestDismiss(REQUEST_DISMISS_REASON_DIALOG_SHOW);
+        final VideoLayerHost layerHost = layerHost();
+        if (layerHost == null) return;
+
+        for (int i = 0; i < layerHost.layerSize(); i++) {
+            VideoLayer layer = layerHost.findLayer(i);
+            if (layer != null && layer != this) {
+                if (layer instanceof AnimateLayer) {
+                    ((AnimateLayer) layer).requestAnimateDismiss(REQUEST_DISMISS_REASON_DIALOG_SHOW);
+                } else if (layer instanceof BaseLayer) {
+                    ((BaseLayer) layer).requestDismiss(REQUEST_DISMISS_REASON_DIALOG_SHOW);
+                }
             }
         }
     }

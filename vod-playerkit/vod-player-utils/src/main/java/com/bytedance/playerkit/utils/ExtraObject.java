@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 
-public class ExtraObject {
+public class ExtraObject implements Serializable {
 
     protected final Map<String, Object> mExtras = Collections.synchronizedMap(new LinkedHashMap<>());
 

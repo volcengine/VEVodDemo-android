@@ -17,8 +17,6 @@
   -->
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     android:layout_gravity="bottom">
 
     <TextView
@@ -35,16 +33,17 @@
         android:textSize="12sp"
         android:typeface="monospace" />
 
-    <SeekBar
+    <androidx.appcompat.widget.AppCompatSeekBar
         android:id="@+id/seekBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:layout_toLeftOf="@id/text2"
         android:layout_toRightOf="@id/text1"
         android:progressBackgroundTint="#FFFFFF"
         android:progressTint="#FFFFFF"
         android:secondaryProgressTint="#FFFFFF"
+        android:splitTrack="false"
         android:thumbTint="#FFFFFF" />
 
     <TextView
