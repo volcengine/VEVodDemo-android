@@ -108,8 +108,8 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_SET_TRACK_VOLUME, volcConfig.enableAudioTrackVolume ? 1 : 0);
 
         if (volcConfig.enableSeekEnd) {
-            player.setIntOption(TTVideoEngine.PLAYER_OPTION_KEEP_FORMAT_THREAD_ALIVE, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_END, 1);
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_LASTFRAME, 1);
         }
 
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
