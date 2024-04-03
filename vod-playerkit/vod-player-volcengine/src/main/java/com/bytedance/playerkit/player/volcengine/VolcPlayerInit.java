@@ -150,7 +150,9 @@ public class VolcPlayerInit {
         if (VolcConfigGlobal.ENABLE_USE_ORIGINAL_URL) {
             TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
         }
-
+        if (VolcConfigGlobal.ENABLE_USE_BACKUP_URL) {
+            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_ALLOW_TRY_THE_LAST_URL, 1);
+        }
         File videoCacheDir = cacheDir(context);
         if (!videoCacheDir.exists()) videoCacheDir.mkdirs();
         VodConfig.Builder vodBuilder = new VodConfig.Builder(context)
