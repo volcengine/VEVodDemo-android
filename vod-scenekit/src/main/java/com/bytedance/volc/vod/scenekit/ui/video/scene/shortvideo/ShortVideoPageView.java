@@ -33,15 +33,13 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
-import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 import com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.OnPageChangeCallbackCompat;
@@ -69,14 +67,28 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
 
         mViewPager = new ViewPager2(context);
         ViewPager2Helper.setup(mViewPager);
+        mViewPager.setOffscreenPageLimit(1);
         mViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         mShortVideoAdapter = new ShortVideoAdapter();
         mShortVideoAdapter.setVideoViewFactory(new ShortVideoViewFactory());
         mViewPager.setAdapter(mShortVideoAdapter);
         mViewPager.registerOnPageChangeCallback(new OnPageChangeCallbackCompat(mViewPager) {
             @Override
-            public void onPageSelected(int position, ViewPager2 pager) {
+            public void onPageSelected(ViewPager2 pager, int position) {
+                super.onPageSelected(pager, position);
                 togglePlayback(position);
+            }
+
+            @Override
+            public void onPagePeekStart(ViewPager2 pager, int position, int peekPosition) {
+                super.onPagePeekStart(pager, position, peekPosition);
+                VideoView videoView = findVideoViewByPosition(pager, peekPosition);
+                if (videoView != null) {
+                    VideoLayerHost host = videoView.layerHost();
+                    if (host != null) {
+                        host.notifyEvent(Layers.Event.VIEW_PAGER_ON_PAGE_PEEK_START.ordinal(), null);
+                    }
+                }
             }
         });
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,

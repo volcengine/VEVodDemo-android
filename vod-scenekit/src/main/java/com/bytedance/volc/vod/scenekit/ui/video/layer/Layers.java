@@ -36,4 +36,8 @@ public class Layers {
     public static final class VisibilityRequestReason {
         public static final String REQUEST_DISMISS_REASON_DIALOG_SHOW = "request_dismiss_reason_dialog_show";
     }
+
+    public enum Event {
+        VIEW_PAGER_ON_PAGE_PEEK_START
+    }
 }
