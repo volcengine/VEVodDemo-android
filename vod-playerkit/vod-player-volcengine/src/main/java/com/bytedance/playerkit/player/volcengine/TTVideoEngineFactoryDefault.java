@@ -61,6 +61,7 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEBUG_UI_NOTIFY, 1);
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_INT_ENABLE_ERROR_THROW_OPTIMIZE, 1);
 
         if (volcConfig.codecStrategyType == VolcConfig.CODEC_STRATEGY_DISABLE) {
             switch (volcConfig.playerDecoderType) {
