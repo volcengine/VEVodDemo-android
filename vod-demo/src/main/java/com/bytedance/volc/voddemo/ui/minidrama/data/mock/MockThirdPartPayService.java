@@ -13,20 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/7/4
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.data.remote.api;
+package com.bytedance.volc.voddemo.ui.minidrama.data.mock;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+import android.os.Handler;
 
-import java.util.List;
+import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 
-public interface GetDramaDetailApi {
+@Deprecated
+public class MockThirdPartPayService {
 
-    void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback);
-
-    void cancel();
+    @Deprecated
+    public static void requestPay(EpisodeVideo episode, Runnable success) {
+        new Handler().postDelayed(() -> {
+            // PayService notify AppService
+            MockAppServer.notifyPaySuccess(episode);
+            success.run();
+        }, 500);
+    }
 
 }

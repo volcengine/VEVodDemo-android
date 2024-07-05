@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/6/28
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.data.remote.api;
+package com.bytedance.volc.voddemo.data.remote.model.drama;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+import java.io.Serializable;
 
-import java.util.List;
+public class EpisodePayInfo implements Serializable {
+    public static final int EPISODE_PAY_TYPE_FREE = 0;
+    public static final int EPISODE_PAY_TYPE_LOCKED = 1;
+    public static final int EPISODE_PAY_TYPE_UNLOCKED = 2;
+    public int payType;
 
-public interface GetDramaDetailApi {
-
-    void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback);
-
-    void cancel();
-
+    public EpisodePayInfo(int payType) {
+        this.payType = payType;
+    }
 }

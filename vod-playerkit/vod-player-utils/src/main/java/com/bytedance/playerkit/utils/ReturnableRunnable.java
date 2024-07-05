@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/6/28
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.data.remote.api;
+package com.bytedance.playerkit.utils;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+public interface ReturnableRunnable<Result, Param> {
 
-import java.util.List;
-
-public interface GetDramaDetailApi {
-
-    void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback);
-
-    void cancel();
-
+    Result run(Param p);
 }

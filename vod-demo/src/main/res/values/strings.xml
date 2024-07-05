@@ -46,5 +46,6 @@
     <string name="vevod_mini_drama_video_layer_continue_play_more_desc">Watch full drama · Total %d episodes</string>
     <string name="vevod_mini_drama_video_layer_bottom_desc">Episode %d | %s</string>
     <string name="vevod_mini_drama_episode_select_dialog_title_desc">Total %d episodes｜29.3w</string>
+    <string name="vevod_video_bottom_bar_card_speed_desc">%.1fx Playing</string>
 
 </resources>

@@ -77,16 +77,7 @@ public class GetFeedStream implements GetFeedStreamApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    List<BaseVideo> details = result.result;
-                    List<VideoItem> items = new ArrayList<>();
-                    if (details != null) {
-                        for (BaseVideo detail : details) {
-                            VideoItem item = BaseVideo.toVideoItem(detail);
-                            if (item != null) {
-                                items.add(item);
-                            }
-                        }
-                    }
+                    List<VideoItem> items = BaseVideo.toVideoItems(result.result);
                     mainCallback.onSuccess(new Page<>(items, pageIndex, Page.TOTAL_INFINITY));
                 } else {
                     mainCallback.onError(new IOException(response.toString()));

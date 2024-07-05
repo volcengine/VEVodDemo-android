@@ -20,8 +20,10 @@ package com.bytedance.volc.vod.scenekit.ui.video.scene;
 
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import com.bytedance.playerkit.player.playback.VideoView;
 
 public interface VideoViewFactory {
-    VideoView createVideoView(ViewGroup parent, Object o);
+    VideoView createVideoView(ViewGroup parent, @Nullable Object o);
 }

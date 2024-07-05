@@ -18,6 +18,9 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
 
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +33,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;
@@ -51,8 +53,8 @@ import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetEpisodeRecommend;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendApi;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.main.DramaMainActivity;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.video.bottom.SpeedIndicatorViewHolder;
 
 import java.util.List;
 
@@ -62,6 +64,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
+    private SpeedIndicatorViewHolder mSpeedIndicator;
     private boolean mRegistered;
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -69,15 +72,28 @@ public class DramaRecommendVideoFragment extends BaseFragment {
             final String action = intent.getAction();
             if (TextUtils.isEmpty(action)) return;
 
-            if (TextUtils.equals(action, ACTION_PLAY_MORE_CLICK)) {
-                onPlayMoreCardClick();
+            switch (action) {
+                case ACTION_PLAY_MORE_CLICK: {
+                    onPlayMoreCardClick();
+                    break;
+                }
+                case ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED: {
+                    mSpeedIndicator.showSpeedIndicator(true);
+                    break;
+                }
+                case ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED: {
+                    mSpeedIndicator.showSpeedIndicator(false);
+                    break;
+                }
             }
+
         }
     };
 
     public ActivityResultLauncher<DramaDetailVideoInput> mDramaDetailPageLauncher = registerForActivityResult(new DramaDetailVideoActivityResultContract(), result -> {
         if (result == null) return;
         if (!VideoItem.mediaEquals(mSceneView.pageView().getCurrentItemModel(), result.currenVideoItem)) {
+            L.d(DramaRecommendVideoFragment.this, "onActivityResult", VideoItem.dump(mSceneView.pageView().getCurrentItemModel()), VideoItem.dump(result.currenVideoItem));
             mSceneView.pageView().replaceItem(mSceneView.pageView().getCurrentItem(), result.currenVideoItem);
         }
     });
@@ -115,7 +131,10 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         });
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
-        mSceneView.requestLayout();
+
+        mSpeedIndicator = new SpeedIndicatorViewHolder(view);
+        mSpeedIndicator.showSpeedIndicator(false);
+
         refresh();
     }
 
@@ -123,7 +142,11 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         if (!mRegistered) {
-            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, new IntentFilter(ACTION_PLAY_MORE_CLICK));
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_PLAY_MORE_CLICK);
+            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED);
+            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED);
+            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
             mRegistered = true;
         }
     }
@@ -153,13 +176,11 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     private void onPlayerStateCompleted(Event event) {
         VideoItem videoItem = mSceneView.pageView().getCurrentItemModel();
         if (videoItem == null) return;
-        EpisodeVideo episodeVideo = (EpisodeVideo) EpisodeVideo.get(videoItem);
+        EpisodeVideo episodeVideo = EpisodeVideo.get(videoItem);
         if (episodeVideo == null) return;
         if (episodeVideo.episodeInfo == null || episodeVideo.episodeInfo.dramaInfo == null) return;
-        if (episodeVideo.episodeInfo.episodeNumber < episodeVideo.episodeInfo.dramaInfo.totalEpisodeNumber) {
-            // goto detail play next
-            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(episodeVideo.episodeInfo.dramaInfo, episodeVideo.episodeInfo.episodeNumber + 1, true));
-        } else {
+
+        if (EpisodeVideo.isLastEpisode(episodeVideo)) {
             // play next recommend
             final Player player = event.owner(Player.class);
             if (player != null && !player.isLooping()) {
@@ -169,6 +190,9 @@ public class DramaRecommendVideoFragment extends BaseFragment {
                     mSceneView.pageView().setCurrentItem(nextPosition, true);
                 }
             }
+        } else {
+            // goto detail play next
+            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(episodeVideo.episodeInfo.dramaInfo, episodeVideo.episodeInfo.episodeNumber + 1, true));
         }
     }
 

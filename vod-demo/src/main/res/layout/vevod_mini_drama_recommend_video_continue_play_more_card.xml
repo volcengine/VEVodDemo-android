@@ -23,7 +23,7 @@
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:layout_marginTop="12dp"
-    android:background="@drawable/vevod_mini_drama_video_continue_play_more_card_bg"
+    android:background="@drawable/vevod_mini_drama_video_bottom_bar_card_bg"
     android:padding="12dp"
     tools:background="@color/accent">
 

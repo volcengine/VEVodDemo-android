@@ -18,6 +18,7 @@
 
 package com.bytedance.volc.voddemo.data.remote.model.base;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -28,40 +29,42 @@ import com.bytedance.volc.voddemo.data.remote.model.parser.PlayInfoJson2MediaSou
 import org.json.JSONException;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class BaseVideo implements Serializable {
     public static final String EXTRA_BASE_VIDEO = "extra_base_video";
-
     public String vid;
     public String caption;
     public double duration;
     public String coverUrl;
     public String videoModel;
     public String playAuthToken;
-    public String subtitleAuthToken; // unused for now
+    public String subtitleAuthToken;
 
-    private static VideoItem createVideoItem(BaseVideo detail) {
-        if (detail.playAuthToken != null) {
+    @Nullable
+    private static VideoItem createVideoItem(BaseVideo video) {
+        if (video.playAuthToken != null) {
             // vid + playAuthToken
             return VideoItem.createVidItem(
-                    detail.vid,
-                    detail.playAuthToken,
-                    detail.subtitleAuthToken,
-                    (long) (detail.duration * 1000),
-                    detail.coverUrl,
-                    detail.caption);
-        } else if (detail.videoModel != null) {
+                    video.vid,
+                    video.playAuthToken,
+                    video.subtitleAuthToken,
+                    (long) (video.duration * 1000),
+                    video.coverUrl,
+                    video.caption);
+        } else if (video.videoModel != null) {
             final int sourceType = VideoSettings.intValue(VideoSettings.COMMON_SOURCE_TYPE);
             switch (sourceType) {
                 case VideoSettings.SourceType.SOURCE_TYPE_MODEL: {
                     VideoItem videoItem = VideoItem.createVideoModelItem(
-                            detail.vid,
-                            detail.videoModel,
-                            detail.subtitleAuthToken,
-                            (long) (detail.duration * 1000),
-                            detail.coverUrl,
-                            detail.caption);
+                            video.vid,
+                            video.videoModel,
+                            video.subtitleAuthToken,
+                            (long) (video.duration * 1000),
+                            video.coverUrl,
+                            video.caption);
                     VideoItem.toMediaSource(videoItem);
                     return videoItem;
                 }
@@ -70,35 +73,56 @@ public class BaseVideo implements Serializable {
                     try {
                         // Demonstrate parse VideoModel JSON to MediaSource object
                         // You should implement your own Parser with your AppServer data structure.
-                        source = new PlayInfoJson2MediaSourceParser(detail.videoModel).parse();
+                        source = new PlayInfoJson2MediaSourceParser(video.videoModel).parse();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                     if (source == null) return null;
                     return VideoItem.createMultiStreamUrlItem(
-                            detail.vid,
+                            video.vid,
                             source,
-                            (long) (detail.duration * 1000),
-                            detail.coverUrl,
-                            detail.caption);
+                            (long) (video.duration * 1000),
+                            video.coverUrl,
+                            video.caption);
+                }
+                default: {
+                    throw new IllegalArgumentException("unsupported sourceType! " + sourceType);
                 }
             }
+        } else {
+            return VideoItem.createEmptyItem(video.vid,
+                    (long) (video.duration * 1000),
+                    video.coverUrl,
+                    video.caption
+            );
         }
-        return null;
     }
 
     @Nullable
-    public static VideoItem toVideoItem(BaseVideo detail) {
-        VideoItem videoItem = createVideoItem(detail);
+    public static VideoItem toVideoItem(BaseVideo video) {
+        VideoItem videoItem = createVideoItem(video);
         if (videoItem != null) {
-            videoItem.putExtra(EXTRA_BASE_VIDEO, detail);
+            videoItem.putExtra(EXTRA_BASE_VIDEO, video);
         }
         return videoItem;
     }
 
     @Nullable
-    public static BaseVideo get(VideoItem videoItem) {
+    public static List<VideoItem> toVideoItems(List<? extends BaseVideo> videos) {
+        if (videos == null) return null;
+        List<VideoItem> items = new ArrayList<>();
+        for (BaseVideo detail : videos) {
+            VideoItem videoItem = toVideoItem(detail);
+            if (videoItem != null) {
+                items.add(videoItem);
+            }
+        }
+        return items;
+    }
+
+    @Nullable
+    public static <T extends BaseVideo> T get(VideoItem videoItem) {
         if (videoItem == null) return null;
-        return videoItem.getExtra(EXTRA_BASE_VIDEO, BaseVideo.class);
+        return (T) videoItem.getExtra(EXTRA_BASE_VIDEO, BaseVideo.class);
     }
 }

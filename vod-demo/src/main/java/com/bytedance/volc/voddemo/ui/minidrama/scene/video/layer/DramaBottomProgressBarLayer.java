@@ -18,6 +18,9 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer;
 
+import static com.bytedance.volc.vod.scenekit.ui.video.layer.Layers.VisibilityRequestReason.REQUEST_DISMISS_REASON_DIALOG_SHOW;
+
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
@@ -81,6 +84,8 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
 
         seekBar.setProgressDrawable(ResourcesCompat.getDrawable(seekBar.getResources(), R.drawable.vevod_mini_drama_bottom_progress_bar_layer_seekbar_track_material, null));
         seekBar.setIndeterminateDrawable(ResourcesCompat.getDrawable(seekBar.getResources(), R.drawable.vevod_mini_drama_bottom_progress_bar_layer_seekbar_track_material, null));
+
+        mMediaSeekBar.setVisibility(View.GONE);
     }
 
     @Nullable
@@ -105,11 +110,45 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
         controller.removePlaybackListener(mPlaybackListener);
     }
 
+    @Override
+    public void requestDismiss(@NonNull String reason) {
+        if (!TextUtils.equals(REQUEST_DISMISS_REASON_DIALOG_SHOW, reason)) {
+            super.requestDismiss(reason);
+        }
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        if (mMediaSeekBar != null && mMediaSeekBar.getVisibility() != View.VISIBLE) {
+            mMediaSeekBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        if (mMediaSeekBar != null && mMediaSeekBar.getVisibility() == View.VISIBLE) {
+            mMediaSeekBar.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void hide() {
+        super.hide();
+        if (mMediaSeekBar != null && mMediaSeekBar.getVisibility() == View.VISIBLE) {
+            mMediaSeekBar.setVisibility(View.GONE);
+        }
+    }
+
     private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {
 
         @Override
         public void onEvent(Event event) {
             switch (event.code()) {
+                case PlaybackEvent.Action.START_PLAYBACK:
+                    show();
+                    break;
                 case PlaybackEvent.State.BIND_PLAYER:
                     if (player() != null) {
                         syncProgress();
@@ -128,7 +167,7 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
                 case PlayerEvent.State.ERROR:
                 case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED: {
-                    dismiss();
+                    hide();
                     break;
                 }
                 case PlayerEvent.Info.VIDEO_RENDERING_START:

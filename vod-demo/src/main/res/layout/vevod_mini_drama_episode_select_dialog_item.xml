@@ -45,4 +45,12 @@
         android:layout_margin="6dp"
         android:src="@drawable/vevod_mini_drama_episode_select_dialog_item_playing_ic" />
 
+
+    <ImageView
+        android:id="@+id/lockView"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:layout_gravity="right|top"
+        android:src="@drawable/vevod_mini_drama_episode_select_dialog_item_locked" />
+
 </com.bytedance.playerkit.player.playback.widgets.RatioFrameLayout>

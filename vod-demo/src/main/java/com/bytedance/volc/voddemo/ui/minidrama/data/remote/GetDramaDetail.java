@@ -24,11 +24,9 @@ import androidx.annotation.NonNull;
 
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.Params;
 import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
-import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetDramaEpisodeRequest;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetDramaEpisodeResponse;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailApi;
@@ -45,12 +43,12 @@ public class GetDramaDetail implements GetDramaDetailApi {
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void getEpisodeVideoItems(String account, int pageIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<Page<VideoItem>> callback) {
-        final RemoteApi.HandlerCallback<Page<VideoItem>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
+    public void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback) {
+        final RemoteApi.HandlerCallback<List<VideoItem>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
 
         final GetDramaEpisodeRequest request = new GetDramaEpisodeRequest(
                 account,
-                pageIndex * pageSize,
+                startIndex,
                 pageSize,
                 dramaId,
                 orderType,
@@ -79,17 +77,8 @@ public class GetDramaDetail implements GetDramaDetailApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    List<EpisodeVideo> details = result.result;
-                    List<VideoItem> items = new ArrayList<>();
-                    if (details != null) {
-                        for (BaseVideo detail : details) {
-                            VideoItem item = BaseVideo.toVideoItem(detail);
-                            if (item != null) {
-                                items.add(item);
-                            }
-                        }
-                    }
-                    mainCallback.onSuccess(new Page<>(items, pageIndex, Page.TOTAL_INFINITY));
+                    List<VideoItem> items = BaseVideo.toVideoItems(result.result);
+                    mainCallback.onSuccess(items);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }
@@ -116,7 +105,6 @@ public class GetDramaDetail implements GetDramaDetailApi {
                 throw new NullPointerException();
         }
     }
-
 
 
     @Override

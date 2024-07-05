@@ -36,10 +36,14 @@ import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaRecommendVideoFragment;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaVideoViewFactory;
+import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
 
 import java.util.Locale;
 
-public class DramaVideoLayer extends AnimateLayer {
+public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoViewPlaybackActionInterceptor {
+
+    public static final String ACTION_DRAMA_VIDEO_LAYER_INTERCEPT_START_PLAYBACK = "action_drama_video_layer_intercept_start_playback";
+    public static final String EXTRA_REASON = "extra_reason";
 
     private final DramaVideoViewFactory.Type mType;
 
@@ -58,6 +62,28 @@ public class DramaVideoLayer extends AnimateLayer {
     public void onVideoViewBindDataSource(MediaSource dataSource) {
         super.onVideoViewBindDataSource(dataSource);
         syncData();
+    }
+
+    @Override
+    public String onVideoViewInterceptStartPlayback(VideoView videoView) {
+        VideoItem videoItem = VideoItem.get(dataSource());
+        if (videoItem == null) return null;
+        if (DramaPayUtils.isLocked(videoItem)) {
+            // intercept
+            return "Episode video [" + VideoItem.dump(videoItem) + "] is locked. Intercept start playback action!";
+        }
+        if (videoItem.getSourceType() == VideoItem.SOURCE_TYPE_EMPTY) {
+            // intercept
+            return "Episode video [" + VideoItem.dump(videoItem) + "] is empty. Intercept start playback action!";
+        }
+        return null;
+    }
+
+    @Override
+    public void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason) {
+        Intent intent = new Intent(ACTION_DRAMA_VIDEO_LAYER_INTERCEPT_START_PLAYBACK);
+        intent.putExtra(EXTRA_REASON, reason);
+        LocalBroadcastManager.getInstance(videoView.getContext()).sendBroadcast(intent);
     }
 
     @Nullable
@@ -91,6 +117,13 @@ public class DramaVideoLayer extends AnimateLayer {
     protected void onBindVideoView(@NonNull VideoView videoView) {
         super.onBindVideoView(videoView);
         show();
+        videoView.addPlaybackInterceptor(0, this);
+    }
+
+    @Override
+    protected void onUnBindVideoView(@NonNull VideoView videoView) {
+        super.onUnBindVideoView(videoView);
+        videoView.removePlaybackInterceptor(0, this);
     }
 
     @Override
@@ -100,24 +133,18 @@ public class DramaVideoLayer extends AnimateLayer {
     }
 
     private void syncData() {
-        final EpisodeVideo episode = (EpisodeVideo) EpisodeVideo.get(VideoItem.get(dataSource()));
-        if (episode != null) {
-            if (episode.episodeInfo != null) {
-                if (episode.episodeInfo.dramaInfo != null) {
-                    if (title != null) {
-                        title.setText(episode.episodeInfo.dramaInfo.dramaTitle);
-                    }
-                    if (continuePlayMoreDesc != null) {
-                        continuePlayMoreDesc.setText(String.format(Locale.getDefault(), continuePlayMoreDesc.getResources().getString(R.string.vevod_mini_drama_video_layer_continue_play_more_desc), episode.episodeInfo.dramaInfo.totalEpisodeNumber));
-                    }
-                }
-                if (desc != null) {
-                    if (mType == DramaVideoViewFactory.Type.DETAIL) {
-                        desc.setText(episode.episodeInfo.episodeDesc);
-                    } else {
-                        desc.setText(String.format(Locale.getDefault(), desc.getResources().getString(R.string.vevod_mini_drama_video_layer_bottom_desc), episode.episodeInfo.episodeNumber, episode.episodeInfo.episodeDesc));
-                    }
-                }
+        final EpisodeVideo episode = EpisodeVideo.get(VideoItem.get(dataSource()));
+        if (title != null) {
+            title.setText(EpisodeVideo.getDramaTitle(episode));
+        }
+        if (continuePlayMoreDesc != null) {
+            continuePlayMoreDesc.setText(String.format(Locale.getDefault(), continuePlayMoreDesc.getResources().getString(R.string.vevod_mini_drama_video_layer_continue_play_more_desc), EpisodeVideo.getTotalEpisodeNumber(episode)));
+        }
+        if (desc != null) {
+            if (mType == DramaVideoViewFactory.Type.DETAIL) {
+                desc.setText(EpisodeVideo.getEpisodeDesc(episode));
+            } else {
+                desc.setText(String.format(Locale.getDefault(), desc.getResources().getString(R.string.vevod_mini_drama_video_layer_bottom_desc), EpisodeVideo.getEpisodeNumber(episode), EpisodeVideo.getEpisodeDesc(episode)));
             }
         }
     }

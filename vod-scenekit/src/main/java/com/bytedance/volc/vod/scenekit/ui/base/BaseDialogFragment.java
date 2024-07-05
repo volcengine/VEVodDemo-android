@@ -32,12 +32,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.bytedance.playerkit.utils.L;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 
 public class BaseDialogFragment extends DialogFragment {
-
-    private boolean mUserExiting = false;
 
     @Override
     @CallSuper
@@ -51,7 +48,6 @@ public class BaseDialogFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         L.d(this, "onCreate");
         super.onCreate(savedInstanceState);
-        mUserExiting = false;
         initBackPressedHandler();
     }
 
@@ -133,6 +129,10 @@ public class BaseDialogFragment extends DialogFragment {
         super.onDetach();
     }
 
+    public boolean isShowing() {
+        return getDialog() != null && getDialog().isShowing();
+    }
+
     protected void initBackPressedHandler() {
         requireActivity().getOnBackPressedDispatcher()
                 .addCallback(this, new OnBackPressedCallback(true) {
@@ -152,13 +152,5 @@ public class BaseDialogFragment extends DialogFragment {
 
     public boolean onBackPressed() {
         return false;
-    }
-
-    protected void setUserExiting(boolean userExiting) {
-        this.mUserExiting = userExiting;
-    }
-
-    protected boolean isUserExiting() {
-        return mUserExiting;
     }
 }

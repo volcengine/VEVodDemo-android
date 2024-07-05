@@ -39,18 +39,37 @@ import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 
 public class VideoItem extends ExtraObject implements Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
+    public static final int SOURCE_TYPE_EMPTY = -1;
     public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
     public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
     public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
 
+    public static String mapSourceType(int sourceType) {
+        if (sourceType == SOURCE_TYPE_EMPTY) {
+            return "empty";
+        }
+        return MediaSource.mapSourceType(sourceType);
+    }
+
     private VideoItem() {
+    }
+
+    public static VideoItem createEmptyItem(@NonNull String vid,
+                                            long duration,
+                                            @Nullable String cover,
+                                            @Nullable String title) {
+        VideoItem videoItem = new VideoItem();
+        videoItem.sourceType = SOURCE_TYPE_EMPTY;
+        videoItem.vid = vid;
+        videoItem.duration = duration;
+        videoItem.cover = cover;
+        videoItem.title = title;
+        return videoItem;
     }
 
     public static VideoItem createVidItem(
@@ -218,7 +237,10 @@ public class VideoItem extends ExtraObject implements Serializable {
     }
 
     private static MediaSource createMediaSource(VideoItem videoItem) {
-        if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
+        if (videoItem.sourceType == VideoItem.SOURCE_TYPE_EMPTY) {
+            MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, "PlayAuthTokenPlaceHolder");
+            return mediaSource;
+        } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
             MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
             mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken);
             return mediaSource;
@@ -303,12 +325,14 @@ public class VideoItem extends ExtraObject implements Serializable {
     }
 
     public static void tag(List<VideoItem> videoItems, String tag, String subTag) {
+        if (videoItems == null) return;
         for (VideoItem videoItem : videoItems) {
             tag(videoItem, tag, subTag);
         }
     }
 
     public static void playScene(List<VideoItem> videoItems, int playScene) {
+        if (videoItems == null) return;
         for (VideoItem videoItem : videoItems) {
             playScene(videoItem, playScene);
         }
@@ -320,6 +344,7 @@ public class VideoItem extends ExtraObject implements Serializable {
     }
 
     public static void syncProgress(List<VideoItem> videoItems, boolean syncProgress) {
+        if (videoItems == null) return;
         for (VideoItem videoItem : videoItems) {
             syncProgress(videoItem, syncProgress);
         }
@@ -331,13 +356,13 @@ public class VideoItem extends ExtraObject implements Serializable {
     }
 
     public String dump() {
-        return L.obj2String(this) + " " + vid + " " + MediaSource.mapSourceType(sourceType);
+        return L.obj2String(this) + " " + vid + " " + mapSourceType(sourceType);
     }
 
     @Nullable
     public static String dump(VideoItem videoItem) {
         if (!L.ENABLE_LOG) return null;
-
+        if (videoItem == null) return null;
         return videoItem.dump();
     }
 
@@ -346,7 +371,7 @@ public class VideoItem extends ExtraObject implements Serializable {
         if (!L.ENABLE_LOG) return null;
         StringBuilder sb = new StringBuilder();
         for (VideoItem videoItem : videoItems) {
-            sb.append(videoItem.dump()).append("\n");
+            sb.append(dump(videoItem)).append("\n");
         }
         return sb.toString();
     }

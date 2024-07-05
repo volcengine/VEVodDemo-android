@@ -36,8 +36,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class BaseBottomDialogFragment extends BottomSheetDialogFragment {
 
-    private boolean mUserExiting = false;
-
     @Override
     @CallSuper
     public void onAttach(@NonNull Context context) {
@@ -50,7 +48,6 @@ public class BaseBottomDialogFragment extends BottomSheetDialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         L.d(this, "onCreate");
         super.onCreate(savedInstanceState);
-        mUserExiting = false;
         initBackPressedHandler();
     }
 
@@ -132,6 +129,10 @@ public class BaseBottomDialogFragment extends BottomSheetDialogFragment {
         super.onDetach();
     }
 
+    public boolean isShowing() {
+        return getDialog() != null && getDialog().isShowing();
+    }
+
     protected void initBackPressedHandler() {
         requireActivity().getOnBackPressedDispatcher()
                 .addCallback(this, new OnBackPressedCallback(true) {
@@ -151,13 +152,5 @@ public class BaseBottomDialogFragment extends BottomSheetDialogFragment {
 
     public boolean onBackPressed() {
         return false;
-    }
-
-    protected void setUserExiting(boolean userExiting) {
-        this.mUserExiting = userExiting;
-    }
-
-    protected boolean isUserExiting() {
-        return mUserExiting;
     }
 }

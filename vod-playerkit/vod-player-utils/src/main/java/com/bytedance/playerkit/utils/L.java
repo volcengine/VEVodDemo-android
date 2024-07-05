@@ -20,6 +20,8 @@ package com.bytedance.playerkit.utils;
 
 import android.util.Log;
 
+import java.util.Collection;
+
 
 public class L {
     private static final String TAG = "Player_Kit";
@@ -133,6 +135,8 @@ public class L {
             return String.valueOf(o);
         } else if (o instanceof Number) {
             return String.valueOf(o);
+        } else if (o instanceof Collection<?>) {
+            return o.getClass().getSimpleName() + '@' + Integer.toHexString(o.hashCode()) + "[" + ((Collection<?>) o).size() + "]";
         } else if (o.getClass().isAnonymousClass()) {
             String s = o.toString();
             return s.substring(s.lastIndexOf('.'));

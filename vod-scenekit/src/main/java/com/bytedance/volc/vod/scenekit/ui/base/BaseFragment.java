@@ -36,7 +36,6 @@ import com.bytedance.playerkit.utils.L;
 
 public class BaseFragment extends Fragment {
 
-    private boolean mUserExiting = false;
 
     @Override
     @CallSuper
@@ -50,7 +49,6 @@ public class BaseFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         L.d(this, "onCreate");
         super.onCreate(savedInstanceState);
-        mUserExiting = false;
         initBackPressedHandler();
     }
 
@@ -151,13 +149,5 @@ public class BaseFragment extends Fragment {
 
     public boolean onBackPressed() {
         return false;
-    }
-
-    protected void setUserExiting(boolean userExiting) {
-        this.mUserExiting = userExiting;
-    }
-
-    protected boolean isUserExiting() {
-        return mUserExiting;
     }
 }

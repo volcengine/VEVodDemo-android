@@ -37,6 +37,8 @@ public class ViewPager2LoadMoreHelper implements LoadMoreAble {
         this.mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                if (!isLoadMoreEnabled()) return;
+
                 final RecyclerView.Adapter<?> adapter = mViewPager.getAdapter();
                 if (adapter == null) return;
 

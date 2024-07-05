@@ -87,11 +87,11 @@ public class PauseLayer extends AnimateLayer {
     protected void initAnimateShowProperty(Animator animator) {
         if (scaleXAnimator != null) {
             scaleXAnimator.setPropertyName("scaleX");
-            scaleXAnimator.setFloatValues(1, 1.5f, 1);
+            scaleXAnimator.setFloatValues(1.5f, 1);
         }
         if (scaleYAnimator != null) {
             scaleYAnimator.setPropertyName("scaleY");
-            scaleYAnimator.setFloatValues(1, 1.5f, 1);
+            scaleYAnimator.setFloatValues(1.5f, 1);
         }
     }
 
@@ -117,6 +117,11 @@ public class PauseLayer extends AnimateLayer {
         } else {
             startPlayback();
         }
+    }
+
+    @Override
+    public void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason) {
+        show();
     }
 
     @Override

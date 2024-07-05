@@ -32,6 +32,12 @@
 
     <style name="VEVodAppTheme.BottomSheetDialog.EpisodeSelector" parent="Theme.AppCompat.Dialog">
         <item name="android:windowBackground">@null</item>
+        <item name="android:windowAnimationStyle">@style/VEVodAppTheme.BottomSheetDialog.EpisodeSelector.Animation</item>
+    </style>
+
+    <style name="VEVodAppTheme.BottomSheetDialog.EpisodeSelector.Animation" parent="android:Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/vevod_slide_in_bottom</item>
+        <item name="android:windowExitAnimation">@anim/vevod_slide_out_bottom</item>
     </style>
 
     <style name="VEVodAppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

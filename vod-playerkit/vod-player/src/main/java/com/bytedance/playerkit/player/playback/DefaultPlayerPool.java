@@ -48,7 +48,7 @@ public class DefaultPlayerPool implements PlayerPool {
         if (player == null) {
             player = create(source, factory);
         }
-        L.d(this, "acquire", source, player);
+        L.d(this, "acquire", MediaSource.dump(source), player);
         return player;
     }
 
@@ -76,7 +76,7 @@ public class DefaultPlayerPool implements PlayerPool {
 
     @Override
     public void recycle(@NonNull Player player) {
-        L.d(this, "recycle", player.getDataSource(), player);
+        L.d(this, "recycle", MediaSource.dump(player.getDataSource()), player);
         synchronized (mAcquiredPlayers) {
             Map<String, Player> copy = new LinkedHashMap<>(mAcquiredPlayers);
             for (Map.Entry<String, Player> entry : copy.entrySet()) {

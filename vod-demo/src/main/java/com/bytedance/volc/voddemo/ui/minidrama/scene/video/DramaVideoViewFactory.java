@@ -43,6 +43,7 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaBottomProgressBarLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaTimeProgressDialogLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaVideoLayer;
 
@@ -60,7 +61,7 @@ public class DramaVideoViewFactory implements VideoViewFactory {
     }
 
     @Override
-    public VideoView createVideoView(ViewGroup parent, Object o) {
+    public VideoView createVideoView(ViewGroup parent, @Nullable Object o) {
         VideoView videoView = new VideoView(parent.getContext());
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.bottomMargin = (int) UIUtils.dip2Px(parent.getContext(), 12);
@@ -74,6 +75,7 @@ public class DramaVideoViewFactory implements VideoViewFactory {
         parent.addView(seekBar, lp1);
 
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
+        layerHost.addLayer(new DramaGestureLayer());
         layerHost.addLayer(new ShortVideoCoverLayer());
         layerHost.addLayer(new DramaVideoLayer(type));
         layerHost.addLayer(new LoadingLayer());

@@ -172,16 +172,44 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
 
         if (position >= mShortVideoAdapter.getItemCount() || position < 0) return;
         L.d(this, "replaceItem", position, VideoItem.dump(videoItem));
-
+        mShortVideoAdapter.replaceItem(position, videoItem);
         final int currentPosition = getCurrentItem();
         if (currentPosition == position) {
             stop();
+            mShortVideoAdapter.addAdapterListener(new ShortVideoAdapter.AdapterListener() {
+                @Override
+                public void onBindViewHolder(@NonNull ShortVideoAdapter.ViewHolder holder, int pos) {
+                    if (currentPosition == pos) {
+                        mShortVideoAdapter.removeAdapterListener(this);
+                        mViewPager.post(() -> play());
+                    }
+                }
+            });
         }
-        mShortVideoAdapter.replaceItem(position, videoItem);
         ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
-        if (currentPosition == position) {
-            mViewPager.postDelayed(this::play, 100);
+    }
+
+    public void replaceItems(int position, List<VideoItem> videoItems) {
+        if (videoItems == null) return;
+        if (mShortVideoAdapter.getItemCount() <= position || position < 0) return;
+
+        VideoItem.playScene(videoItems, PlayScene.SCENE_SHORT);
+        L.d(this, "replaceItems", position, VideoItem.dump(videoItems));
+        mShortVideoAdapter.replaceItems(position, videoItems);
+        final int currentPosition = getCurrentItem();
+        if (position <= currentPosition && currentPosition < position + videoItems.size()) {
+            stop();
+            mShortVideoAdapter.addAdapterListener(new ShortVideoAdapter.AdapterListener() {
+                @Override
+                public void onBindViewHolder(@NonNull ShortVideoAdapter.ViewHolder holder, int pos) {
+                    if (currentPosition == pos) {
+                        mShortVideoAdapter.removeAdapterListener(this);
+                        mViewPager.post(() -> play());
+                    }
+                }
+            });
         }
+        ShortVideoStrategy.setItems(mShortVideoAdapter.getItems());
     }
 
     public List<VideoItem> getItems() {
@@ -226,18 +254,21 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         }
         final VideoItem videoItem = mShortVideoAdapter.getItem(currentPosition);
         L.d(this, "togglePlayback", currentPosition, VideoItem.dump(videoItem));
-        final VideoView videoView = (VideoView) findVideoViewByPosition(mViewPager, currentPosition);
-        if (mController.videoView() == null) {
+        final VideoView videoView = findVideoViewByPosition(mViewPager, currentPosition);
+        VideoView currentVideoView = mController.videoView();
+        if (currentVideoView == null) {
             if (videoView != null) {
                 mController.bind(videoView);
-                mController.startPlayback();
+                currentVideoView = videoView;
+                currentVideoView.startPlayback();
             }
         } else {
-            if (videoView != null && videoView != mController.videoView()) {
-                mController.stopPlayback();
+            if (videoView != null && videoView != currentVideoView) {
+                currentVideoView.stopPlayback();
                 mController.bind(videoView);
+                currentVideoView = videoView;
             }
-            mController.startPlayback();
+            currentVideoView.startPlayback();
         }
     }
 
@@ -249,6 +280,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void resume() {
+        L.d(this, "resume");
         if (!mInterceptStartPlaybackOnResume) {
             play();
         }
@@ -256,6 +288,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     public void pause() {
+        L.d(this, "pause");
         Player player = mController.player();
         if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
             mInterceptStartPlaybackOnResume = true;

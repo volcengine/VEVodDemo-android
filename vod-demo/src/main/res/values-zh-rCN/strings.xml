@@ -43,4 +43,5 @@
     <string name="vevod_mini_drama_video_layer_continue_play_more_desc">观看完整短剧 · 全%d集</string>
     <string name="vevod_mini_drama_video_layer_bottom_desc">第%d集 | %s</string>
     <string name="vevod_mini_drama_episode_select_dialog_title_desc">全%d集｜29.3w</string>
+    <string name="vevod_video_bottom_bar_card_speed_desc">%.1fx 播放中</string>
 </resources>

@@ -18,12 +18,81 @@
 
 package com.bytedance.volc.voddemo.data.remote.model.drama;
 
+import androidx.annotation.Nullable;
+
+import com.bytedance.playerkit.utils.L;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.google.gson.annotations.SerializedName;
 
-public class EpisodeVideo extends BaseVideo {
+import java.util.ArrayList;
+import java.util.List;
 
+public class EpisodeVideo extends BaseVideo {
+    public static final int TYPE_FROM_APP_SERVER = 0;
+    public static final int TYPE_FROM_APP_CLIENT_MOCK = 1;
+    public int from;
     @SerializedName("episodeDetail")
     public EpisodeInfo episodeInfo;
 
+    public EpisodePayInfo episodePayInfo;
+
+    public static boolean isLastEpisode(EpisodeVideo episode) {
+        return getEpisodeNumber(episode) >= getTotalEpisodeNumber(episode);
+    }
+
+    public static int getEpisodeNumber(EpisodeVideo episode) {
+        if (episode == null) return -1;
+        if (episode.episodeInfo == null) return -1;
+        return episode.episodeInfo.episodeNumber;
+    }
+
+    public static int getTotalEpisodeNumber(EpisodeVideo episode) {
+        if (episode == null) return -1;
+        if (episode.episodeInfo == null || episode.episodeInfo.dramaInfo == null) return -1;
+        return episode.episodeInfo.dramaInfo.totalEpisodeNumber;
+    }
+
+    @Nullable
+    public static String getDramaTitle(EpisodeVideo episode) {
+        if (episode == null) return null;
+        if (episode.episodeInfo == null || episode.episodeInfo.dramaInfo == null) return null;
+        return episode.episodeInfo.dramaInfo.dramaTitle;
+    }
+
+    public static String getDramaId(EpisodeVideo episode) {
+        if (episode == null) return null;
+        if (episode.episodeInfo == null || episode.episodeInfo.dramaInfo == null) return null;
+        return episode.episodeInfo.dramaInfo.dramaId;
+    }
+
+    public static String getEpisodeDesc(EpisodeVideo episode) {
+        if (episode == null) return null;
+        if (episode.episodeInfo == null) return null;
+        return episode.episodeInfo.episodeDesc;
+    }
+
+    public static int episodeNumber2VideoItemIndex(List<VideoItem> videoItems, int episodeNumber) {
+        for (int i = 0; i < videoItems.size(); i++) {
+            VideoItem videoItem = videoItems.get(i);
+            EpisodeVideo episode = EpisodeVideo.get(videoItem);
+            if (EpisodeVideo.getEpisodeNumber(episode) == episodeNumber) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static List<EpisodeVideo> videoItems2EpisodeVideos(List<VideoItem> videoItems) {
+        List<EpisodeVideo> episodes = new ArrayList<>();
+        for (VideoItem videoItem : videoItems) {
+            EpisodeVideo episode = EpisodeVideo.get(videoItem);
+            if (episode != null) {
+                episodes.add(episode);
+            }
+        }
+        return episodes;
+    }
 }
+
+

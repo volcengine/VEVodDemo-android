@@ -36,16 +36,31 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.ViewHolder> {
 
+    public interface AdapterListener {
+        void onBindViewHolder(@NonNull ViewHolder holder, int position);
+    }
+
     private final List<VideoItem> mItems = new ArrayList<>();
+
+    private final CopyOnWriteArrayList<AdapterListener> mAdapterListeners = new CopyOnWriteArrayList<>();
 
     private VideoViewFactory mVideoViewFactory;
 
     public void setVideoViewFactory(VideoViewFactory videoViewFactory) {
         this.mVideoViewFactory = videoViewFactory;
+    }
+
+    public void addAdapterListener(AdapterListener listener) {
+        mAdapterListeners.addIfAbsent(listener);
+    }
+
+    public void removeAdapterListener(AdapterListener listener) {
+        mAdapterListeners.remove(listener);
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -118,6 +133,15 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         }
     }
 
+    public void replaceItems(int position, List<VideoItem> videoItems) {
+        if (0 <= position && position < mItems.size()) {
+            for (int i = 0; i < videoItems.size(); i++) {
+                mItems.set(position + i, videoItems.get(i));
+            }
+            notifyItemRangeChanged(position, videoItems.size(), new Object() /*Prevent Adapter calling onCreateViewHolder}*/);
+        }
+    }
+
     public VideoItem getItem(int position) {
         return mItems.get(position);
     }
@@ -146,6 +170,10 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         VideoItem videoItem = mItems.get(position);
         holder.bind(position, videoItem);
+
+        for (AdapterListener adapterListener : mAdapterListeners) {
+            adapterListener.onBindViewHolder(holder, position);
+        }
     }
 
     @Override

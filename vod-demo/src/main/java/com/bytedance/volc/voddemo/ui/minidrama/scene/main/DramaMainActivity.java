@@ -81,6 +81,7 @@ public class DramaMainActivity extends BaseActivity {
 
         mViewPager = findViewById(R.id.viewPager);
         ViewPager2Helper.setup(mViewPager);
+        mViewPager.setOffscreenPageLimit(1);
         mAdapter = new DramaMainAdapter(this);
         mViewPager.setAdapter(mAdapter);
         mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
