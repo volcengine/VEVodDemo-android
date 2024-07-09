@@ -83,6 +83,13 @@ public class MockAdLoader implements AdLoader {
                         onError(new Exception("empty"));
                         return;
                     }
+                    L.d(this, "onSuccess", items);
+                    for (Item item : items) {
+                        if (item instanceof VideoItem) {
+                            VideoItem videoItem = (VideoItem) item;
+                            videoItem.setVid("mock_ad_" + videoItem.getVid());
+                        }
+                    }
                     mItems.addAll(items);
                     load(type, num, callback);
                 }

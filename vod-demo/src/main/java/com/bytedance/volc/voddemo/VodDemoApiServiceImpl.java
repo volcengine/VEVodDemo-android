@@ -30,6 +30,7 @@ public class VodDemoApiServiceImpl implements VodDemoApiService {
     @Override
     public void initVodSDK(Context context, String appId, String appName, String appChannel, String appVersion, String licenseUri) {
         VodDemoApi.initVodSDK(context, appId, appName, appChannel, appVersion, licenseUri);
+        VodDemoApi.initMockADSDK(context);
     }
 
     @Override

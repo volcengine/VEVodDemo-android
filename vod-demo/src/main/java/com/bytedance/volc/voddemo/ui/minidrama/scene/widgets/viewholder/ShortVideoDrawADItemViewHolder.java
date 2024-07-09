@@ -37,6 +37,9 @@ import java.util.List;
 
 public class ShortVideoDrawADItemViewHolder extends ViewHolder {
     public final FrameLayout videoViewContainer;
+    /**
+     * @deprecated mock AD VideoView
+     */
     public final MockShortVideoAdVideoView mockAdVideoView;
     public DrawADItem mItem;
 
