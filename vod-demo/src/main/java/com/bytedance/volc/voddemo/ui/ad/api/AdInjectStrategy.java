@@ -22,19 +22,17 @@ import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.DrawADItem;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
-import com.bytedance.volc.voddemo.ui.ad.mock.MockAdLoader;
 
 import java.util.List;
 
 public final class AdInjectStrategy {
     private static AdLoadStrategy sAdLoadStrategy;
 
-    public static void init() {
+    public static void init(AdLoader.Factory factory) {
         if (sAdLoadStrategy == null) {
             final int prefetchMaxCount = VideoSettings.intValue(VideoSettings.AD_VIDEO_PREFETCH_MAX_COUNT);
             L.d(AdInjectStrategy.class, "init", "prefetchMaxCount", prefetchMaxCount);
-            sAdLoadStrategy = new AdLoadStrategy(prefetchMaxCount, new MockAdLoader.Factory("ShortVideo"));
-            sAdLoadStrategy.start();
+            sAdLoadStrategy = new AdLoadStrategy(prefetchMaxCount, factory);
         }
     }
 

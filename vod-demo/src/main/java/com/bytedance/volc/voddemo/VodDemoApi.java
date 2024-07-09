@@ -21,6 +21,10 @@ package com.bytedance.volc.voddemo;
 import android.app.Activity;
 import android.content.Context;
 
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
+import com.bytedance.volc.voddemo.ui.ad.api.AdLoader;
+import com.bytedance.volc.voddemo.ui.ad.mock.MockAdLoader;
 import com.bytedance.volc.voddemo.ui.main.MainActivity;
 
 public class VodDemoApi {
@@ -32,6 +36,23 @@ public class VodDemoApi {
                                   String appVersion,
                                   String licenseUri) {
         VodSDK.init(context, appId, appName, appChannel, appVersion, licenseUri);
+    }
+
+    /**
+     * @deprecated mock AD SDK
+     */
+    @Deprecated
+    public static void initMockADSDK(Context context) {
+        if (VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_AD)
+                || VideoSettings.booleanValue(VideoSettings.DRAMA_DETAIL_ENABLE_AD)
+                || VideoSettings.booleanValue(VideoSettings.DRAMA_RECOMMEND_ENABLE_AD)) {
+
+            // preload AD data for demo
+            // Mock 短剧/短视频广告逻辑，在正式项目中不要调用该方法
+            AdLoader.Factory mockAdLoaderFactory = new MockAdLoader.Factory("ShortVideo");
+
+            AdInjectStrategy.init(mockAdLoaderFactory);
+        }
     }
 
     public static void intentInto(Activity activity, boolean showActionBar) {

@@ -196,6 +196,10 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         return vid;
     }
 
+    public void setVid(String vid) {
+        this.vid = vid;
+    }
+
     public String getPlayAuthToken() {
         return playAuthToken;
     }

@@ -51,6 +51,10 @@ public class App extends Application {
                 LICENSE_URI
         );
 
+        /**
+         * Mock 短剧/短视频广告逻辑，在正式项目中不要调用该方法
+         */
+        VodDemoApi.initMockADSDK(this);
     }
 
     public Context context() {
