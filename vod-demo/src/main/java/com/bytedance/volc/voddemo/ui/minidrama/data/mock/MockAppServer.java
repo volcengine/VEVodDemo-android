@@ -18,9 +18,10 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.data.mock;
 
+import androidx.annotation.Nullable;
+
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodePayInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
-import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,7 +37,7 @@ public class MockAppServer {
     public static void notifyPaySuccess(EpisodeVideo episode) {
         if (episode == null) return;
         if (episode.episodePayInfo == null) return;
-        APP_SERVER_UNLOCKED_SET.add(DramaPayUtils.key(episode));
+        APP_SERVER_UNLOCKED_SET.add(key(episode));
     }
 
     @Deprecated
@@ -48,7 +49,7 @@ public class MockAppServer {
                 if (episode.episodeInfo != null && episode.episodeInfo.episodeNumber <= 5) {
                     episode.episodePayInfo = new EpisodePayInfo(EpisodePayInfo.EPISODE_PAY_TYPE_FREE);
                 } else {
-                    if (APP_SERVER_UNLOCKED_SET.contains(DramaPayUtils.key(episode))) {
+                    if (APP_SERVER_UNLOCKED_SET.contains(key(episode))) {
                         episode.episodePayInfo = new EpisodePayInfo(EpisodePayInfo.EPISODE_PAY_TYPE_UNLOCKED);
                     } else {
                         episode.episodePayInfo = new EpisodePayInfo(EpisodePayInfo.EPISODE_PAY_TYPE_LOCKED);
@@ -63,5 +64,15 @@ public class MockAppServer {
     private static void mockClearEpisodeVideoSourceInfo(EpisodeVideo episode) {
         episode.videoModel = null;
         episode.playAuthToken = null;
+    }
+
+    public static String key(@Nullable EpisodeVideo episode) {
+        if (episode == null) return "";
+        if (episode.episodeInfo == null) return "";
+        String dramaId = null;
+        if (episode.episodeInfo.dramaInfo != null) {
+            dramaId = episode.episodeInfo.dramaInfo.dramaId;
+        }
+        return "DramaId=" + dramaId + "&EpisodeNumber=" + episode.episodeInfo.episodeNumber + "&VideoId=" + episode.vid;
     }
 }

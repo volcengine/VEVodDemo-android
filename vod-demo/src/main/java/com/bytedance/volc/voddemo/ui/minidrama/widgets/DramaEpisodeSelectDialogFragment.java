@@ -35,33 +35,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseBottomDialogFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
+import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
 import com.bytedance.volc.voddemo.utils.AdaptiveSpacingItemDecoration;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
 
     public static final String ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK = "action_drama_episode_select_dialog_click";
-    public static final String EXTRA_PLAYING_INDEX = "extra_playing_index";
-    public static final String EXTRA_VIDEO_ITEMS = "extra_current_video_items";
-    public static final String EXTRA_EPISODE_INDEX = "extra_episode_index";
+    public static final String EXTRA_VIDOE_ITEM = "extra_video_item";
+    public static final String EXTRA_DRAMA_ITEM = "extra_drama_item";
 
-    public static DramaEpisodeSelectDialogFragment newInstance(ArrayList<VideoItem> items, int playingIndex) {
+    public static DramaEpisodeSelectDialogFragment newInstance(DramaItem dramaItem) {
         Bundle bundle = new Bundle();
-        bundle.putSerializable(EXTRA_VIDEO_ITEMS, items);
-        bundle.putSerializable(EXTRA_PLAYING_INDEX, playingIndex);
+        bundle.putSerializable(EXTRA_DRAMA_ITEM, dramaItem);
         DramaEpisodeSelectDialogFragment fragment = new DramaEpisodeSelectDialogFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    private int mPlayingIndex;
-    private List<VideoItem> mVideoItems;
+    private DramaItem mDramaItem;
     private TextView mTitleView;
     private TextView mDescView;
     private RecyclerView mRecyclerView;
@@ -72,10 +69,16 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            mPlayingIndex = bundle.getInt(EXTRA_PLAYING_INDEX);
-            mVideoItems = (ArrayList<VideoItem>) bundle.getSerializable(EXTRA_VIDEO_ITEMS);
+            mDramaItem = (DramaItem) bundle.getSerializable(EXTRA_DRAMA_ITEM);
         }
-        mAdapter = new ItemAdapter(mVideoItems) {
+        if (mDramaItem == null
+                || mDramaItem.episodeVideoItems == null
+                || mDramaItem.episodeVideoItems.isEmpty()) {
+            dismiss();
+            return;
+        }
+
+        mAdapter = new ItemAdapter() {
             @NonNull
             @Override
             public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -86,18 +89,13 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
                 return holder;
             }
         };
-        mAdapter.setPlayingIndex(mPlayingIndex);
     }
 
     private void onEpisodeNumberItemClick(ItemAdapter.ViewHolder holder) {
-        int position = holder.getAbsoluteAdapterPosition();
-        if (position < 0) return;
-
+        VideoItem videoItem = (VideoItem) holder.itemView.getTag();
         Intent intent = new Intent(ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK);
-        intent.putExtra(EXTRA_EPISODE_INDEX, position);
+        intent.putExtra(EXTRA_VIDOE_ITEM, videoItem);
         LocalBroadcastManager.getInstance(requireActivity()).sendBroadcast(intent);
-
-        mAdapter.setPlayingIndex(position);
         holder.itemView.postDelayed(this::dismiss, 100); // delay 100MS would make selection changing be visible
     }
 
@@ -126,45 +124,32 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new AdaptiveSpacingItemDecoration((int) UIUtils.dip2Px(requireActivity(), 12), false));
 
-        if (mVideoItems == null || mPlayingIndex >= mVideoItems.size()) return;
-        VideoItem videoItem = mVideoItems.get(mPlayingIndex);
-        if (videoItem == null) return;
-        EpisodeVideo episodeVideo = EpisodeVideo.get(videoItem);
-
-        int itemCount = 0;
-        String title = null;
-        String desc = null;
-        if (episodeVideo != null && episodeVideo.episodeInfo != null) {
-            if (episodeVideo.episodeInfo.dramaInfo != null) {
-                itemCount = episodeVideo.episodeInfo.dramaInfo.totalEpisodeNumber;
-                title = episodeVideo.episodeInfo.dramaInfo.dramaTitle;
-                desc = String.format(Locale.getDefault(), getString(R.string.vevod_mini_drama_episode_select_dialog_title_desc), itemCount);
-            }
-        }
-        mTitleView.setText(title);
-        mDescView.setText(desc);
+        setDramaItem(mDramaItem);
     }
 
-    public void setPlayingIndex(int playingIndex) {
-        mPlayingIndex = playingIndex;
+    public void setDramaItem(DramaItem dramaItem) {
+        if (dramaItem == null) {
+            return;
+        }
+        mDramaItem = dramaItem;
+
         if (mAdapter != null) {
-            mAdapter.setPlayingIndex(playingIndex);
+            mAdapter.setDramaItem(mDramaItem);
+        }
+
+        DramaInfo dramaInfo = mDramaItem.dramaInfo;
+        if (dramaInfo != null) {
+            mTitleView.setText(dramaInfo.dramaTitle);
+            mDescView.setText(String.format(Locale.getDefault(), getString(R.string.vevod_mini_drama_episode_select_dialog_title_desc), dramaInfo.totalEpisodeNumber));
         }
     }
 
     private static class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
-        private List<VideoItem> mItems;
-        private int mPlayingIndex;
+        private DramaItem mDramaItem;
 
-        public ItemAdapter(List<VideoItem> items) {
-            this.mItems = items;
-        }
-
-        public void setPlayingIndex(int playingIndex) {
-            if (mPlayingIndex == playingIndex) return;
-
-            mPlayingIndex = playingIndex;
+        public void setDramaItem(DramaItem dramaItem) {
+            this.mDramaItem = dramaItem;
             notifyDataSetChanged();
         }
 
@@ -176,18 +161,21 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            holder.bind(position, mPlayingIndex, mItems);
+            holder.bind(position, mDramaItem);
         }
 
         @Override
         public int getItemCount() {
-            return mItems.size();
+            if (mDramaItem != null && mDramaItem.episodeVideoItems != null) {
+                return mDramaItem.episodeVideoItems.size();
+            }
+            return 0;
         }
+
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             public final TextView indexView;
             public final ImageView playingView;
-
             public final ImageView lockView;
 
             public ViewHolder(@NonNull View itemView) {
@@ -197,11 +185,20 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
                 lockView = itemView.findViewById(R.id.lockView);
             }
 
-            public void bind(int position, int playingIndex, List<VideoItem> videoItems) {
-                indexView.setText(String.valueOf(position + 1));
-                playingView.setVisibility(position == playingIndex ? View.VISIBLE : View.GONE);
-                lockView.setVisibility(DramaPayUtils.isLocked(videoItems.get(position)) ? View.VISIBLE : View.GONE);
-                itemView.setSelected(position == playingIndex);
+            public void bind(int position, DramaItem dramaItem) {
+                if (dramaItem == null) return;
+                if (dramaItem.episodeVideoItems == null) return;
+
+                final VideoItem videoItem = dramaItem.episodeVideoItems.get(position);
+                final int episodeNumber = EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(videoItem));
+                final int currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(dramaItem.currentItem));
+
+                indexView.setText(String.valueOf(episodeNumber));
+                playingView.setVisibility(episodeNumber == currentEpisodeNumber ? View.VISIBLE : View.GONE);
+                itemView.setSelected(episodeNumber == currentEpisodeNumber);
+                lockView.setVisibility(DramaPayUtils.isLocked(videoItem) ? View.VISIBLE : View.GONE);
+
+                itemView.setTag(videoItem);
             }
         }
     }

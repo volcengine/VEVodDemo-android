@@ -44,7 +44,6 @@ public class MockGetEpisodes implements GetEpisodesApi {
             @Override
             public void onSuccess(List<VideoItem> videoItems) {
                 List<EpisodeVideo> episodes = new ArrayList<>();
-                MockAppServer.mockDramaDetailLockState(episodes);
                 for (int episodeNumber : episodeNumbers) {
                     for (VideoItem item : videoItems) {
                         EpisodeVideo episode = EpisodeVideo.get(item);
@@ -53,6 +52,7 @@ public class MockGetEpisodes implements GetEpisodesApi {
                         }
                     }
                 }
+                MockAppServer.mockDramaDetailLockState(episodes);
                 callback.onSuccess(episodes);
             }
 

@@ -42,6 +42,7 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
 
     private boolean mPeekStart;
     private int mPeekPosition;
+    private int mLastPosition = -1;
 
     public OnPageChangeCallbackCompat(ViewPager2 viewPager) {
         this.mViewPagerRef = new WeakReference<>(viewPager);
@@ -70,7 +71,11 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
             return;
         }
         mPageSelectedTryInvokeCounts.put(position, 0);
-        onPageSelected(viewPager, position);
+
+        if (mLastPosition != position) {
+            onPageSelected(viewPager, position);
+            mLastPosition = position;
+        }
     }
 
     @Override

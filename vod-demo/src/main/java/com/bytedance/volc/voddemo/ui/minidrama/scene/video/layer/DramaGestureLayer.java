@@ -38,8 +38,8 @@ import com.bytedance.volc.vod.scenekit.utils.GestureHelper;
 import java.lang.ref.WeakReference;
 
 public class DramaGestureLayer extends BaseLayer {
-    public static final String ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED = "action_drama_gesture_layer_on_touch_event_long_press";
-    public static final String ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED = "action_drama_gesture_layer_on_touch_event_up";
+    public static final String ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED = "action_drama_gesture_layer_show_speed";
+    public static final String ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED = "action_drama_gesture_layer_dismiss_speed";
 
     @Nullable
     @Override
@@ -148,31 +148,37 @@ public class DramaGestureLayer extends BaseLayer {
         videoView.performClick();
     }
 
+    private boolean mSpeedShowing = false;
+
     protected void showSpeed() {
         final Context context = context();
         if (context == null) return;
+        if (mSpeedShowing) return;
 
         L.d(this, "showSpeed");
 
         final Player player = player();
-        if (player != null && player.isPlaying()) {
+        if (player == null) return;
+
+        if (player.isPlaying()) {
             player.setSpeed(2f);
+            mSpeedShowing = true;
+            Intent intent = new Intent(ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         }
-        Intent intent = new Intent(ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     protected void dismissSpeed() {
+        if (!mSpeedShowing) return;
+        mSpeedShowing = false;
 
         final Context context = context();
         if (context == null) return;
 
         L.d(this, "dismissSpeed");
-
         final Player player = player();
-        if (player != null) {
-            player.setSpeed(1f);
-        }
+        if (player == null) return;
+        player.setSpeed(1f);
 
         Intent intent = new Intent(ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);

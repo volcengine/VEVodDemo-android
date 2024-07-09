@@ -18,19 +18,11 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.utils;
 
-import androidx.annotation.Nullable;
-
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodePayInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
-import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockUser;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class DramaPayUtils {
-    private static final Set<String> APP_CLIENT_UNLOCKED_SET = Collections.synchronizedSet(new HashSet<>());
 
     public static boolean isLocked(VideoItem videoItem) {
         return isLocked(EpisodeVideo.get(videoItem));
@@ -39,37 +31,6 @@ public class DramaPayUtils {
     public static boolean isLocked(EpisodeVideo episode) {
         if (episode == null) return false;
         if (episode.episodePayInfo == null) return false;
-        if (episode.episodePayInfo.payType == EpisodePayInfo.EPISODE_PAY_TYPE_LOCKED) {
-            if (APP_CLIENT_UNLOCKED_SET.contains(key(episode))) {
-                episode.episodePayInfo.payType = EpisodePayInfo.EPISODE_PAY_TYPE_UNLOCKED;
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void unlock(VideoItem videoItem) {
-        unlock(EpisodeVideo.get(videoItem));
-    }
-
-    public static void unlock(EpisodeVideo episode) {
-        if (episode == null) return;
-        if (episode.episodePayInfo == null) return;
-
-        episode.episodePayInfo.payType = EpisodePayInfo.EPISODE_PAY_TYPE_UNLOCKED;
-        APP_CLIENT_UNLOCKED_SET.add(key(episode));
-    }
-
-    public static String key(@Nullable EpisodeVideo episode) {
-        if (episode == null) return "";
-        if (episode.episodeInfo == null) return "";
-        String userId = MockUser.mockUserId(); // TODO use real userid instead
-        String dramaId = null;
-        if (episode.episodeInfo.dramaInfo != null) {
-            dramaId = episode.episodeInfo.dramaInfo.dramaId;
-        }
-        return "UserId=" + userId + "&DramaId=" + dramaId + "&EpisodeNumber=" + episode.episodeInfo.episodeNumber + "&VideoId=" + episode.vid;
+        return episode.episodePayInfo.payType == EpisodePayInfo.EPISODE_PAY_TYPE_LOCKED;
     }
 }

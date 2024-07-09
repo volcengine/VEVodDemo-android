@@ -25,8 +25,7 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 
 import java.io.Serializable;
 import java.util.List;
@@ -36,39 +35,25 @@ public class DramaDetailVideoActivityResultContract extends ActivityResultContra
     public static final String EXTRA_OUTPUT = "extra_output";
 
     public static class DramaDetailVideoInput implements Serializable {
-        public final DramaInfo drama;
-        public final int episodeNumber;
-        public final VideoItem currenVideoItem;
+        public final List<DramaItem> dramaItems;
+        public final int currentDramaIndex;
         public final boolean continuesPlayback;
 
-        public DramaDetailVideoInput(DramaInfo drama, int episodeNumber, boolean continuesPlayback) {
-            this.drama = drama;
-            this.episodeNumber = episodeNumber;
-            this.currenVideoItem = null;
-            this.continuesPlayback = continuesPlayback;
-        }
-
-        public DramaDetailVideoInput(VideoItem currenVideoItem, boolean continuesPlayback) {
-            this.drama = null;
-            this.episodeNumber = 0;
-            this.currenVideoItem = currenVideoItem;
+        public DramaDetailVideoInput(List<DramaItem> dramaItems, int currentDramaIndex, boolean continuesPlayback) {
+            this.dramaItems = dramaItems;
+            this.currentDramaIndex = currentDramaIndex;
             this.continuesPlayback = continuesPlayback;
         }
     }
 
     public static class DramaDetailVideoOutput implements Serializable {
-        public final DramaInfo drama;
-        public final VideoItem originalVideoItem;
-        public final VideoItem currenVideoItem;
-
-        public final List<VideoItem> videoItems;
+        public int currentDramaIndex;
+        public DramaItem currentDramaItem;
         public final boolean continuesPlayback;
 
-        public DramaDetailVideoOutput(DramaInfo drama, VideoItem originalVideoItem, VideoItem currenVideoItem, List<VideoItem> videoItems, boolean continuesPlayback) {
-            this.drama = drama;
-            this.originalVideoItem = originalVideoItem;
-            this.currenVideoItem = currenVideoItem;
-            this.videoItems = videoItems;
+        public DramaDetailVideoOutput(int currentDramaIndex, DramaItem currentDramaItem, boolean continuesPlayback) {
+            this.currentDramaIndex = currentDramaIndex;
+            this.currentDramaItem = currentDramaItem;
             this.continuesPlayback = continuesPlayback;
         }
     }

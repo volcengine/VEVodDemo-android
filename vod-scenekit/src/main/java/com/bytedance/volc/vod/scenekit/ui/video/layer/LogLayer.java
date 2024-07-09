@@ -61,6 +61,7 @@ public class LogLayer extends BaseLayer {
 
     private static class LogInfo {
         private final List<Long> cacheHintBytes = new ArrayList<>();
+        private MediaSource mediaSource;
         private long startPlaybackFT;
         private long prepareFT;
         private long videoRenderStartFT;
@@ -276,9 +277,13 @@ public class LogLayer extends BaseLayer {
         public void onEvent(Event event) {
             switch (event.code()) {
                 case PlaybackEvent.Action.START_PLAYBACK:
+                    if (mLogInfo != null && !MediaSource.mediaEquals(mLogInfo.mediaSource, dataSource())) {
+                        mLogInfo = null;
+                    }
                     if (mLogInfo == null) {
                         mLogInfo = new LogInfo();
                         mLogInfo.startPlaybackFT = event.dispatchTime();
+                        mLogInfo.mediaSource = dataSource();
                     }
                     break;
                 case PlaybackEvent.Action.STOP_PLAYBACK:

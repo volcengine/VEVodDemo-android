@@ -19,6 +19,7 @@
 package com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer;
 
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
@@ -42,11 +44,12 @@ import java.util.Locale;
 
 public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoViewPlaybackActionInterceptor {
 
-    public static final String ACTION_DRAMA_VIDEO_LAYER_INTERCEPT_START_PLAYBACK = "action_drama_video_layer_intercept_start_playback";
-    public static final String EXTRA_REASON = "extra_reason";
+    public static final String ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG = "action_drama_video_layer_show_pay_dialog";
+
+    public static final String INTERCEPT_START_PLAYBACK_REASON_LOCKED = "locked";
+    public static final String INTERCEPT_START_PLAYBACK_REASON_EMPTY = "empty";
 
     private final DramaVideoViewFactory.Type mType;
-
     private TextView title;
     private TextView desc;
     private TextView continuePlayMoreDesc;
@@ -67,23 +70,28 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
     @Override
     public String onVideoViewInterceptStartPlayback(VideoView videoView) {
         VideoItem videoItem = VideoItem.get(dataSource());
-        if (videoItem == null) return null;
+        if (videoItem == null) {
+            return null;
+        }
         if (DramaPayUtils.isLocked(videoItem)) {
             // intercept
-            return "Episode video [" + VideoItem.dump(videoItem) + "] is locked. Intercept start playback action!";
+            L.d(this, "onVideoViewInterceptStartPlayback", "Episode video [" + VideoItem.dump(videoItem) + "] is locked.");
+            return INTERCEPT_START_PLAYBACK_REASON_LOCKED;
         }
         if (videoItem.getSourceType() == VideoItem.SOURCE_TYPE_EMPTY) {
             // intercept
-            return "Episode video [" + VideoItem.dump(videoItem) + "] is empty. Intercept start playback action!";
+            L.d(this, "onVideoViewInterceptStartPlayback", "Episode video [" + VideoItem.dump(videoItem) + "] is empty.");
+            return INTERCEPT_START_PLAYBACK_REASON_EMPTY;
         }
         return null;
     }
 
     @Override
     public void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason) {
-        Intent intent = new Intent(ACTION_DRAMA_VIDEO_LAYER_INTERCEPT_START_PLAYBACK);
-        intent.putExtra(EXTRA_REASON, reason);
-        LocalBroadcastManager.getInstance(videoView.getContext()).sendBroadcast(intent);
+        if (TextUtils.equals(reason, INTERCEPT_START_PLAYBACK_REASON_LOCKED)) {
+            Intent intent = new Intent(ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG);
+            LocalBroadcastManager.getInstance(videoView.getContext()).sendBroadcast(intent);
+        }
     }
 
     @Nullable
@@ -117,13 +125,13 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
     protected void onBindVideoView(@NonNull VideoView videoView) {
         super.onBindVideoView(videoView);
         show();
-        videoView.addPlaybackInterceptor(0, this);
+        videoView.addPlaybackInterceptor(1, this);
     }
 
     @Override
     protected void onUnBindVideoView(@NonNull VideoView videoView) {
         super.onUnBindVideoView(videoView);
-        videoView.removePlaybackInterceptor(0, this);
+        videoView.removePlaybackInterceptor(1, this);
     }
 
     @Override

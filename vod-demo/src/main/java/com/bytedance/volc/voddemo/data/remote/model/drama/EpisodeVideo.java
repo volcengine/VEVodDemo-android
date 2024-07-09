@@ -29,12 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EpisodeVideo extends BaseVideo {
-    public static final int TYPE_FROM_APP_SERVER = 0;
-    public static final int TYPE_FROM_APP_CLIENT_MOCK = 1;
-    public int from;
     @SerializedName("episodeDetail")
     public EpisodeInfo episodeInfo;
-
     public EpisodePayInfo episodePayInfo;
 
     public static boolean isLastEpisode(EpisodeVideo episode) {
@@ -51,6 +47,12 @@ public class EpisodeVideo extends BaseVideo {
         if (episode == null) return -1;
         if (episode.episodeInfo == null || episode.episodeInfo.dramaInfo == null) return -1;
         return episode.episodeInfo.dramaInfo.totalEpisodeNumber;
+    }
+
+    public static DramaInfo getDramaInfo(EpisodeVideo episode) {
+        if (episode == null) return null;
+        if (episode.episodeInfo == null) return null;
+        return episode.episodeInfo.dramaInfo;
     }
 
     @Nullable
@@ -92,6 +94,11 @@ public class EpisodeVideo extends BaseVideo {
             }
         }
         return episodes;
+    }
+
+    public static String dump(EpisodeVideo episode) {
+        if (episode == null) return null;
+        return L.obj2String(episode) + " " + episode.vid + " " + EpisodeVideo.getDramaId(episode) + " " + EpisodeVideo.getEpisodeNumber(episode) + "/" + EpisodeVideo.getTotalEpisodeNumber(episode);
     }
 }
 

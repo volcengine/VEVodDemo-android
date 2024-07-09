@@ -19,11 +19,11 @@
 package com.bytedance.volc.voddemo.ui.minidrama.widgets;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseDialogFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
@@ -61,9 +62,6 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     private EpisodeVideo mEpisode;
     private String mAccount;
     private MockGetEpisodes mMockGetEpisode;
-
-    private ProgressDialog mPayLoading;
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,20 +115,19 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
 
     private void goPay() {
         if (mEpisode == null) return;
-
+        L.d(this, "pay", mEpisode);
         Toast.makeText(requireActivity(), "支付中...", Toast.LENGTH_SHORT).show();
 
         // TODO remove mock code
         MockThirdPartPayService.requestPay(mEpisode, () -> {
             if (getActivity() == null) return;
             // mock 第三方支付返回成功
-
             fetchUnlockedEpisode(mEpisode);
         });
     }
 
-    private void fetchUnlockedEpisode(EpisodeVideo episode) {
-        mMockGetEpisode.getEpisodeVideosByIds(mAccount, EpisodeVideo.getDramaId(episode), Arrays.asList(EpisodeVideo.getEpisodeNumber(episode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
+    private void fetchUnlockedEpisode(EpisodeVideo lockedEpisode) {
+        mMockGetEpisode.getEpisodeVideosByIds(mAccount, EpisodeVideo.getDramaId(lockedEpisode), Arrays.asList(EpisodeVideo.getEpisodeNumber(lockedEpisode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
             public void onSuccess(List<EpisodeVideo> episodeVideos) {
                 if (getActivity() == null) return;
@@ -138,31 +135,37 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
                 EpisodeVideo unlockedEpisode = episodeVideos != null && !episodeVideos.isEmpty() ? episodeVideos.get(0) : null;
                 if (unlockedEpisode == null) {
                     onError(new Exception("MockAppServer Error! Get unlocked episode video return null!"));
-                }
-                if (DramaPayUtils.isLocked(unlockedEpisode)) {
-                    onError(new Exception("MockAppServer Error! " + DramaPayUtils.key(episode) + " is locked! Expected an unlocked one."));
                     return;
                 }
-
-                unlock(unlockedEpisode);
+                if (!TextUtils.equals(lockedEpisode.vid, unlockedEpisode.vid)) {
+                    onError(new Exception("MockAppServer Error! " + "Expected:" + lockedEpisode.vid + " Returned:" + unlockedEpisode.vid));
+                    return;
+                }
+                if (DramaPayUtils.isLocked(unlockedEpisode)) {
+                    onError(new Exception("MockAppServer Error! [" + EpisodeVideo.dump(lockedEpisode) + "] is locked! Expected an unlocked one."));
+                    return;
+                }
+                onPaySuccess(lockedEpisode, unlockedEpisode);
             }
 
             @Override
             public void onError(Exception e) {
                 if (getActivity() == null) return;
-
-                Toast.makeText(requireActivity(), "Unlock Operation Error! " + e.toString(), Toast.LENGTH_LONG).show();
+                onPayError(lockedEpisode, e);
             }
         });
     }
 
-    private void unlock(EpisodeVideo episode) {
+    private void onPaySuccess(EpisodeVideo lockedEpisode, EpisodeVideo unlockedEpisode) {
+        L.d(this, "onPaySuccess", lockedEpisode, unlockedEpisode, unlockedEpisode.vid, unlockedEpisode.playAuthToken, unlockedEpisode.videoModel);
         Toast.makeText(requireActivity(), "支付成功，开始播放", Toast.LENGTH_SHORT).show();
-
-        DramaPayUtils.unlock(episode);
         Intent intent = new Intent(ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED);
-        intent.putExtra(EXTRA_EPISODE_VIDEO, episode);
+        intent.putExtra(EXTRA_EPISODE_VIDEO, unlockedEpisode);
         LocalBroadcastManager.getInstance(requireActivity()).sendBroadcast(intent);
-        dismiss();
+    }
+
+    private void onPayError(EpisodeVideo lockedEpisode, Exception e) {
+        Toast.makeText(requireActivity(), "Unlock Operation Error! " + e.toString(), Toast.LENGTH_LONG).show();
+        L.e(this, "onPayError", lockedEpisode, e.getMessage());
     }
 }

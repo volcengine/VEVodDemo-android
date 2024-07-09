@@ -96,6 +96,6 @@ public class DefaultPlayerPool implements PlayerPool {
     }
 
     private String key(@NonNull MediaSource mediaSource) {
-        return mediaSource.getUniqueId();
+        return mediaSource.getMediaId();
     }
 }

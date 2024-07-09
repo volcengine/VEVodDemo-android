@@ -34,9 +34,19 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoDebugLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoProgressBarLayer;
 
+import java.lang.ref.WeakReference;
+
 public class ShortVideoViewFactory implements VideoViewFactory {
+
+    private final WeakReference<ShortVideoPageView> mPageViewRef;
+
+    public ShortVideoViewFactory(ShortVideoPageView pageView) {
+        this.mPageViewRef = new WeakReference<>(pageView);
+    }
+
     @Override
     public VideoView createVideoView(ViewGroup parent, Object o) {
         VideoView videoView = new VideoView(parent.getContext());
@@ -50,6 +60,7 @@ public class ShortVideoViewFactory implements VideoViewFactory {
         layerHost.addLayer(new PlayErrorLayer());
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
             layerHost.addLayer(new LogLayer());
+            layerHost.addLayer(new ShortVideoDebugLayer(mPageViewRef));
         }
         layerHost.attachToVideoView(videoView);
         videoView.setBackgroundColor(parent.getResources().getColor(android.R.color.black));

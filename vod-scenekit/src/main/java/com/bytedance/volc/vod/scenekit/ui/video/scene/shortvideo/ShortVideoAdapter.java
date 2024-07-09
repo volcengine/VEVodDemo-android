@@ -31,36 +31,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
 
 
 public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.ViewHolder> {
 
-    public interface AdapterListener {
-        void onBindViewHolder(@NonNull ViewHolder holder, int position);
-    }
+    private final ArrayList<VideoItem> mItems = new ArrayList<>();
 
-    private final List<VideoItem> mItems = new ArrayList<>();
-
-    private final CopyOnWriteArrayList<AdapterListener> mAdapterListeners = new CopyOnWriteArrayList<>();
+    private final Map<Integer, WeakReference<ShortVideoAdapter.ViewHolder>> mHolders = new HashMap<>();
 
     private VideoViewFactory mVideoViewFactory;
 
     public void setVideoViewFactory(VideoViewFactory videoViewFactory) {
         this.mVideoViewFactory = videoViewFactory;
-    }
-
-    public void addAdapterListener(AdapterListener listener) {
-        mAdapterListeners.addIfAbsent(listener);
-    }
-
-    public void removeAdapterListener(AdapterListener listener) {
-        mAdapterListeners.remove(listener);
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -126,6 +117,14 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         }
     }
 
+    public void deleteItems(int position, int count) {
+        if (position >= 0 && position < mItems.size()) {
+            List<VideoItem> items = new ArrayList<>(mItems);
+            items.removeAll(items.subList(position, Math.min(position + count, items.size())));
+            setItems(items);
+        }
+    }
+
     public void replaceItem(int position, VideoItem videoItem) {
         if (0 <= position && position < mItems.size()) {
             mItems.set(position, videoItem);
@@ -150,6 +149,14 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         return mItems;
     }
 
+    public ViewHolder getViewHolder(int position) {
+        WeakReference<ViewHolder> ref = mHolders.get(position);
+        if (ref != null) {
+            return ref.get();
+        }
+        return null;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -157,23 +164,31 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
     }
 
     @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        final VideoItem videoItem = mItems.get(position);
+        L.d(this, "onBindViewHolder", position, holder, holder.videoItem, videoItem);
+        holder.bind(position, videoItem);
+
+        final WeakReference<ShortVideoAdapter.ViewHolder> ref = mHolders.get(position);
+        if (ref == null || ref.get() != holder) {
+            mHolders.put(position, new WeakReference<>(holder));
+        }
+    }
+
+    @Override
     public void onViewDetachedFromWindow(@NonNull ViewHolder holder) {
         holder.videoView.stopPlayback();
+
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull ViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
     }
 
     @Override
     public void onViewRecycled(@NonNull ViewHolder holder) {
         holder.videoView.stopPlayback();
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        VideoItem videoItem = mItems.get(position);
-        holder.bind(position, videoItem);
-
-        for (AdapterListener adapterListener : mAdapterListeners) {
-            adapterListener.onBindViewHolder(holder, position);
-        }
     }
 
     @Override
@@ -186,10 +201,10 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         return position;
     }
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final VideoView videoView;
         public final FrameLayout videoViewContainer;
+        public VideoItem videoItem;
 
         public static ViewHolder create(ViewGroup parent, VideoViewFactory videoViewFactory) {
             FrameLayout frameLayout = new FrameLayout(parent.getContext());
@@ -205,6 +220,7 @@ public class ShortVideoAdapter extends RecyclerView.Adapter<ShortVideoAdapter.Vi
         }
 
         public void bind(int position, VideoItem videoItem) {
+            this.videoItem = videoItem;
             MediaSource mediaSource = videoView.getDataSource();
             if (mediaSource == null) {
                 mediaSource = VideoItem.toMediaSource(videoItem);

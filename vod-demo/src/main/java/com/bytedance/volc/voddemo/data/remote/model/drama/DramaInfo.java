@@ -28,4 +28,9 @@ public class DramaInfo implements Serializable {
     public int totalEpisodeNumber; // 集数
     public int latestEpisodeNumber; // 更新集数
     public String authorId;
+
+    public static String dump(DramaInfo dramaInfo) {
+        if (dramaInfo == null) return null;
+        return dramaInfo.dramaId + " " + dramaInfo.dramaTitle + " " + dramaInfo.totalEpisodeNumber;
+    }
 }

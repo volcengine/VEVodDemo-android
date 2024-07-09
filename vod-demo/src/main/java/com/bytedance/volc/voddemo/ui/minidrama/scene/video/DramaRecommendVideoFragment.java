@@ -51,6 +51,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoScene
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetEpisodeRecommend;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
@@ -92,9 +93,50 @@ public class DramaRecommendVideoFragment extends BaseFragment {
 
     public ActivityResultLauncher<DramaDetailVideoInput> mDramaDetailPageLauncher = registerForActivityResult(new DramaDetailVideoActivityResultContract(), result -> {
         if (result == null) return;
-        if (!VideoItem.mediaEquals(mSceneView.pageView().getCurrentItemModel(), result.currenVideoItem)) {
-            L.d(DramaRecommendVideoFragment.this, "onActivityResult", VideoItem.dump(mSceneView.pageView().getCurrentItemModel()), VideoItem.dump(result.currenVideoItem));
-            mSceneView.pageView().replaceItem(mSceneView.pageView().getCurrentItem(), result.currenVideoItem);
+        if (result.currentDramaItem == null) return;
+        if (result.currentDramaItem.currentItem == null) return;
+
+        int currentDramaIndex = mSceneView.pageView().getCurrentItem();
+        int targetDramaIndex = result.currentDramaIndex;
+
+        // 1. find dramaItemIndex first
+        VideoItem targetDramaCurrentVideoItem = mSceneView.pageView().getItem(targetDramaIndex);
+        final VideoItem targetDramaTargetVideoItem = result.currentDramaItem.currentItem;
+        if (!TextUtils.equals(EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaCurrentVideoItem)),
+                EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaTargetVideoItem)))) {
+            for (int i = 0; i < mSceneView.pageView().getItemCount(); i++) {
+                final VideoItem videoItem = mSceneView.pageView().getItem(i);
+                if (TextUtils.equals(EpisodeVideo.getDramaId(EpisodeVideo.get(videoItem)),
+                        EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaTargetVideoItem)))) {
+                    targetDramaIndex = i;
+                    targetDramaCurrentVideoItem = videoItem;
+                    break;
+                }
+            }
+        }
+
+        if (targetDramaIndex == -1 || targetDramaCurrentVideoItem == null) {
+            return;
+        }
+
+        L.d(DramaRecommendVideoFragment.this, "onActivityResult");
+
+        // 2. replace videoItem
+        if (!VideoItem.mediaEquals(targetDramaCurrentVideoItem, targetDramaTargetVideoItem)) {
+            L.d(DramaRecommendVideoFragment.this, "onActivityResult",
+                    "currentDramaIndex=" + currentDramaIndex,
+                    "targetDramaIndex=" + targetDramaIndex,
+                    "targetDramaCurrentVideoItem=" + VideoItem.dump(targetDramaCurrentVideoItem),
+                    "targetDramaTargetVideoItem=" + VideoItem.dump(targetDramaTargetVideoItem));
+            mSceneView.pageView().stop();
+            mSceneView.pageView().replaceItem(targetDramaIndex, targetDramaTargetVideoItem);
+        }
+
+        // 3. set current item to target drama index
+        if (targetDramaIndex != currentDramaIndex) {
+            L.d(DramaRecommendVideoFragment.this, "onActivityResult", "setCurrentItem", currentDramaIndex, targetDramaIndex);
+            mSceneView.pageView().stop();
+            mSceneView.pageView().setCurrentItem(targetDramaIndex, false);
         }
     });
 
@@ -123,7 +165,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
         mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.RECOMMEND));
+        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.RECOMMEND, mSceneView.pageView()));
         mSceneView.pageView().addPlaybackListener(event -> {
             if (event.code() == PlayerEvent.State.COMPLETED) {
                 onPlayerStateCompleted(event);
@@ -169,8 +211,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
             continuesPlayback = controller.player() != null;
             controller.unbindPlayer();
         }
-        final VideoItem videoItem = mSceneView.pageView().getCurrentItemModel();
-        mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(videoItem, continuesPlayback));
+        mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(DramaItem.createByEpisodes(mSceneView.pageView().getItems()), mSceneView.pageView().getCurrentItem(), continuesPlayback));
     }
 
     private void onPlayerStateCompleted(Event event) {
@@ -192,7 +233,12 @@ public class DramaRecommendVideoFragment extends BaseFragment {
             }
         } else {
             // goto detail play next
-            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(episodeVideo.episodeInfo.dramaInfo, episodeVideo.episodeInfo.episodeNumber + 1, true));
+            final List<DramaItem> dramaItems = DramaItem.createByEpisodes(mSceneView.pageView().getItems());
+            final DramaItem currentDrama = dramaItems.get(mSceneView.pageView().getCurrentItem());
+            if (currentDrama != null) {
+                currentDrama.currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(episodeVideo) + 1;
+            }
+            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(dramaItems, mSceneView.pageView().getCurrentItem(), true));
         }
     }
 

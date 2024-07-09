@@ -19,7 +19,7 @@
 package com.bytedance.volc.voddemo.ui.minidrama.scene.main;
 
 
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.*;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
 
 import android.os.Bundle;
 import android.view.View;
@@ -43,6 +43,7 @@ import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetDramas;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramasApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract;
@@ -79,8 +80,7 @@ public class DramaGridCoverFragment extends BaseFragment {
             public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 DramaGridCoverAdapter.ViewHolder holder = super.onCreateViewHolder(parent, viewType);
                 holder.itemView.setOnClickListener(v -> {
-                    DramaInfo drama = mAdapter.getItem(holder.getAbsoluteAdapterPosition());
-                    mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(drama, 1, false));
+                    mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(DramaItem.createByDramaInfos(mAdapter.getItems()), holder.getAbsoluteAdapterPosition(), false));
                 });
                 return holder;
             }

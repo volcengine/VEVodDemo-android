@@ -457,8 +457,9 @@ public class PlaybackController {
         if (surface == null) return;
 
         // 1. update surface
-        player.setSurface(surface);
-
+        if (videoView.getSurface() != player.getSurface()) {
+            player.setSurface(surface);
+        }
         @Player.PlayerState final int playerState = player.getState();
 
         // 2. start play
@@ -581,7 +582,7 @@ public class PlaybackController {
                 controller.mStartOnReadyCommand.run();
             } else {
                 final Player player = controller.player();
-                if (player != null) {
+                if (player != null && player.getSurface() != surface) {
                     player.setSurface(surface);
                 }
             }

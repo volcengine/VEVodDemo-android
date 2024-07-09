@@ -19,11 +19,9 @@
 package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
 
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
@@ -35,17 +33,19 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoDebugLayer;
 import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
-import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaBottomProgressBarLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaTimeProgressDialogLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaVideoLayer;
+
+import java.lang.ref.WeakReference;
 
 public class DramaVideoViewFactory implements VideoViewFactory {
 
@@ -56,8 +56,11 @@ public class DramaVideoViewFactory implements VideoViewFactory {
 
     private final Type type;
 
-    public DramaVideoViewFactory(Type type) {
+    private final WeakReference<ShortVideoPageView> mPageViewRef;
+
+    public DramaVideoViewFactory(Type type, ShortVideoPageView pageView) {
         this.type = type;
+        this.mPageViewRef = new WeakReference<>(pageView);
     }
 
     @Override
@@ -85,6 +88,7 @@ public class DramaVideoViewFactory implements VideoViewFactory {
         layerHost.addLayer(new PlayErrorLayer());
         if (VideoSettings.booleanValue(VideoSettings.DEBUG_ENABLE_LOG_LAYER)) {
             layerHost.addLayer(new LogLayer());
+            layerHost.addLayer(new ShortVideoDebugLayer(mPageViewRef));
         }
         layerHost.attachToVideoView(videoView);
         videoView.setBackgroundColor(parent.getResources().getColor(android.R.color.black));

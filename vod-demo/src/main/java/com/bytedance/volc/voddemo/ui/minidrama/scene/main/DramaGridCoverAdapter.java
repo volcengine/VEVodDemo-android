@@ -67,6 +67,10 @@ public class DramaGridCoverAdapter extends RecyclerView.Adapter<DramaGridCoverAd
         }
     }
 
+    public List<DramaInfo> getItems() {
+        return mItems;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

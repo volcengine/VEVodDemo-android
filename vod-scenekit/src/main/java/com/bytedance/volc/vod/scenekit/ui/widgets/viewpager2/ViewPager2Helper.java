@@ -36,6 +36,7 @@ public class ViewPager2Helper {
         if (recyclerView == null) return;
         recyclerView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING);
         recyclerView.setItemAnimator(null);
+        recyclerView.setHasFixedSize(true);
     }
 
     @Nullable
