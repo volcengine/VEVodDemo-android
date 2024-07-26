@@ -276,7 +276,9 @@ public class VideoItem extends ExtraObject implements Serializable {
         List<MediaSource> sources = new ArrayList<>();
         if (videoItems != null) {
             for (VideoItem videoItem : videoItems) {
-                sources.add(VideoItem.toMediaSource(videoItem));
+                if (videoItem.sourceType != VideoItem.SOURCE_TYPE_EMPTY) {
+                    sources.add(VideoItem.toMediaSource(videoItem));
+                }
             }
         }
         return sources;
