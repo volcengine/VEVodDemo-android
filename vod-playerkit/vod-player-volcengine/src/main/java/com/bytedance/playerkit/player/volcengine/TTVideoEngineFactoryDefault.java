@@ -62,6 +62,8 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEBUG_UI_NOTIFY, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_INT_ENABLE_ERROR_THROW_OPTIMIZE, 1);
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_GET_POSITION_SKIP_LOOPER, 1);
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
 
         if (volcConfig.codecStrategyType == VolcConfig.CODEC_STRATEGY_DISABLE) {
             switch (volcConfig.playerDecoderType) {
@@ -78,10 +80,10 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
                         player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_H264);
                         break;
                     case Track.ENCODER_TYPE_H265:
-                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h265);
+                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, "h265");
                         break;
                     case Track.ENCODER_TYPE_H266:
-                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, TTVideoEngine.CODEC_TYPE_h266);
+                        player.setStringOption(TTVideoEngine.PLAYER_OPTION_STRING_SET_VIDEO_CODEC_TYPE, "h266");
                         break;
                 }
             }
@@ -112,8 +114,6 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_END, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_LASTFRAME, 1);
         }
-
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
 
         if (volcConfig.enableECDN &&
                 VolcConfigGlobal.ENABLE_ECDN &&

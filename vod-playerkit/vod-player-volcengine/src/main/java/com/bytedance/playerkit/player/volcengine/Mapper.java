@@ -286,6 +286,7 @@ public class Mapper {
         mediaSource.setMediaProtocol(videoModelFormat2MediaSourceMediaProtocol(videoModel));
         mediaSource.setSegmentType(dynamicType2SegmentType(videoModel.getDynamicType()));
         mediaSource.setSupportABR(videoModel.getVideoRefBool(VideoRef.VALUE_VIDEO_REF_ENABLE_ADAPTIVE));
+        mediaSource.setMediaType(videoModelMediaTypeInt2MediaType(videoModel.getVideoRefInt(VideoRef.VALUE_VIDEO_REF_MEDIA_TYPE)));
         if (mediaSource.getTracks() == null) {
             mediaSource.setTracks(videoInfoList2TrackList(videoModel));
         }
@@ -302,6 +303,26 @@ public class Mapper {
         if (videoTrack != null) {
             mediaSource.setDisplayAspectRatio(calTrackDisplayAspectRatio(videoTrack));
         }
+    }
+
+
+    private static int mediaType2VideoModelMediaTypeInt(int mediaType) {
+        switch (mediaType) {
+            case MediaSource.MEDIA_TYPE_VIDEO:
+                return VideoRef.TYPE_VIDEO;
+            case MediaSource.MEDIA_TYPE_AUDIO:
+                return VideoRef.TYPE_AUDIO;
+        }
+        return VideoRef.TYPE_VIDEO;
+    }
+
+    private static int videoModelMediaTypeInt2MediaType(int videoModelMediaType) {
+        if (videoModelMediaType == VideoRef.TYPE_VIDEO) {
+            return MediaSource.MEDIA_TYPE_VIDEO;
+        } else if (videoModelMediaType == VideoRef.TYPE_AUDIO) {
+            return MediaSource.MEDIA_TYPE_AUDIO;
+        }
+        return MediaSource.MEDIA_TYPE_VIDEO;
     }
 
     public static int calTrackDisplayAspectRatio(Track track) {
@@ -382,14 +403,17 @@ public class Mapper {
         throw new IllegalArgumentException("unsupported format " + format);
     }
 
-    private static int videoModelEncodeType2TrackEncodeType(String encodeType) {
+    static final String TTVideoEngineCodecH264 = "H264"; // Source.EncodeType.H264;
+    static final String TTVideoEngineCodecH265 = "h265"; // Source.EncodeType.h265;
+    static final String TTVideoEngineCodecH266 = "h266"; // Source.EncodeType.h266;
+    public static int videoModelEncodeType2TrackEncodeType(String encodeType) {
         if (encodeType != null) {
             switch (encodeType) {
-                case Source.EncodeType.H264:
+                case TTVideoEngineCodecH264:
                     return Track.ENCODER_TYPE_H264;
-                case Source.EncodeType.h265:
+                case TTVideoEngineCodecH265:
                     return Track.ENCODER_TYPE_H265;
-                case Source.EncodeType.h266:
+                case TTVideoEngineCodecH266:
                     return Track.ENCODER_TYPE_H266;
             }
         }
@@ -397,14 +421,14 @@ public class Mapper {
     }
 
     @Nullable
-    private static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
+    public static String trackEncodeType2VideoModelEncodeType(@Track.EncoderType int encoderType) {
         switch (encoderType) {
             case Track.ENCODER_TYPE_H264:
-                return Source.EncodeType.H264;
+                return TTVideoEngineCodecH264;
             case Track.ENCODER_TYPE_H265:
-                return Source.EncodeType.h265;
+                return TTVideoEngineCodecH265;
             case Track.ENCODER_TYPE_H266:
-                return Source.EncodeType.h266;
+                return TTVideoEngineCodecH266;
         }
         return null;
     }

@@ -211,6 +211,9 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public void setSurface(final Surface surface) {
+        if (mSurface == null) {
+            mSurface = mPlayer.getSurface();
+        }
         if (mSurface != surface) {
             mPlayer.setSurface(surface);
             mSurface = surface;

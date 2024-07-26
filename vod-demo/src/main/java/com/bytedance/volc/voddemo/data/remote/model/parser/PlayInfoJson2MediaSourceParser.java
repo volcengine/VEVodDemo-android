@@ -107,7 +107,7 @@ public class PlayInfoJson2MediaSourceParser implements Parser<MediaSource> {
 
         track.setQuality(Mapper.definition2Quality(trackType, playInfo.optString(trackType == Track.TRACK_TYPE_AUDIO ? "Quality" : "Definition"))); // must set if using {@link com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.QualitySelectDialogLayer}
         track.setFormat(format2Format(playInfo.optString("Format"))); // must set for (dash or smooth track switching streaming)
-        track.setEncoderType(encoderType2EncoderType(playInfo.optString("Codec"))); // must set for (dash or smooth track switching streaming)
+        track.setEncoderType(Mapper.videoModelEncodeType2TrackEncodeType(playInfo.optString("Codec"))); // must set for (dash or smooth track switching streaming)
 
         // LogoType // optional
 
@@ -133,20 +133,6 @@ public class PlayInfoJson2MediaSourceParser implements Parser<MediaSource> {
         float duration = Numbers.safeParseFloat(result.optString("Duration"), 0f); // optional set
         track.setDuration((long) (duration * 1000));
         return track;
-    }
-
-    public static int encoderType2EncoderType(String encoderType) {
-        if (encoderType != null) {
-            switch (encoderType) {
-                case "h264":
-                    return Track.ENCODER_TYPE_H264;
-                case "h265":
-                    return Track.ENCODER_TYPE_H265;
-                case "h266":
-                    return Track.ENCODER_TYPE_H266;
-            }
-        }
-        return Track.ENCODER_TYPE_H264;
     }
 
     public static int format2Format(String format) {
