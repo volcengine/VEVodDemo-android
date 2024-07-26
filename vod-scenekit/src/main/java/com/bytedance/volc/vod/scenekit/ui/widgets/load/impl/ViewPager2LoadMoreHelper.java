@@ -43,7 +43,7 @@ public class ViewPager2LoadMoreHelper implements LoadMoreAble {
                 if (adapter == null) return;
 
                 final int count = adapter.getItemCount();
-                if (position == count - 2 && !isLoadingMore()) {
+                if (count - position <= 5 && !isLoadingMore()) {
                     if (mOnLoadMoreListener != null) {
                         mOnLoadMoreListener.onLoadMore();
                     }
