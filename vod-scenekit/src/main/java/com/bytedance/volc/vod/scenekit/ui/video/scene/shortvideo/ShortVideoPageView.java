@@ -263,6 +263,11 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     }
 
     private void togglePlayback(int currentPosition) {
+        if (!mLifeCycle.getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+            L.d(this, "togglePlayback", currentPosition, "returned",
+                    L.string(mLifeCycle.getCurrentState()));
+            return;
+        }
         final VideoItem videoItem = mShortVideoAdapter.getItem(currentPosition);
         final VideoView videoView = findVideoViewByPosition(mViewPager, currentPosition);
         L.d(this, "togglePlayback", currentPosition, videoView, VideoItem.dump(videoItem));
