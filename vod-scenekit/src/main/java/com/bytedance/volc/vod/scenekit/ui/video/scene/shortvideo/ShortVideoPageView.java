@@ -18,6 +18,8 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo;
 
+import static com.bytedance.volc.vod.scenekit.VideoSettings.booleanValue;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -35,6 +37,7 @@ import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
@@ -72,6 +75,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
 
         mViewPager = new ViewPager2(context);
         ViewPager2Helper.setup(mViewPager);
+
         mViewPager.setOffscreenPageLimit(1);
         mViewPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
         mShortVideoAdapter = new MultiTypeAdapter(new ShortVideoViewHolderFactory() {
@@ -90,14 +94,6 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
             public void onPageSelected(ViewPager2 pager, int position) {
                 super.onPageSelected(pager, position);
                 togglePlayback(position, ADAPTER_BINDING_DATA_DELAY_RETRY_MAX_COUNT);
-            }
-
-            @Override
-            public void onPagePeekStart(ViewPager2 pager, int position, int peekPosition) {
-                super.onPagePeekStart(pager, position, peekPosition);
-                final ViewHolder holder = findItemViewHolderByPosition(pager, peekPosition);
-                if (holder == null) return;
-                holder.executeAction(ViewHolderAction.ACTION_VIEW_PAGER_ON_PAGE_PEEK_START, new Object[]{pager, position, peekPosition});
             }
         });
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,
