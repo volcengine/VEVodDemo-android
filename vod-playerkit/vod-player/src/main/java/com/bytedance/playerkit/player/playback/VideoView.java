@@ -171,6 +171,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
                 }
             }
         });
+        L.d(this, "construction");
     }
 
     @Override

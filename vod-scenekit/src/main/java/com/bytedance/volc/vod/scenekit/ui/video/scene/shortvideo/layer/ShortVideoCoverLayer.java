@@ -18,32 +18,40 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer;
 
+
+import static com.bytedance.playerkit.player.playback.DisplayModeHelper.calDisplayAspectRatio;
+import static com.bytedance.volc.vod.scenekit.VideoSettings.booleanValue;
+
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
+import com.bytedance.playerkit.player.event.ActionSetSurface;
+import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.volcengine.VolcPreRenderSurfaceHolder;
+import com.bytedance.playerkit.player.volcengine.VolcPreRenderSurfaceHolder.PreRenderListener;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
-import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
-import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoStrategy;
 
 public class ShortVideoCoverLayer extends CoverLayer {
-
     /**
      * 针对续播场景优化向上翻页封面体验
      */
     private final boolean mSyncStartProgress;
 
+    private final VolcPreRenderSurfaceHolder mPreRenderSurfaceHolder;
+
     public ShortVideoCoverLayer(boolean syncStartProgress) {
         this.mSyncStartProgress = syncStartProgress;
+        this. mPreRenderSurfaceHolder = new VolcPreRenderSurfaceHolder();
     }
 
     @Override
@@ -52,8 +60,39 @@ public class ShortVideoCoverLayer extends CoverLayer {
     }
 
     @Override
+    public void onVideoViewBindDataSource(MediaSource dataSource) {
+        super.onVideoViewBindDataSource(dataSource);
+        mPreRenderSurfaceHolder.onVideoViewBindDataSource(dataSource);
+    }
+
+    @Override
+    public void onSurfaceAvailable(Surface surface, int width, int height) {
+        L.d(this, "onSurfaceAvailable", MediaSource.dump(dataSource()), surface, width, height);
+        mPreRenderSurfaceHolder.onSurfaceAvailable(surface, width, height);
+    }
+
+    @Override
+    public void onSurfaceDestroy(Surface surface) {
+        L.d(this, "onSurfaceDestroy", MediaSource.dump(dataSource()), surface);
+        show();
+        mPreRenderSurfaceHolder.onSurfaceDestroyed(surface);
+    }
+
+    @Override
+    protected void onBindVideoView(@NonNull VideoView videoView) {
+        super.onBindVideoView(videoView);
+        mPreRenderSurfaceHolder.setPreRenderListener(mPreRenderListener);
+    }
+
+    @Override
+    protected void onUnBindVideoView(@NonNull VideoView videoView) {
+        super.onUnBindVideoView(videoView);
+        mPreRenderSurfaceHolder.setPreRenderListener(null);
+    }
+
+    @Override
     protected void load() {
-        if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_IMAGE_COVER)) return;
+        if (!booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_IMAGE_COVER)) return;
 
         super.load();
     }
@@ -82,8 +121,9 @@ public class ShortVideoCoverLayer extends CoverLayer {
         public void onEvent(Event event) {
             switch (event.code()) {
                 case PlayerEvent.Action.SET_SURFACE: {
-                    Player player = player();
-                    if (player != null && player.isInPlaybackState()) {
+                    final ActionSetSurface e = event.cast(ActionSetSurface.class);
+                    final Player player = player();
+                    if (player != null && player.getSurface() != e.surface && player.isInPlaybackState()) {
                         dismiss();
                     }
                     break;
@@ -96,36 +136,36 @@ public class ShortVideoCoverLayer extends CoverLayer {
         }
     };
 
-    @Override
-    public void onSurfaceDestroy(Surface surface) {
-        L.d(this, "onSurfaceDestroy", surface);
-        show();
-    }
-
-    @Override
-    protected void handleEvent(int code, @Nullable Object obj) {
-        super.handleEvent(code, obj);
-        if (code == Layers.Event.VIEW_PAGER_ON_PAGE_PEEK_START.ordinal()) {
-            startPreRenderCover("ViewPager#onPagePeekStart");
-        }
-    }
-
-    public void startPreRenderCover(String reason) {
-        final VideoView videoView = videoView();
-        if (videoView == null) return;
-
-        if (videoView.getSurface() == null || !videoView.getSurface().isValid()) return;
-
-        if (player() != null) {
-            return;
+    private final PreRenderListener mPreRenderListener = new PreRenderListener() {
+        @Override
+        public void onPreRenderVideoSizeChanged(MediaSource mediaSource, int videoWidth, int videoHeight) {
+            final VideoView videoView = videoView();
+            if (videoView == null) return;
+            videoView.setDisplayAspectRatio(calDisplayAspectRatio(videoWidth, videoHeight, 0));
         }
 
-        final boolean rendered = ShortVideoStrategy.renderFrame(videoView);
-        if (rendered) {
-            L.d(this, "startPreRenderCover", reason, videoView, videoView.getSurface(), "preRender success");
-            dismiss();
-        } else {
-            L.d(this, "startPreRenderCover", reason, videoView, videoView.getSurface(), "preRender failed");
+        @Override
+        public void onPreRenderFirstFrame(MediaSource mediaSource, int videoWidth, int videoHeight) {
+            final VideoView videoView = videoView();
+            if (videoView == null) return;
+
+            L.d(ShortVideoCoverLayer.this, "onPreRenderFirstFrame", MediaSource.dump(mediaSource), videoWidth, videoHeight);
+
+            videoView.setDisplayAspectRatio(calDisplayAspectRatio(videoWidth, videoHeight, 0));
+
+            if (videoView.getDisplayViewType() == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
+                dismiss();
+            }
         }
-    }
+
+        @Override
+        public void onPreRenderEndError(MediaSource mediaSource, int errorCode) {
+            L.d(ShortVideoCoverLayer.this, "onPreRenderEndError", MediaSource.dump(mediaSource), errorCode);
+        }
+
+        @Override
+        public void onPreRenderEndRelease(MediaSource mediaSource) {
+            L.d(ShortVideoCoverLayer.this, "onPreRenderEndRelease", MediaSource.dump(mediaSource));
+        }
+    };
 }

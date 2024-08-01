@@ -244,7 +244,7 @@ public class VideoSettings {
                         CATEGORY_INIT,
                         INIT_ENABLE_LOGCAT,
                         "开启 Logcat 输出",
-                        Option.STRATEGY_IMMEDIATELY,
+                        Option.STRATEGY_RESTART_APP,
                         Boolean.class,
                         Boolean.TRUE,
                         null)));
@@ -254,7 +254,7 @@ public class VideoSettings {
                         CATEGORY_INIT,
                         INIT_ENABLE_ASSERTS,
                         "开启 Debug 断言",
-                        Option.STRATEGY_IMMEDIATELY,
+                        Option.STRATEGY_RESTART_APP,
                         Boolean.class,
                         Boolean.TRUE,
                         null)));

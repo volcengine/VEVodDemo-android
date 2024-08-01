@@ -18,8 +18,6 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo;
 
-import com.bytedance.playerkit.player.playback.DisplayModeHelper;
-import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.volcengine.VolcEngineStrategy;
 import com.bytedance.playerkit.player.volcengine.VolcScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
@@ -53,21 +51,4 @@ public class ShortVideoStrategy {
         final List<VideoItem> videoItems = VideoItem.findVideoItems(items);
         VolcEngineStrategy.addMediaSourcesAsync(() -> VideoItem.toMediaSources(videoItems));
     }
-
-    public static boolean renderFrame(VideoView videoView) {
-        if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_STRATEGY)) return false;
-        if (videoView == null) return false;
-
-        int[] frameInfo = new int[2];
-        VolcEngineStrategy.renderFrame(videoView.getDataSource(), videoView.getSurface(), frameInfo);
-        int videoWidth = frameInfo[0];
-        int videoHeight = frameInfo[1];
-        if (videoWidth > 0 && videoHeight > 0) {
-            videoView.setDisplayAspectRatio(DisplayModeHelper.calDisplayAspectRatio(videoWidth, videoHeight, 0));
-            return true;
-        }
-        return false;
-    }
-
-
 }

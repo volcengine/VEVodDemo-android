@@ -214,6 +214,7 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public void setSurface(final Surface surface) {
+        final boolean refreshSurface = mSurface != null;
         if (mSurface == null) {
             mSurface = mPlayer.getSurface();
         }
@@ -221,7 +222,7 @@ class VolcPlayer implements PlayerAdapter {
             mPlayer.setSurface(surface);
             mSurface = surface;
             mSurfaceHolder = null;
-        } else if (surface != null) {
+        } else if (surface != null && refreshSurface) {
             refreshSurface();
         }
     }
@@ -367,7 +368,6 @@ class VolcPlayer implements PlayerAdapter {
 
             final TTVideoEngine player = mPlayer;
             bind(player);
-            player.setSurface(mSurface);
             player.setStartTime(mPlaybackTimeWhenChangeAVTrack > 0 ? (int) mPlaybackTimeWhenChangeAVTrack : 0);
             prepareDirectUrl(mediaSource, track, !mPausedWhenChangeAVTrack);
         }

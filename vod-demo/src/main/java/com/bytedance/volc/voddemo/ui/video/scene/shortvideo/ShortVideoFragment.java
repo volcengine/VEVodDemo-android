@@ -252,6 +252,9 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     private void loadMore() {
+        if (mSceneView.isRefreshing()) {
+            return;
+        }
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());

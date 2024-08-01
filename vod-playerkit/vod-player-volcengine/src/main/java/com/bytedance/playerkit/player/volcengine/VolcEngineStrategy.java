@@ -62,6 +62,7 @@ public class VolcEngineStrategy {
     static void init() {
         if (!VolcConfigGlobal.ENABLE_SCENE_STRATEGY_INIT) return;
         // preRender
+        StrategyManager.instance().enablePreRenderSurfaceHolder(true);
         StrategyManager.instance().enableReleasePreRenderEngineInstanceByLRU(true);
         TTVideoEngine.setEngineStrategyListener(new EngineStrategyListener() {
             @Override
@@ -245,6 +246,10 @@ public class VolcEngineStrategy {
             if (strategySources == null) return;
             TTVideoEngine.addStrategySources(strategySources);
         });
+    }
+
+    public static void preload(int index) {
+        StrategyManager.instance().preload(index);
     }
 
     @Nullable

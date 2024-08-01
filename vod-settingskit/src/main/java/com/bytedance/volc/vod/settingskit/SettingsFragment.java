@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -50,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SettingsFragment extends Fragment {
-
     private Adapter mAdapter;
     private RecyclerView mRecyclerView;
     private List<SettingItem> mItems;
@@ -132,13 +132,40 @@ public class SettingsFragment extends Fragment {
                 .show();
     }
 
+    private static void showRestartAppTakeEffectDialog(Context context, String title, String text) {
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setCancelable(false)
+                .setMessage(text)
+                .setPositiveButton("确定", (dialog, which) -> {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.exit(0);
+                        }
+                    }, 1000);
+                })
+                .setNegativeButton("稍后", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
     private void resetOptions() {
+        boolean needRestartApp = false;
         for (SettingItem settingItem : mItems) {
             if (settingItem.type == SettingItem.TYPE_OPTION) {
                 settingItem.option.userValues().saveValue(settingItem.option, null);
+                if (settingItem.option.strategy == Option.STRATEGY_RESTART_APP) {
+                    needRestartApp = true;
+                }
             }
         }
         mAdapter.notifyDataSetChanged();
+
+        if (needRestartApp) {
+            showRestartAppTakeEffectDialog(requireActivity(), "选项已重置", "重新启动 App 生效");
+        }
     }
 
     private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -296,6 +323,9 @@ public class SettingsFragment extends Fragment {
                 switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (item.option.strategy == Option.STRATEGY_RESTART_APP) {
+                            showRestartAppTakeEffectDialog(buttonView.getContext(), item.option.title, value + " -> " + isChecked + ". 重新启动 App 生效");
+                        }
                         item.option.userValues().saveValue(item.option, isChecked);
                         if (item.listener != null) {
                             item.listener.onEvent(SettingItem.OnEventListener.EVENT_TYPE_RATIO_ITEM_ON_CHECKED_CHANGED, switchView.getContext(), item, RatioButtonViewHolder.this);
