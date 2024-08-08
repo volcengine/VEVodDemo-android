@@ -329,7 +329,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
                             calDisplayAspectRatio(
                                     player.getVideoWidth(),
                                     player.getVideoHeight(),
-                                    player.getVideoSampleAspectRatio()));
+                                    0));
                 } else {
                     MediaSource source = player.getDataSource();
                     if (source != null && source.getDisplayAspectRatio() > 0) {
@@ -346,7 +346,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
                         calDisplayAspectRatio(
                                 player.getVideoWidth(),
                                 player.getVideoHeight(),
-                                player.getVideoSampleAspectRatio()));
+                                0));
                 break;
             }
             case PlayerEvent.Info.TRACK_INFO_READY: {

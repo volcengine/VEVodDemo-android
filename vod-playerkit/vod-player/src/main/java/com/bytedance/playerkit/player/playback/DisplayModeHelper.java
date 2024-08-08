@@ -193,14 +193,14 @@ public class DisplayModeHelper {
     }
 
     public static float calDisplayAspectRatio(int videoWidth, int videoHeight, float sampleAspectRatio) {
-        float ratio = calRatio(videoWidth, videoHeight);
+        float pixelAspectRatioRatio = calPixelAspectRatio(videoWidth, videoHeight);
         if (sampleAspectRatio > 0) {
-            return ratio * sampleAspectRatio;
+            return pixelAspectRatioRatio * sampleAspectRatio;
         }
-        return ratio;
+        return pixelAspectRatioRatio;
     }
 
-    private static float calRatio(int videoWidth, int videoHeight) {
+    public static float calPixelAspectRatio(int videoWidth, int videoHeight) {
         if (videoWidth > 0 && videoHeight > 0) {
             return videoWidth / (float) videoHeight;
         }

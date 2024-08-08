@@ -134,6 +134,7 @@ class VolcPlayer implements PlayerAdapter {
         boolean mSubtitleEnabled;
         int mVideoWidth;
         int mVideoHeight;
+        float mSampleAspectRatio;
         Exception mPlayerException;
 
         synchronized static EngineParams get(TTVideoEngine engine) {
@@ -1423,7 +1424,7 @@ class VolcPlayer implements PlayerAdapter {
 
             player.setState(Player.STATE_PREPARED);
             final String enginePlayerType = VolcEditions.dumpEngineCoreType(engine);
-            L.d(player, "onPrepared", engine, enginePlayerType);
+            L.d(player, "onPrepared", engine, enginePlayerType, engine.getVideoWidth() + "x" + engine.getVideoHeight());
 
             player.stopCheckBufferingTimeout();
 
@@ -1554,9 +1555,16 @@ class VolcPlayer implements PlayerAdapter {
             Listener listener = player.mListener;
             if (listener == null) return;
 
-            EngineParams params = EngineParams.get(player.mPlayer);
-            params.mVideoWidth = width;
-            params.mVideoHeight = height;
+            final EngineParams params = EngineParams.get(player.mPlayer);
+            if (params.mSampleAspectRatio == 0) {
+                params.mVideoWidth = width;
+                params.mVideoHeight = height;
+            } else {
+                // Fixed width mode keep same the TTVideoEngine#getVideoWidth/getVideoHeight logic
+                params.mVideoWidth = width;
+                params.mVideoHeight = (int) (height / params.mSampleAspectRatio);
+            }
+            L.d(player, "onVideoSizeChanged",width +"x" + height, params.mSampleAspectRatio , params.mVideoWidth + "x" + params.mVideoHeight);
 
             listener.onVideoSizeChanged(player, width, height);
         }
@@ -1567,6 +1575,9 @@ class VolcPlayer implements PlayerAdapter {
             if (player == null) return;
             Listener listener = player.mListener;
             if (listener == null) return;
+
+            EngineParams params = EngineParams.get(player.mPlayer);
+            params.mSampleAspectRatio = num / (float) den;
 
             listener.onSARChanged(player, num, den);
         }
