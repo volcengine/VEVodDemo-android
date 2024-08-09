@@ -21,8 +21,6 @@ package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
 
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.EXTRA_INPUT;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.EXTRA_OUTPUT;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaVideoLayer.ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG;
 import static com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodePayDialogFragment.ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED;
 import static com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodeSelectDialogFragment.ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK;
@@ -111,14 +109,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
                 case ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG:
                     showEpisodePayDialog(EpisodeVideo.get(mSceneView.pageView().getCurrentItemModel()));
                     break;
-                case ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED: {
-                    mSpeedIndicator.showSpeedIndicator(true);
-                    break;
-                }
-                case ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED: {
-                    mSpeedIndicator.showSpeedIndicator(false);
-                    break;
-                }
             }
         }
     };
@@ -234,12 +224,17 @@ public class DramaDetailVideoFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mSpeedIndicator = new SpeedIndicatorViewHolder(view);
+
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
         mSceneView.pageView().setLifeCycle(getLifecycle());
         mSceneView.setRefreshEnabled(false);
         mSceneView.setLoadMoreEnabled(true);
         mSceneView.setOnLoadMoreListener(this::load);
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.DETAIL, mSceneView.pageView()));
+        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(
+                DramaVideoViewFactory.Type.DETAIL,
+                mSceneView.pageView(),
+                mSpeedIndicator));
         mSceneView.pageView().addPlaybackListener(event -> {
             if (event.code() == PlayerEvent.State.COMPLETED) {
                 onPlayerStateCompleted(event);
@@ -284,9 +279,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
             DramaItem dramaItem = mDramaItems.get(mCurrentDramaIndex);
             showEpisodeSelectDialog(dramaItem);
         });
-
-        mSpeedIndicator = new SpeedIndicatorViewHolder(view);
-
         initData();
     }
 
@@ -317,8 +309,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK);
             filter.addAction(ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED);
-            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED);
-            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED);
             filter.addAction(ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG);
             LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
             mRegistered = true;

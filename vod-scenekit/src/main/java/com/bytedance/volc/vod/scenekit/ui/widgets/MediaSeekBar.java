@@ -121,7 +121,10 @@ public class MediaSeekBar extends RelativeLayout {
 
     public void setCurrentPosition(long currentPosition) {
         if (!mTouchSeeking) {
-            final int progress = (int) (currentPosition / (float) mDuration * seekBar.getMax());
+            int progress = 0;
+            if (mDuration > 0) {
+                progress = (int) (currentPosition / (float) mDuration * seekBar.getMax());
+            }
             seekBar.setProgress(progress);
         }
     }

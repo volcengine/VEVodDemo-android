@@ -18,8 +18,6 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.layer;
 
-import static com.bytedance.volc.vod.scenekit.ui.video.layer.Layers.VisibilityRequestReason.REQUEST_DISMISS_REASON_DIALOG_SHOW;
-
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -117,16 +115,10 @@ public class LogLayer extends BaseLayer {
 
     @Override
     public void requestDismiss(@NonNull String reason) {
-        if (!TextUtils.equals(reason, REQUEST_DISMISS_REASON_DIALOG_SHOW)) {
-            super.requestDismiss(reason);
-        }
     }
 
     @Override
     public void requestHide(@NonNull String reason) {
-        if (!TextUtils.equals(reason, REQUEST_DISMISS_REASON_DIALOG_SHOW)) {
-            super.requestHide(reason);
-        }
     }
 
     @Override

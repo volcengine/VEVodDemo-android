@@ -58,9 +58,12 @@ public class DramaVideoViewFactory implements VideoViewFactory {
 
     private final WeakReference<ShortVideoPageView> mPageViewRef;
 
-    public DramaVideoViewFactory(Type type, ShortVideoPageView pageView) {
+    private final WeakReference<DramaGestureLayer.DramaGestureContract> mGestureContractRef;
+
+    public DramaVideoViewFactory(Type type, ShortVideoPageView pageView, DramaGestureLayer.DramaGestureContract gestureContract) {
         this.type = type;
         this.mPageViewRef = new WeakReference<>(pageView);
+        this.mGestureContractRef = new WeakReference<>(gestureContract);
     }
 
     @Override
@@ -78,7 +81,7 @@ public class DramaVideoViewFactory implements VideoViewFactory {
         parent.addView(seekBar, lp1);
 
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
-        layerHost.addLayer(new DramaGestureLayer());
+        layerHost.addLayer(new DramaGestureLayer(mGestureContractRef));
         layerHost.addLayer(new ShortVideoCoverLayer());
         layerHost.addLayer(new DramaVideoLayer(type));
         layerHost.addLayer(new LoadingLayer());

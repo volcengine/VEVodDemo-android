@@ -148,6 +148,9 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
             switch (event.code()) {
                 case PlaybackEvent.Action.START_PLAYBACK:
                     show();
+                    if (player() == null) {
+                        setProgress(0, 0, 0);
+                    }
                     break;
                 case PlaybackEvent.State.BIND_PLAYER:
                     if (player() != null) {
@@ -212,7 +215,6 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
             }
         }
     }
-
 
     private void dismissTimeProgressDialog() {
         final VideoLayerHost layerHost = layerHost();

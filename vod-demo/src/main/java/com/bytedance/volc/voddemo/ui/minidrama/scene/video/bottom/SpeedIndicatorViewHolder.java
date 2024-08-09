@@ -32,11 +32,12 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer;
 
 import java.io.IOException;
 import java.util.Locale;
 
-public class SpeedIndicatorViewHolder {
+public class SpeedIndicatorViewHolder implements DramaGestureLayer.DramaGestureContract {
     private final ShortVideoSceneView mSceneView;
     private final View mSpeedIndicatorView;
     private final TextView mSpeedDescView;
@@ -50,6 +51,12 @@ public class SpeedIndicatorViewHolder {
         showSpeedIndicator(false);
     }
 
+    @Override
+    public boolean isSpeedIndicatorShowing() {
+        return mSpeedIndicatorView.getVisibility() == View.VISIBLE;
+    }
+
+    @Override
     public void showSpeedIndicator(boolean show) {
         if (show) {
             VideoView videoView = mSceneView.pageView().getCurrentItemVideoView();

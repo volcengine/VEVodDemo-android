@@ -18,8 +18,6 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
 
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer.ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -78,16 +76,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
                     onPlayMoreCardClick();
                     break;
                 }
-                case ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED: {
-                    mSpeedIndicator.showSpeedIndicator(true);
-                    break;
-                }
-                case ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED: {
-                    mSpeedIndicator.showSpeedIndicator(false);
-                    break;
-                }
             }
-
         }
     };
 
@@ -163,9 +152,12 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mSpeedIndicator = new SpeedIndicatorViewHolder(view);
+        mSpeedIndicator.showSpeedIndicator(false);
+
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
         mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.RECOMMEND, mSceneView.pageView()));
+        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.RECOMMEND, mSceneView.pageView(), mSpeedIndicator));
         mSceneView.pageView().addPlaybackListener(event -> {
             if (event.code() == PlayerEvent.State.COMPLETED) {
                 onPlayerStateCompleted(event);
@@ -173,10 +165,6 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         });
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
-
-        mSpeedIndicator = new SpeedIndicatorViewHolder(view);
-        mSpeedIndicator.showSpeedIndicator(false);
-
         refresh();
     }
 
@@ -186,8 +174,6 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         if (!mRegistered) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_PLAY_MORE_CLICK);
-            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_SHOW_SPEED);
-            filter.addAction(ACTION_DRAMA_GESTURE_LAYER_DISMISS_SPEED);
             LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
             mRegistered = true;
         }
