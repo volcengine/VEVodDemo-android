@@ -44,4 +44,8 @@
     <string name="vevod_mini_drama_video_layer_bottom_desc">第%d集 | %s</string>
     <string name="vevod_mini_drama_episode_select_dialog_title_desc">全%d集｜29.3w</string>
     <string name="vevod_video_bottom_bar_card_speed_desc">%.1fx 播放中</string>
+    <string name="vevod_mini_drama_play_next_drama_hint">本剧已看完，播放下一部：</string>
+    <string name="vevod_mini_drama_paying">支付中...</string>
+    <string name="vevod_mini_drama_pay_success_start_playback">支付成功，开始播放</string>
+    <string name="vevod_mini_drama_unlock_operation_error">解锁操作失败！</string>
 </resources>

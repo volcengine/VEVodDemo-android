@@ -116,7 +116,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     private void goPay() {
         if (mEpisode == null) return;
         L.d(this, "pay", mEpisode);
-        Toast.makeText(requireActivity(), "支付中...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireActivity(), R.string.vevod_mini_drama_paying, Toast.LENGTH_SHORT).show();
 
         // TODO remove mock code
         MockThirdPartPayService.requestPay(mEpisode, () -> {
@@ -158,14 +158,14 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
 
     private void onPaySuccess(EpisodeVideo lockedEpisode, EpisodeVideo unlockedEpisode) {
         L.d(this, "onPaySuccess", lockedEpisode, unlockedEpisode, unlockedEpisode.vid, unlockedEpisode.playAuthToken, unlockedEpisode.videoModel);
-        Toast.makeText(requireActivity(), "支付成功，开始播放", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireActivity(), R.string.vevod_mini_drama_pay_success_start_playback, Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED);
         intent.putExtra(EXTRA_EPISODE_VIDEO, unlockedEpisode);
         LocalBroadcastManager.getInstance(requireActivity()).sendBroadcast(intent);
     }
 
     private void onPayError(EpisodeVideo lockedEpisode, Exception e) {
-        Toast.makeText(requireActivity(), "Unlock Operation Error! " + e.toString(), Toast.LENGTH_LONG).show();
+        Toast.makeText(requireActivity(), getString(R.string.vevod_mini_drama_unlock_operation_error) + e.toString(), Toast.LENGTH_LONG).show();
         L.e(this, "onPayError", lockedEpisode, e.getMessage());
     }
 }

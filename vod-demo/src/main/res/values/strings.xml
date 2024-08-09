@@ -47,5 +47,9 @@
     <string name="vevod_mini_drama_video_layer_bottom_desc">Episode %d | %s</string>
     <string name="vevod_mini_drama_episode_select_dialog_title_desc">Total %d episodes｜29.3w</string>
     <string name="vevod_video_bottom_bar_card_speed_desc">%.1fx Playing</string>
+    <string name="vevod_mini_drama_play_next_drama_hint">Drama finished. Watch next drama：</string>
+    <string name="vevod_mini_drama_paying">Unlocking...</string>
+    <string name="vevod_mini_drama_pay_success_start_playback">Unlock success. Start playback.</string>
+    <string name="vevod_mini_drama_unlock_operation_error">"Unlock Operation Error! "</string>
 
 </resources>

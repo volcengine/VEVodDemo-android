@@ -398,7 +398,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private void onPlayerStateCompleted(Event event) {
         final VideoItem videoItem = mSceneView.pageView().getCurrentItemModel();
         if (EpisodeVideo.isLastEpisode(EpisodeVideo.get(videoItem))) {
-            Toast.makeText(requireActivity(), "本剧已看完，播放下一部：" + EpisodeVideo.getDramaTitle(EpisodeVideo.get(videoItem)), Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireActivity(), getString(R.string.vevod_mini_drama_play_next_drama_hint) + EpisodeVideo.getDramaTitle(EpisodeVideo.get(videoItem)), Toast.LENGTH_SHORT).show();
         }
         // play next recommend
         final Player player = event.owner(Player.class);
