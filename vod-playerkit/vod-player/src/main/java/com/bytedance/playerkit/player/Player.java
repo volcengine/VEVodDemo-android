@@ -656,7 +656,7 @@ public interface Player {
      * @see #reset()
      * @see #release()
      */
-    void stop() throws IllegalStateException;
+    /* void stop() throws IllegalStateException; */ // remove method for known issue
 
     /**
      * Resets the player to {@link #STATE_IDLE} state. Call prepare() + start()  to start playback

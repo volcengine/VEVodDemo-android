@@ -87,7 +87,6 @@ public class LoadingLayer extends AnimateLayer {
                     break;
                 }
                 case PlayerEvent.Action.PAUSE:
-                case PlayerEvent.Action.STOP:
                 case PlayerEvent.Action.RELEASE: {
                     dismiss();
                     break;

@@ -390,7 +390,7 @@ public class PlaybackController {
         }
 
         if (mPlayer != null) {
-            if (mPlayer.isReleased() || mPlayer.isError()) {
+            if (mPlayer.isReleased() || mPlayer.isError() || mPlayer.isStopped()) {
                 unbindPlayer(true);
             } else if (!mPlayer.isIDLE()
                     && !mediaEquals(mPlayer.getDataSource(), viewSource)) {

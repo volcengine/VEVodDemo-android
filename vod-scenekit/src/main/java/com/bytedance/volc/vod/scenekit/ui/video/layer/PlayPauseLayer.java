@@ -160,7 +160,6 @@ public class PlayPauseLayer extends AnimateLayer {
                     syncState();
                     dismiss();
                     break;
-                case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED:
                     show();
                     break;

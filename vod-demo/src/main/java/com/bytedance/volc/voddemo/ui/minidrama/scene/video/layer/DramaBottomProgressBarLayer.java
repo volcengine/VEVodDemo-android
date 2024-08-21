@@ -168,7 +168,6 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
                     break;
                 }
                 case PlayerEvent.State.ERROR:
-                case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED: {
                     hide();
                     break;

@@ -81,6 +81,7 @@ public interface PlayerEvent {
         /**
          * @see ActionStop
          */
+        @Deprecated
         public static final int STOP = 1005;
         /**
          * @see ActionRelease
@@ -129,6 +130,7 @@ public interface PlayerEvent {
         /**
          * @see StateStopped
          */
+        @Deprecated
         public static final int STOPPED = 2006;
         /**
          * @see StateReleased

@@ -171,7 +171,6 @@ public class SimpleProgressBarLayer extends AnimateLayer {
                     break;
                 }
                 case PlayerEvent.State.ERROR:
-                case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED: {
                     dismiss();
                     break;

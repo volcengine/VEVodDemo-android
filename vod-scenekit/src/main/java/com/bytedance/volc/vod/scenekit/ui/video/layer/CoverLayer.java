@@ -119,7 +119,6 @@ public class CoverLayer extends BaseLayer {
                     }
                     break;
                 }
-                case PlayerEvent.Action.STOP:
                 case PlayerEvent.Action.RELEASE: {
                     show();
                     break;

@@ -143,7 +143,6 @@ public class PauseLayer extends AnimateLayer {
                 case PlayerEvent.Info.VIDEO_RENDERING_START:
                     animateDismiss();
                     break;
-                case PlayerEvent.Action.STOP:
                 case PlayerEvent.Action.RELEASE:
                     dismiss();
                     break;

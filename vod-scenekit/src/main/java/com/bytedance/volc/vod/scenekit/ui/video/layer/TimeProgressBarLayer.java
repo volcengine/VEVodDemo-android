@@ -412,7 +412,6 @@ public class TimeProgressBarLayer extends AnimateLayer {
                     dismiss();
                     break;
                 }
-                case PlayerEvent.State.STOPPED:
                 case PlayerEvent.State.RELEASED: {
                     dismiss();
                     break;

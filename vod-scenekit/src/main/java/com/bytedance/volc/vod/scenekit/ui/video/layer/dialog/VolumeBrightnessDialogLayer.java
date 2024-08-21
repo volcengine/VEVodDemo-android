@@ -159,7 +159,6 @@ public class VolumeBrightnessDialogLayer extends DialogLayer {
 
     private final Dispatcher.EventListener mPlaybackListener = event -> {
         switch (event.code()) {
-            case PlayerEvent.State.STOPPED:
             case PlayerEvent.State.RELEASED:
                 dismiss();
                 break;

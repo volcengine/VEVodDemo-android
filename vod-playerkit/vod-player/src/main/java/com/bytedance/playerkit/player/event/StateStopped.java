@@ -21,7 +21,7 @@ package com.bytedance.playerkit.player.event;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.utils.event.Event;
 
-
+@Deprecated
 public class StateStopped extends Event {
     public StateStopped() {
         super(PlayerEvent.State.STOPPED);

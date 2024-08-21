@@ -793,7 +793,7 @@ public class AVPlayer extends ExtraObject implements Player {
         mDispatcher.obtain(StatePaused.class, this).dispatch();
     }
 
-    @Override
+    /*@Override
     public void stop() throws IllegalStateException {
         if (checkIsRelease("stop")) return;
 
@@ -812,7 +812,7 @@ public class AVPlayer extends ExtraObject implements Player {
         }
         setState(STATE_STOPPED);
         mDispatcher.obtain(StateStopped.class, this).dispatch();
-    }
+    }*/
 
     @Override
     public void reset() {
