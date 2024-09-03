@@ -34,7 +34,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bytedance.playerkit.utils.L;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
@@ -52,7 +51,6 @@ import java.util.List;
 
 public class DramaGridCoverFragment extends BaseFragment {
     private GetDramasApi mRemoteApi;
-    private String mAccount;
     private final Book<DramaInfo> mBook = new Book<>(12);
     private SwipeRefreshLayout mRefreshLayout;
     private DramaGridCoverAdapter mAdapter;
@@ -72,7 +70,6 @@ public class DramaGridCoverFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRemoteApi = new GetDramas();
-        mAccount = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
         mAdapter = new DramaGridCoverAdapter() {
 
             @NonNull
@@ -117,13 +114,13 @@ public class DramaGridCoverFragment extends BaseFragment {
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         showRefreshing();
-        mRemoteApi.getDramas(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<DramaInfo>>() {
+        mRemoteApi.getDramas(0, mBook.pageSize(), new RemoteApi.Callback<List<DramaInfo>>() {
             @Override
-            public void onSuccess(Page<DramaInfo> page) {
+            public void onSuccess(List<DramaInfo> result) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
                 dismissRefreshing();
-                List<DramaInfo> dramas = mBook.firstPage(page);
+                List<DramaInfo> dramas = mBook.firstPage(new Page<>(result, 0, Page.TOTAL_INFINITY));
                 mAdapter.setItems(dramas);
             }
 
@@ -142,12 +139,12 @@ public class DramaGridCoverFragment extends BaseFragment {
             if (isLoadingMore()) return;
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
             showLoadingMore();
-            mRemoteApi.getDramas(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<DramaInfo>>() {
+            mRemoteApi.getDramas(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<DramaInfo>>() {
                 @Override
-                public void onSuccess(Page<DramaInfo> page) {
+                public void onSuccess(List<DramaInfo> result) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<DramaInfo> dramas = mBook.addPage(page);
+                    List<DramaInfo> dramas = mBook.addPage(new Page<>(result, mBook.nextPageIndex(), Page.TOTAL_INFINITY));
                     dismissLoadingMore();
                     mAdapter.appendItems(dramas);
                 }

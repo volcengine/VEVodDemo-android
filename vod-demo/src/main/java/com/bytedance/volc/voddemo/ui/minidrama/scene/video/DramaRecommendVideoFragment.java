@@ -39,7 +39,6 @@ import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
@@ -60,7 +59,6 @@ import java.util.List;
 public class DramaRecommendVideoFragment extends BaseFragment {
     public static final String ACTION_PLAY_MORE_CLICK = "action_play_more_click";
     private GetEpisodeRecommendApi mRemoteApi;
-    private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
     private SpeedIndicatorViewHolder mSpeedIndicator;
@@ -135,7 +133,6 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRemoteApi = new GetEpisodeRecommend();
-        mAccount = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
     }
 
     @Override
@@ -231,12 +228,12 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getRecommendEpisodeVideoItems(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+        mRemoteApi.getRecommendEpisodeVideoItems(0, mBook.pageSize(), new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
-            public void onSuccess(Page<VideoItem> page) {
+            public void onSuccess(List<EpisodeVideo> result) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(page);
+                List<VideoItem> videoItems = mBook.firstPage(new Page<>(EpisodeVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                 VideoItem.syncProgress(videoItems, true);
                 mSceneView.dismissRefreshing();
@@ -257,12 +254,12 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getRecommendEpisodeVideoItems(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+            mRemoteApi.getRecommendEpisodeVideoItems(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<EpisodeVideo>>() {
                 @Override
-                public void onSuccess(Page<VideoItem> page) {
+                public void onSuccess(List<EpisodeVideo> page) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(page);
+                    List<VideoItem> videoItems = mBook.addPage(new Page<>(EpisodeVideo.toVideoItems(page), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                     VideoItem.syncProgress(videoItems, true);
                     mSceneView.dismissLoadingMore();

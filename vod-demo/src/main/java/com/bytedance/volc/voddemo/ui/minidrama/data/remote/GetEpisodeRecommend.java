@@ -23,11 +23,8 @@ import static com.bytedance.volc.voddemo.data.remote.AppServer.dramaApi;
 import androidx.annotation.NonNull;
 
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.Params;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetEpisodeFeedStreamRequest;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetEpisodeFeedStreamResponse;
@@ -46,9 +43,9 @@ public class GetEpisodeRecommend implements GetEpisodeRecommendApi {
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void getRecommendEpisodeVideoItems(String account, int pageIndex, int pageSize, RemoteApi.Callback<Page<VideoItem>> callback) {
-        final RemoteApi.HandlerCallback<Page<VideoItem>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
-
+    public void getRecommendEpisodeVideoItems(int pageIndex, int pageSize, RemoteApi.Callback<List<EpisodeVideo>> callback) {
+        final RemoteApi.HandlerCallback<List<EpisodeVideo>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
+        final String account = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
         final GetEpisodeFeedStreamRequest request = new GetEpisodeFeedStreamRequest(
                 account,
                 pageIndex * pageSize,
@@ -77,8 +74,7 @@ public class GetEpisodeRecommend implements GetEpisodeRecommendApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    List<VideoItem> items = BaseVideo.toVideoItems(result.result);
-                    mainCallback.onSuccess(new Page<>(items, pageIndex, Page.TOTAL_INFINITY));
+                    mainCallback.onSuccess(result.result);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }

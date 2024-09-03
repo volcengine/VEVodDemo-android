@@ -18,7 +18,6 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.data.mock;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetDramaDetail;
@@ -31,13 +30,12 @@ public class MockGetDramaDetail implements GetDramaDetailApi {
     private final GetDramaDetail mGetDramaDetail = new GetDramaDetail();
 
     @Override
-    public void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback) {
-        mGetDramaDetail.getDramaDetail(account, startIndex, pageSize, dramaId, null, new RemoteApi.Callback<List<VideoItem>>() {
+    public void getDramaDetail(int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<EpisodeVideo>> callback) {
+        mGetDramaDetail.getDramaDetail(startIndex, pageSize, dramaId, null, new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
-            public void onSuccess(List<VideoItem> videoItems) {
-                List<EpisodeVideo> episodes = EpisodeVideo.videoItems2EpisodeVideos(videoItems);
-                MockAppServer.mockDramaDetailLockState(episodes);
-                callback.onSuccess(EpisodeVideo.toVideoItems(episodes));
+            public void onSuccess(List<EpisodeVideo> result) {
+                MockAppServer.mockDramaDetailLockState(result);
+                callback.onSuccess(result);
             }
 
             @Override

@@ -18,7 +18,6 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.data.mock;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetDramaDetail;
@@ -33,27 +32,18 @@ public class MockGetEpisodes implements GetEpisodesApi {
     private final GetDramaDetail mGetDramaDetail = new GetDramaDetail();
 
     @Override
-    public void getEpisodeVideosByIds(String account, String dramaId, List<Integer> episodeNumbers, RemoteApi.Callback<List<EpisodeVideo>> callback) {
+    public void getEpisodeVideosByIds(String dramaId, List<Integer> episodeNumbers, RemoteApi.Callback<List<EpisodeVideo>> callback) {
         if (episodeNumbers.isEmpty()) return;
         List<Integer> sortedEpisodeNumbers = new ArrayList<>(episodeNumbers);
         Collections.sort(sortedEpisodeNumbers);
         int startIndex = Math.max(sortedEpisodeNumbers.get(0) - 1, 0);
         int endIndex = Math.max(sortedEpisodeNumbers.get(sortedEpisodeNumbers.size() - 1) - 1, 0);
         int pageSize = endIndex - startIndex + 1;
-        mGetDramaDetail.getDramaDetail(account, startIndex, pageSize, dramaId, null, new RemoteApi.Callback<List<VideoItem>>() {
+        mGetDramaDetail.getDramaDetail(startIndex, pageSize, dramaId, null, new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
-            public void onSuccess(List<VideoItem> videoItems) {
-                List<EpisodeVideo> episodes = new ArrayList<>();
-                for (int episodeNumber : episodeNumbers) {
-                    for (VideoItem item : videoItems) {
-                        EpisodeVideo episode = EpisodeVideo.get(item);
-                        if (EpisodeVideo.getEpisodeNumber(episode) == episodeNumber) {
-                            episodes.add(episode);
-                        }
-                    }
-                }
-                MockAppServer.mockDramaDetailLockState(episodes);
-                callback.onSuccess(episodes);
+            public void onSuccess(List<EpisodeVideo> result) {
+                MockAppServer.mockDramaDetailLockState(result);
+                callback.onSuccess(result);
             }
 
             @Override

@@ -19,7 +19,7 @@
 package com.bytedance.volc.voddemo.ui.minidrama.data.remote;
 
 
-import com.bytedance.volc.vod.scenekit.data.page.Page;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.voddemo.data.remote.AppServer;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
@@ -40,9 +40,9 @@ public class GetDramas implements GetDramasApi {
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void getDramas(String account, int pageIndex, int pageSize, RemoteApi.Callback<Page<DramaInfo>> callback) {
-        final RemoteApi.HandlerCallback<Page<DramaInfo>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
-
+    public void getDramas(int pageIndex, int pageSize, RemoteApi.Callback<List<DramaInfo>> callback) {
+        final RemoteApi.HandlerCallback<List<DramaInfo>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
+        final String account = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
         GetDramasRequest request = new GetDramasRequest(account, pageIndex * pageSize, pageSize);
         Call<GetDramasResponse> call = AppServer.dramaApi().getDramas(request);
         call.enqueue(new Callback<GetDramasResponse>() {
@@ -63,7 +63,7 @@ public class GetDramas implements GetDramasApi {
                     if (dramas == null) {
                         dramas = new ArrayList<>();
                     }
-                    mainCallback.onSuccess(new Page<>(dramas, pageIndex, Page.TOTAL_INFINITY));
+                    mainCallback.onSuccess(dramas);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }

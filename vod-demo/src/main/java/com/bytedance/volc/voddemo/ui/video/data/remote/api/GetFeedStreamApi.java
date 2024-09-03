@@ -18,12 +18,13 @@
 
 package com.bytedance.volc.voddemo.ui.video.data.remote.api;
 
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
+
+import java.util.List;
 
 public interface GetFeedStreamApi {
-    void getFeedStream(String account, int pageIndex, int pageSize, RemoteApi.Callback<Page<VideoItem>> callback);
+    void getFeedStream(String account, int pageIndex, int pageSize, RemoteApi.Callback<List<BaseVideo>> callback);
 
     void cancel();
 }

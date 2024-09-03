@@ -33,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.utils.L;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseDialogFragment;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
@@ -60,7 +59,6 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     }
 
     private EpisodeVideo mEpisode;
-    private String mAccount;
     private MockGetEpisodes mMockGetEpisode;
 
     @Override
@@ -70,8 +68,6 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
         if (bundle != null) {
             mEpisode = (EpisodeVideo) bundle.getSerializable(EXTRA_EPISODE_VIDEO);
         }
-
-        mAccount = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
         mMockGetEpisode = new MockGetEpisodes();
     }
 
@@ -127,7 +123,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     }
 
     private void fetchUnlockedEpisode(EpisodeVideo lockedEpisode) {
-        mMockGetEpisode.getEpisodeVideosByIds(mAccount, EpisodeVideo.getDramaId(lockedEpisode), Arrays.asList(EpisodeVideo.getEpisodeNumber(lockedEpisode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
+        mMockGetEpisode.getEpisodeVideosByIds(EpisodeVideo.getDramaId(lockedEpisode), Arrays.asList(EpisodeVideo.getEpisodeNumber(lockedEpisode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
             public void onSuccess(List<EpisodeVideo> episodeVideos) {
                 if (getActivity() == null) return;

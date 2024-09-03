@@ -23,10 +23,9 @@ import static com.bytedance.volc.voddemo.data.remote.AppServer.dramaApi;
 import androidx.annotation.NonNull;
 
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.Params;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
+import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetDramaEpisodeRequest;
 import com.bytedance.volc.voddemo.data.remote.model.drama.GetDramaEpisodeResponse;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailApi;
@@ -43,9 +42,9 @@ public class GetDramaDetail implements GetDramaDetailApi {
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void getDramaDetail(String account, int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<VideoItem>> callback) {
-        final RemoteApi.HandlerCallback<List<VideoItem>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
-
+    public void getDramaDetail(int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<EpisodeVideo>> callback) {
+        final RemoteApi.HandlerCallback<List<EpisodeVideo>> mainCallback = new RemoteApi.HandlerCallback<>(callback);
+        final String account = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
         final GetDramaEpisodeRequest request = new GetDramaEpisodeRequest(
                 account,
                 startIndex,
@@ -77,8 +76,7 @@ public class GetDramaDetail implements GetDramaDetailApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    List<VideoItem> items = BaseVideo.toVideoItems(result.result);
-                    mainCallback.onSuccess(items);
+                    mainCallback.onSuccess(result.result);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }

@@ -47,6 +47,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
+import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
@@ -136,12 +137,12 @@ public class ShortVideoFragment extends BaseFragment {
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
             @Override
-            public void onSuccess(Page<VideoItem> page) {
+            public void onSuccess(List<BaseVideo> result) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(page);
+                List<VideoItem> videoItems = mBook.firstPage(new Page<>(BaseVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                 mSceneView.dismissRefreshing();
                 mSceneView.pageView().setItems(videoItems);
@@ -161,12 +162,12 @@ public class ShortVideoFragment extends BaseFragment {
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<Page<VideoItem>>() {
+            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
                 @Override
-                public void onSuccess(Page<VideoItem> page) {
+                public void onSuccess(List<BaseVideo> result) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(page);
+                    List<VideoItem> videoItems = mBook.addPage(new Page<>(BaseVideo.toVideoItems(result), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);

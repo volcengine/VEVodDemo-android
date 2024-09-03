@@ -49,7 +49,6 @@ import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
@@ -79,7 +78,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private int mCurrentDramaIndex;
     private boolean mContinuesPlayback;
     private GetDramaDetailApi mRemoteApi;
-    private String mAccount;
     private ShortVideoSceneView mSceneView;
     private EpisodeSelectorViewHolder mEpisodeSelector;
     private SpeedIndicatorViewHolder mSpeedIndicator;
@@ -163,7 +161,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         mRemoteApi = new MockGetDramaDetail();
-        mAccount = VideoSettings.stringValue(VideoSettings.DRAMA_VIDEO_SCENE_ACCOUNT_ID);
 
         final DramaDetailVideoInput input = parseInput();
 
@@ -497,12 +494,13 @@ public class DramaDetailVideoFragment extends BaseFragment {
         }
         mSceneView.showLoadingMore();
         L.d(this, "load", "start", DramaItem.dump(dramaItem));
-        mRemoteApi.getDramaDetail(mAccount, 0, -1, dramaItem.dramaInfo.dramaId, null, new RemoteApi.Callback<List<VideoItem>>() {
+        mRemoteApi.getDramaDetail(0, -1, dramaItem.dramaInfo.dramaId, null, new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
-            public void onSuccess(List<VideoItem> items) {
-                L.d(this, "load", "success", DramaItem.dump(dramaItem), items);
+            public void onSuccess(List<EpisodeVideo> episodeVideos) {
+                L.d(this, "load", "success", DramaItem.dump(dramaItem), episodeVideos);
                 if (getActivity() == null) return;
                 mSceneView.dismissLoadingMore();
+                List<VideoItem> items = EpisodeVideo.toVideoItems(episodeVideos);
                 dramaItem.episodeVideoItems = items;
                 dramaItem.episodesAllLoaded = true;
                 final DramaItem initDrama = mDramaItems.get(mInitDramaIndex);

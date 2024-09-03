@@ -18,12 +18,13 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.data.remote.api;
 
-import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 
+import java.util.List;
+
 public interface GetDramasApi {
-    void getDramas(String account, int pageIndex, int pageSize, RemoteApi.Callback<Page<DramaInfo>> callback);
+    void getDramas(int pageIndex, int pageSize, RemoteApi.Callback<List<DramaInfo>> callback);
 
     void cancel();
 }

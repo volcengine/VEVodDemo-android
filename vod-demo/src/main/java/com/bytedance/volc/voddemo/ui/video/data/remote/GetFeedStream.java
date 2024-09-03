@@ -23,15 +23,12 @@ import static com.bytedance.volc.voddemo.data.remote.AppServer.generalApi;
 import androidx.annotation.NonNull;
 
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi.Callback;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi.HandlerCallback;
-import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
-import com.bytedance.volc.voddemo.data.remote.model.general.GetFeedStreamRequest;
-import com.bytedance.volc.voddemo.data.remote.model.general.GetFeedStreamResponse;
 import com.bytedance.volc.voddemo.data.remote.model.Params;
 import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
+import com.bytedance.volc.voddemo.data.remote.model.general.GetFeedStreamRequest;
+import com.bytedance.volc.voddemo.data.remote.model.general.GetFeedStreamResponse;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 
 import java.io.IOException;
@@ -47,8 +44,8 @@ public class GetFeedStream implements GetFeedStreamApi {
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
 
     @Override
-    public void getFeedStream(String account, int pageIndex, int pageSize, Callback<Page<VideoItem>> callback) {
-        final HandlerCallback<Page<VideoItem>> mainCallback = new HandlerCallback<>(callback);
+    public void getFeedStream(String account, int pageIndex, int pageSize, Callback<List<BaseVideo>> callback) {
+        final HandlerCallback<List<BaseVideo>> mainCallback = new HandlerCallback<>(callback);
         final GetFeedStreamRequest request = new GetFeedStreamRequest(
                 account,
                 pageIndex * pageSize,
@@ -77,8 +74,7 @@ public class GetFeedStream implements GetFeedStreamApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    List<VideoItem> items = BaseVideo.toVideoItems(result.result);
-                    mainCallback.onSuccess(new Page<>(items, pageIndex, Page.TOTAL_INFINITY));
+                    mainCallback.onSuccess(result.result);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }
