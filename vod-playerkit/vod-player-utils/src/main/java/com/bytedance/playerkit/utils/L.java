@@ -107,6 +107,10 @@ public class L {
         }
     }
 
+    public static void fw(Object o, String method, Throwable throwable, Object... messages) {
+        Log.w(TAG, createLog(o, method, messages), throwable);
+    }
+
     private static String createLog(Object o, String method, Object... messages) {
         StringBuilder msg = new StringBuilder("[" + obj2String(o) + "]").append(" -> ").append(method);
         if (messages != null) {

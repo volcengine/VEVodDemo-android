@@ -498,7 +498,8 @@ public class PlaybackController {
             case Player.STATE_STOPPED:
             case Player.STATE_RELEASED:
             default:
-                throw new IllegalStateException(mPlayer + " state is illegal. " + mPlayer.dump());
+                Asserts.throwIfDebug(new IllegalStateException(mPlayer + " state is illegal. " + mPlayer.dump()));
+                break;
         }
     }
 

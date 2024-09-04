@@ -24,8 +24,7 @@ class Factory {
             return clazz.newInstance();
         } catch (IllegalAccessException | InstantiationException |
                  NullPointerException e ) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        throw new NullPointerException();
     }
 }

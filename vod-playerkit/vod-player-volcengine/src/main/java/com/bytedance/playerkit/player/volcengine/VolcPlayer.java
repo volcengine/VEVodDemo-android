@@ -496,7 +496,8 @@ class VolcPlayer implements PlayerAdapter {
 
         final MediaSource mediaSource = mMediaSource;
         if (mediaSource == null) {
-            throw new IllegalStateException("You should invoke VolcPlayer#setDataSource(MediaSource) method first!", new NullPointerException("source == null"));
+            Asserts.throwIfDebug(new IllegalStateException("You should invoke VolcPlayer#setDataSource(MediaSource) method first!", new NullPointerException("mMediaSource == null")));
+            return;
         }
 
         if (EngineParams.get(mPlayer).mPreRenderPlayer) {

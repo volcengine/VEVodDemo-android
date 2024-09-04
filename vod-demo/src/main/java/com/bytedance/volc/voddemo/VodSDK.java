@@ -36,10 +36,12 @@ import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
 import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
+import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.settingskit.SettingItem;
+import com.bytedance.volc.voddemo.impl.BuildConfig;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.video.AppUrlRefreshFetcher;
 
@@ -68,6 +70,7 @@ public class VodSDK {
         sContext = context;
 
         L.ENABLE_LOG = true;
+        Asserts.DEBUG = BuildConfig.DEBUG;
 
         VideoSettings.init(context, new SettingItem.OnEventListener() {
             @Override

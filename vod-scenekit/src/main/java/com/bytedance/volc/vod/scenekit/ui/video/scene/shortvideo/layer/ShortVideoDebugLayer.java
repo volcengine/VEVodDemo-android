@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
@@ -72,11 +73,9 @@ public class ShortVideoDebugLayer extends BaseLayer implements VideoView.VideoVi
         if (pageView == null) return null;
         VideoItem adapterItem = pageView.getCurrentItemModel();
         if (!VideoItem.mediaEquals(adapterItem, videoItem)) {
-            if (L.ENABLE_LOG) {
-                throw new RuntimeException(L.obj2String(videoView) + " Episode video [" + VideoItem.dump(videoItem) + "] will be replaced to [" + VideoItem.dump(adapterItem) + "] by adapter notify . Intercept start playback action!");
-            } else {
-                return "Episode video [" + VideoItem.dump(videoItem) + "] will be replaced to [" + VideoItem.dump(adapterItem) + "] by adapter notify . Intercept start playback action!";
-            }
+            final String msg = "Episode video [" + VideoItem.dump(videoItem) + "] will be replaced to [" + VideoItem.dump(adapterItem) + "] by adapter notify . Intercept start playback action!";
+            Asserts.throwIfDebug(new RuntimeException(L.obj2String(videoView) + " " + msg));
+            return msg;
         }
         return null;
     }

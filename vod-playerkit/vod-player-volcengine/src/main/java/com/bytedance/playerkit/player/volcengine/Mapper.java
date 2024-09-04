@@ -273,7 +273,7 @@ public class Mapper {
     public static void updateMediaSource(MediaSource mediaSource, MediaSource mediaSource1) {
         if (mediaSource == mediaSource1) return;
         if (!MediaSource.mediaEquals(mediaSource, mediaSource1)) {
-            throw new IllegalArgumentException("MediaSource is not media equal!" + MediaSource.dump(mediaSource) + " " + MediaSource.dump(mediaSource1));
+            Asserts.throwIfDebug(new IllegalArgumentException("MediaSource is not media equal!" + MediaSource.dump(mediaSource) + " " + MediaSource.dump(mediaSource1)));
         }
 
         if (mediaSource.getTracks() == null) {
@@ -449,7 +449,8 @@ public class Mapper {
         } else if (mediaType == VideoRef.TYPE_VIDEO) {
             return TRACK_TYPE_VIDEO;
         } else {
-            throw new IllegalArgumentException();
+            Asserts.throwIfDebug(new IllegalArgumentException("Unsupported mediaType " + mediaType));
+            return TRACK_TYPE_VIDEO;
         }
     }
 
@@ -459,7 +460,8 @@ public class Mapper {
         } else if (trackType == TRACK_TYPE_AUDIO) {
             return VideoRef.TYPE_AUDIO;
         } else {
-            throw new IllegalArgumentException();
+            Asserts.throwIfDebug(new IllegalArgumentException("Unsupported trackType " + trackType));
+            return VideoRef.TYPE_VIDEO;
         }
     }
 
@@ -592,7 +594,8 @@ public class Mapper {
             case VolcScene.SCENE_FEED_VIDEO:
                 return StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
             default:
-                throw new IllegalArgumentException("unsupported scene " + volcScene);
+                Asserts.throwIfDebug(new IllegalArgumentException("unsupported scene " + volcScene));
+                return StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
         }
     }
 
