@@ -33,6 +33,16 @@ public class EpisodeVideo extends BaseVideo {
     public EpisodeInfo episodeInfo;
     public EpisodePayInfo episodePayInfo;
 
+    public static boolean isLocked(VideoItem videoItem) {
+        return isLocked(EpisodeVideo.get(videoItem));
+    }
+
+    public static boolean isLocked(EpisodeVideo episode) {
+        if (episode == null) return false;
+        if (episode.episodePayInfo == null) return false;
+        return episode.episodePayInfo.payType == EpisodePayInfo.EPISODE_PAY_TYPE_LOCKED;
+    }
+
     public static boolean isLastEpisode(EpisodeVideo episode) {
         return getEpisodeNumber(episode) >= getTotalEpisodeNumber(episode);
     }

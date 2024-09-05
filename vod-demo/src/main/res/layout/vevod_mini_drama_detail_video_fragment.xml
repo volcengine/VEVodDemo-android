@@ -21,7 +21,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="center"
     android:background="#000000"
-    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoFragment">
+    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoFragment">
 
     <FrameLayout
         android:id="@+id/bottomBar"

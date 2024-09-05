@@ -16,7 +16,7 @@
  * Create Date : 2024/3/28
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer;
 
 import android.content.Intent;
 import android.text.TextUtils;
@@ -36,9 +36,8 @@ import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaRecommendVideoFragment;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaVideoViewFactory;
-import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.recommend.DramaRecommendVideoFragment;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
 
 import java.util.Locale;
 
@@ -73,7 +72,7 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
         if (videoItem == null) {
             return null;
         }
-        if (DramaPayUtils.isLocked(videoItem)) {
+        if (EpisodeVideo.isLocked(videoItem)) {
             // intercept
             L.d(this, "onVideoViewInterceptStartPlayback", "Episode video [" + VideoItem.dump(videoItem) + "] is locked.");
             return INTERCEPT_START_PLAYBACK_REASON_LOCKED;

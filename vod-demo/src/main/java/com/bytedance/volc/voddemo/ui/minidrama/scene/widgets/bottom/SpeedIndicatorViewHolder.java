@@ -16,7 +16,7 @@
  * Create Date : 2024/7/8
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video.bottom;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom;
 
 import android.graphics.ImageDecoder;
 import android.graphics.drawable.AnimatedImageDrawable;
@@ -32,7 +32,7 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaGestureLayer;
 
 import java.io.IOException;
 import java.util.Locale;

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/28
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.widgets;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.detail;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,7 +39,6 @@ import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
-import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
 import com.bytedance.volc.voddemo.utils.AdaptiveSpacingItemDecoration;
 
 import java.util.Locale;
@@ -196,7 +195,7 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
                 indexView.setText(String.valueOf(episodeNumber));
                 playingView.setVisibility(episodeNumber == currentEpisodeNumber ? View.VISIBLE : View.GONE);
                 itemView.setSelected(episodeNumber == currentEpisodeNumber);
-                lockView.setVisibility(DramaPayUtils.isLocked(videoItem) ? View.VISIBLE : View.GONE);
+                lockView.setVisibility(EpisodeVideo.isLocked(videoItem) ? View.VISIBLE : View.GONE);
 
                 itemView.setTag(videoItem);
             }

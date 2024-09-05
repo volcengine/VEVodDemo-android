@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
 package com.bytedance.volc.voddemo.ui.minidrama.scene.main;
@@ -26,7 +26,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaRecommendVideoFragment;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.theater.DramaTheaterFragment;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.recommend.DramaRecommendVideoFragment;
 
 public class DramaMainAdapter extends FragmentStateAdapter {
     private Context mContext;
@@ -40,7 +41,7 @@ public class DramaMainAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         if (position == 0) {
-            return new DramaGridCoverFragment();
+            return new DramaTheaterFragment();
         } else {
             return new DramaRecommendVideoFragment();
         }

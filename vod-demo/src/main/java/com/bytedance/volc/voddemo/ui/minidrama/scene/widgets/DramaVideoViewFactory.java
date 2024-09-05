@@ -16,7 +16,7 @@
  * Create Date : 2024/3/28
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.widgets;
 
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -40,10 +40,10 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVide
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoDebugLayer;
 import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaBottomProgressBarLayer;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaGestureLayer;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaTimeProgressDialogLayer;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaVideoLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaBottomProgressBarLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaGestureLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaTimeProgressDialogLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer;
 
 import java.lang.ref.WeakReference;
 

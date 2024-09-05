@@ -25,6 +25,7 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
+
     <com.bytedance.playerkit.player.playback.widgets.RatioFrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,14 +43,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#EEEEEE"
-                android:contentDescription="@null"
-                tools:background="@color/accent" />
+                android:contentDescription="@null" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_gravity="bottom"
-                android:background="@drawable/vevod_mini_drama_grid_cover_item_cover_shadow" />
+                android:background="@drawable/vevod_mini_drama_theater_grid_item_cover_shadow" />
 
         </androidx.cardview.widget.CardView>
 
@@ -66,7 +66,7 @@
             android:textColor="#E5FFFFFF"
             android:textFontWeight="500"
             android:textSize="12sp"
-            app:drawableLeftCompat="@drawable/vevod_mini_drama_grid_cover_item_play_count" />
+            app:drawableLeftCompat="@drawable/vevod_mini_drama_theater_grid_item_play_count" />
 
 
     </com.bytedance.playerkit.player.playback.widgets.RatioFrameLayout>

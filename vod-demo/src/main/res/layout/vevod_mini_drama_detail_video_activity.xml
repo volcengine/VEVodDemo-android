@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivity">
+    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivity">
 
 
     <FrameLayout

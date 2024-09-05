@@ -20,7 +20,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.main.DramaGridCoverFragment">
+    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.theater.DramaTheaterFragment">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"

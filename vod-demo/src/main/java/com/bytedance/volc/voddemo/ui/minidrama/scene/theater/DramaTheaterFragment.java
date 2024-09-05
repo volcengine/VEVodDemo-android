@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.main;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.theater;
 
 
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
 
 import android.os.Bundle;
 import android.view.View;
@@ -45,37 +45,37 @@ import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetDramas;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramasApi;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract;
 
 import java.util.List;
 
-public class DramaGridCoverFragment extends BaseFragment {
+public class DramaTheaterFragment extends BaseFragment {
     private GetDramasApi mRemoteApi;
     private final Book<DramaInfo> mBook = new Book<>(12);
     private SwipeRefreshLayout mRefreshLayout;
-    private DramaGridCoverAdapter mAdapter;
+    private DramaTheaterAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private RecycleViewLoadMoreHelper mLoadMoreHelper;
     public ActivityResultLauncher<DramaDetailVideoInput> mDramaDetailPageLauncher = registerForActivityResult(new DramaDetailVideoActivityResultContract(), result -> {
     });
 
-    public static DramaGridCoverFragment newInstance() {
-        return new DramaGridCoverFragment();
+    public static DramaTheaterFragment newInstance() {
+        return new DramaTheaterFragment();
     }
 
-    public DramaGridCoverFragment() {
+    public DramaTheaterFragment() {
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRemoteApi = new GetDramas();
-        mAdapter = new DramaGridCoverAdapter() {
+        mAdapter = new DramaTheaterAdapter() {
 
             @NonNull
             @Override
             public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                DramaGridCoverAdapter.ViewHolder holder = super.onCreateViewHolder(parent, viewType);
+                DramaTheaterAdapter.ViewHolder holder = super.onCreateViewHolder(parent, viewType);
                 holder.itemView.setOnClickListener(v -> {
                     mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(DramaItem.createByDramaInfos(mAdapter.getItems()), holder.getAbsoluteAdapterPosition(), false));
                 });
@@ -86,7 +86,7 @@ public class DramaGridCoverFragment extends BaseFragment {
 
     @Override
     protected int getLayoutResId() {
-        return R.layout.vevod_mini_drama_grid_cover_fragment;
+        return R.layout.vevod_mini_drama_theater_fragment;
     }
 
 
@@ -103,7 +103,7 @@ public class DramaGridCoverFragment extends BaseFragment {
         GridLayoutManager layoutManager = new GridLayoutManager(requireActivity(), 3);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DramaGridCoverItemDecoration());
+        mRecyclerView.addItemDecoration(new DramaTheaterItemDecoration());
         mLoadMoreHelper = new RecycleViewLoadMoreHelper(mRecyclerView);
 
         mRefreshLayout.setOnRefreshListener(this::refresh);

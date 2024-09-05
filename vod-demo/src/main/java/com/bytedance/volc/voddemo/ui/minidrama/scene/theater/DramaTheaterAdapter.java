@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.main;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.theater;
 
 import static com.bytedance.playerkit.player.playback.DisplayModeHelper.calDisplayAspectRatio;
 
@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DramaGridCoverAdapter extends RecyclerView.Adapter<DramaGridCoverAdapter.ViewHolder> {
+public class DramaTheaterAdapter extends RecyclerView.Adapter<DramaTheaterAdapter.ViewHolder> {
 
     private final List<DramaInfo> mItems = new ArrayList<>();
 
@@ -94,7 +94,7 @@ public class DramaGridCoverAdapter extends RecyclerView.Adapter<DramaGridCoverAd
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         static ViewHolder create(ViewGroup parent) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_mini_drama_grid_cover_item, parent, false));
+            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_mini_drama_theater_grid_item, parent, false));
         }
 
         public final ImageView cover;
@@ -119,7 +119,7 @@ public class DramaGridCoverAdapter extends RecyclerView.Adapter<DramaGridCoverAd
 
         public void bind(DramaInfo drama) {
             title.setText(drama.dramaTitle);
-            desc.setText(String.format(desc.getResources().getString(R.string.vevod_mini_drama_grid_cover_item_total_desc), drama.totalEpisodeNumber));
+            desc.setText(String.format(desc.getResources().getString(R.string.vevod_mini_drama_theater_grid_item_total_desc), drama.totalEpisodeNumber));
             Glide.with(cover).load(drama.coverUrl).listener(new RequestListener<Drawable>() {
                 @Override
                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {

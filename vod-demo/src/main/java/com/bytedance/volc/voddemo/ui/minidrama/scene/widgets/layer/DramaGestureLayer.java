@@ -16,7 +16,7 @@
  * Create Date : 2024/7/4
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer;
 
 import android.content.Context;
 import android.view.MotionEvent;

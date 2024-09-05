@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/6/28
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.widgets;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.detail;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -40,7 +40,6 @@ import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetEpisodes;
 import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockThirdPartPayService;
-import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -137,7 +136,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
                     onError(new Exception("MockAppServer Error! " + "Expected:" + lockedEpisode.vid + " Returned:" + unlockedEpisode.vid));
                     return;
                 }
-                if (DramaPayUtils.isLocked(unlockedEpisode)) {
+                if (EpisodeVideo.isLocked(unlockedEpisode)) {
                     onError(new Exception("MockAppServer Error! [" + EpisodeVideo.dump(lockedEpisode) + "] is locked! Expected an unlocked one."));
                     return;
                 }

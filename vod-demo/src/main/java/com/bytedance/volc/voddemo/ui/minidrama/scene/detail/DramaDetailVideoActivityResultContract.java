@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/4/17
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.detail;
 
 import android.content.Context;
 import android.content.Intent;

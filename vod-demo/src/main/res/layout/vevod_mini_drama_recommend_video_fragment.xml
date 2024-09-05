@@ -21,7 +21,7 @@
     android:layout_height="match_parent"
     android:background="#000000"
     android:orientation="vertical"
-    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaRecommendVideoFragment">
+    tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.recommend.DramaRecommendVideoFragment">
 
     <FrameLayout
         android:id="@+id/bottomBar"
@@ -42,6 +42,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="52dp"
-        tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaRecommendVideoFragment" />
+        tools:context="com.bytedance.volc.voddemo.ui.minidrama.scene.recommend.DramaRecommendVideoFragment" />
 
 </com.bytedance.volc.vod.scenekit.ui.widgets.viewpager2.ViewPager2ChildFrameLayout>

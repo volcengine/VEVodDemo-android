@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.recommend;
 
 
 import android.content.BroadcastReceiver;
@@ -51,8 +51,10 @@ import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetEpisodeRecommend;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendApi;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.bottom.SpeedIndicatorViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.SpeedIndicatorViewHolder;
 
 import java.util.List;
 

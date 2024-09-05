@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.main;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.theater;
 
 import android.graphics.Rect;
 import android.view.View;
@@ -28,7 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 
 
-public class DramaGridCoverItemDecoration extends RecyclerView.ItemDecoration {
+public class DramaTheaterItemDecoration extends RecyclerView.ItemDecoration {
     @Override
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
                                @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {

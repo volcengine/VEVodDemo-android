@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/3/26
+ * Create Date : 2024/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.detail;
 
 
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.EXTRA_INPUT;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.EXTRA_OUTPUT;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer.DramaVideoLayer.ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG;
-import static com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodePayDialogFragment.ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED;
-import static com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodeSelectDialogFragment.ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK;
-import static com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodeSelectDialogFragment.EXTRA_VIDOE_ITEM;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.EXTRA_INPUT;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.EXTRA_OUTPUT;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodePayDialogFragment.ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.EXTRA_VIDOE_ITEM;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer.ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -59,13 +59,11 @@ import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetDramaDetail;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailApi;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.DramaDetailVideoActivityResultContract.DramaDetailVideoOutput;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.bottom.EpisodeSelectorViewHolder;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.video.bottom.SpeedIndicatorViewHolder;
-import com.bytedance.volc.voddemo.ui.minidrama.utils.DramaPayUtils;
-import com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodePayDialogFragment;
-import com.bytedance.volc.voddemo.ui.minidrama.widgets.DramaEpisodeSelectDialogFragment;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoOutput;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.EpisodeSelectorViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.SpeedIndicatorViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +130,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         }
 
         boolean continuesPlayback = false;
-        if (DramaPayUtils.isLocked(currentDramaItem.currentItem)) {
+        if (EpisodeVideo.isLocked(currentDramaItem.currentItem)) {
             if (currentDramaItem.lastUnlockedItem != null) {
                 currentDramaItem.currentItem = currentDramaItem.lastUnlockedItem;
             }
@@ -147,11 +145,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         }
         L.d(this, "onBackPressed", DramaItem.dump(currentDramaItem), VideoItem.dump(currentDramaItem.currentItem));
         Intent intent = new Intent();
-        intent.putExtra(EXTRA_OUTPUT, new DramaDetailVideoOutput(
-                mCurrentDramaIndex,
-                currentDramaItem,
-                continuesPlayback
-        ));
+        intent.putExtra(EXTRA_OUTPUT, new DramaDetailVideoOutput(mCurrentDramaIndex, currentDramaItem, continuesPlayback));
         requireActivity().setResult(RESULT_CODE_EXIT, intent);
         return super.onBackPressed();
     }
@@ -228,10 +222,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         mSceneView.setRefreshEnabled(false);
         mSceneView.setLoadMoreEnabled(true);
         mSceneView.setOnLoadMoreListener(this::load);
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(
-                DramaVideoViewFactory.Type.DETAIL,
-                mSceneView.pageView(),
-                mSpeedIndicator));
+        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.DETAIL, mSceneView.pageView(), mSpeedIndicator));
         mSceneView.pageView().addPlaybackListener(event -> {
             if (event.code() == PlayerEvent.State.COMPLETED) {
                 onPlayerStateCompleted(event);
@@ -292,7 +283,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         mEpisodeSelector.bind(dramaItem.dramaInfo);
         syncEpisodeSelectDialog(dramaItem);
 
-        if (DramaPayUtils.isLocked(episodeVideo)) {
+        if (EpisodeVideo.isLocked(episodeVideo)) {
             showEpisodePayDialog(episodeVideo);
         } else {
             dramaItem.lastUnlockedItem = dramaItem.currentItem;
@@ -369,8 +360,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
         if (dramaItem == null) return;
         if (dramaItem.dramaInfo == null) return;
         if (dramaItem.episodeVideoItems == null) return;
-        if (!TextUtils.equals(dramaItem.dramaInfo.dramaId,
-                EpisodeVideo.getDramaId(unlockedEpisode))) return;
+        if (!TextUtils.equals(dramaItem.dramaInfo.dramaId, EpisodeVideo.getDramaId(unlockedEpisode)))
+            return;
         // 1. replace unlocked videoItem in dramaItem.episodeVideoItems
         for (int i = 0; i < dramaItem.episodeVideoItems.size(); i++) {
             VideoItem videoItem = dramaItem.episodeVideoItems.get(i);
@@ -504,9 +495,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
                 dramaItem.episodeVideoItems = items;
                 dramaItem.episodesAllLoaded = true;
                 final DramaItem initDrama = mDramaItems.get(mInitDramaIndex);
-                if (initDrama != null &&
-                        initDrama.dramaInfo != null &&
-                        dramaItem == initDrama) {
+                if (initDrama != null && initDrama.dramaInfo != null && dramaItem == initDrama) {
                     setItems(items);
                     if (initDrama.currentEpisodeNumber >= 1) {
                         setCurrentItemByEpisodeNumber(initDrama.currentEpisodeNumber);

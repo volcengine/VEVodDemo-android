@@ -16,7 +16,7 @@
  * Create Date : 2024/4/1
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.scene.video.layer;
+package com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer;
 
 import static com.bytedance.volc.vod.scenekit.ui.video.layer.Layers.VisibilityRequestReason.REQUEST_DISMISS_REASON_DIALOG_SHOW;
 
