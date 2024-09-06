@@ -18,7 +18,8 @@
 
 package com.bytedance.volc.voddemo.data.remote.model.base;
 
-import androidx.annotation.NonNull;
+import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -36,16 +37,17 @@ import java.util.List;
 public class BaseVideo implements Serializable {
     public static final String EXTRA_BASE_VIDEO = "extra_base_video";
     public String vid;
-    public String caption;
-    public double duration;
-    public String coverUrl;
+    public String videoUrl;
     public String videoModel;
     public String playAuthToken;
     public String subtitleAuthToken;
+    public String caption;
+    public double duration;
+    public String coverUrl;
 
     @Nullable
     private static VideoItem createVideoItem(BaseVideo video) {
-        if (video.playAuthToken != null) {
+        if (!TextUtils.isEmpty(video.playAuthToken)) {
             // vid + playAuthToken
             return VideoItem.createVidItem(
                     video.vid,
@@ -54,7 +56,7 @@ public class BaseVideo implements Serializable {
                     (long) (video.duration * 1000),
                     video.coverUrl,
                     video.caption);
-        } else if (video.videoModel != null) {
+        } else if (!TextUtils.isEmpty(video.videoModel)) {
             final int sourceType = VideoSettings.intValue(VideoSettings.COMMON_SOURCE_TYPE);
             switch (sourceType) {
                 case VideoSettings.SourceType.SOURCE_TYPE_MODEL: {
@@ -89,6 +91,15 @@ public class BaseVideo implements Serializable {
                     throw new IllegalArgumentException("unsupported sourceType! " + sourceType);
                 }
             }
+        } else if (!TextUtils.isEmpty(video.videoUrl)) {
+            return VideoItem.createUrlItem(
+                    video.vid,
+                    video.coverUrl,
+                    null,
+                    null,
+                    (long) (video.duration * 1000),
+                    video.coverUrl,
+                    video.caption);
         } else {
             return VideoItem.createEmptyItem(video.vid,
                     (long) (video.duration * 1000),
