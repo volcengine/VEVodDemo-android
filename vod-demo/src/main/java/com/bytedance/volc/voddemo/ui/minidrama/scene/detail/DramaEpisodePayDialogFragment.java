@@ -40,6 +40,7 @@ import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetEpisodes;
 import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockThirdPartPayService;
+import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodesApi;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +59,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     }
 
     private EpisodeVideo mEpisode;
-    private MockGetEpisodes mMockGetEpisode;
+    private GetEpisodesApi mGetEpisodesApi;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,7 +68,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
         if (bundle != null) {
             mEpisode = (EpisodeVideo) bundle.getSerializable(EXTRA_EPISODE_VIDEO);
         }
-        mMockGetEpisode = new MockGetEpisodes();
+        mGetEpisodesApi = new MockGetEpisodes();
     }
 
     @NonNull
@@ -104,11 +105,11 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        view.findViewById(R.id.pay).setOnClickListener(v -> goPay());
+        view.findViewById(R.id.pay).setOnClickListener(v -> pay());
         view.findViewById(R.id.cancel).setOnClickListener(v -> dismiss());
     }
 
-    private void goPay() {
+    private void pay() {
         if (mEpisode == null) return;
         L.d(this, "pay", mEpisode);
         Toast.makeText(requireActivity(), R.string.vevod_mini_drama_paying, Toast.LENGTH_SHORT).show();
@@ -122,22 +123,22 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
     }
 
     private void fetchUnlockedEpisode(EpisodeVideo lockedEpisode) {
-        mMockGetEpisode.getEpisodeVideosByIds(EpisodeVideo.getDramaId(lockedEpisode), Arrays.asList(EpisodeVideo.getEpisodeNumber(lockedEpisode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
+        mGetEpisodesApi.getEpisodeVideosByIds(EpisodeVideo.getDramaId(lockedEpisode), Arrays.asList(EpisodeVideo.getEpisodeNumber(lockedEpisode)), new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
             public void onSuccess(List<EpisodeVideo> episodeVideos) {
                 if (getActivity() == null) return;
 
                 EpisodeVideo unlockedEpisode = episodeVideos != null && !episodeVideos.isEmpty() ? episodeVideos.get(0) : null;
                 if (unlockedEpisode == null) {
-                    onError(new Exception("MockAppServer Error! Get unlocked episode video return null!"));
+                    onPayError(mEpisode, new Exception("MockAppServer Error! Get unlocked episode video return null!"));
                     return;
                 }
                 if (!TextUtils.equals(lockedEpisode.vid, unlockedEpisode.vid)) {
-                    onError(new Exception("MockAppServer Error! " + "Expected:" + lockedEpisode.vid + " Returned:" + unlockedEpisode.vid));
+                    onPayError(mEpisode, new Exception("MockAppServer Error! " + "Expected:" + lockedEpisode.vid + " Returned:" + unlockedEpisode.vid));
                     return;
                 }
                 if (EpisodeVideo.isLocked(unlockedEpisode)) {
-                    onError(new Exception("MockAppServer Error! [" + EpisodeVideo.dump(lockedEpisode) + "] is locked! Expected an unlocked one."));
+                    onPayError(mEpisode, new Exception("MockAppServer Error! [" + EpisodeVideo.dump(lockedEpisode) + "] is locked! Expected an unlocked one."));
                     return;
                 }
                 onPaySuccess(lockedEpisode, unlockedEpisode);
@@ -146,6 +147,7 @@ public class DramaEpisodePayDialogFragment extends BaseDialogFragment {
             @Override
             public void onError(Exception e) {
                 if (getActivity() == null) return;
+
                 onPayError(lockedEpisode, e);
             }
         });
