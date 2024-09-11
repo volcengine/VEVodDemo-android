@@ -35,6 +35,7 @@ import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.utils.Asserts;
+import com.ss.ttvideoengine.DataLoaderHelper;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
@@ -46,7 +47,6 @@ import com.ss.ttvideoengine.model.SubInfo;
 import com.ss.ttvideoengine.model.VideoInfo;
 import com.ss.ttvideoengine.model.VideoRef;
 import com.ss.ttvideoengine.source.DirectUrlSource;
-import com.ss.ttvideoengine.source.Source;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
 import com.ss.ttvideoengine.source.VideoModelSource;
 import com.ss.ttvideoengine.strategy.StrategyManager;
@@ -640,7 +640,10 @@ public class Mapper {
         if (subtitle == null) return null;
         JSONObject object = new JSONObject();
         try {
-            object.put("url", subtitle.getUrl());
+            String subtitleUrl = subtitle.getUrl();
+            String subtitleCacheKey = VolcPlayerInit.getCacheKeyFactory().generateCacheKey(subtitleUrl);
+            String subtitleProxyUrl = DataLoaderHelper.getDataLoader().proxyUrl(subtitleCacheKey, subtitleUrl);
+            object.put("url", subtitleProxyUrl);
             object.put("language_id", subtitle.getLanguageId());
             object.put("format", subtitle.getFormat());
             object.put("language", subtitle.getLanguage());
