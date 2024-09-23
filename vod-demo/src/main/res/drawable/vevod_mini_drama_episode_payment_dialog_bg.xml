@@ -22,7 +22,7 @@
     <corners android:radius="16dp" />
 
     <gradient
-        android:angle="142.74"
+        android:angle="135"
         android:endColor="#FFE0DC"
         android:startColor="#FFF8D9"
         android:type="linear" />
