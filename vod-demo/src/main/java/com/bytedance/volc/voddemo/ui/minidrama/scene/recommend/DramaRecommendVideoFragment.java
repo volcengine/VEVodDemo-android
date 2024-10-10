@@ -26,6 +26,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,30 +40,39 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
+import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
-import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetEpisodeRecommend;
-import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendApi;
+import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetEpisodeRecommendMultiItems;
+import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendMultiItemsApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.SpeedIndicatorViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.DramaEpisodeVideoViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
 
 import java.util.List;
 
 public class DramaRecommendVideoFragment extends BaseFragment {
     public static final String ACTION_PLAY_MORE_CLICK = "action_play_more_click";
-    private GetEpisodeRecommendApi mRemoteApi;
-    private final Book<VideoItem> mBook = new Book<>(10);
+    private GetEpisodeRecommendMultiItemsApi mRemoteApi;
+    private final Book<Item> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
     private SpeedIndicatorViewHolder mSpeedIndicator;
     private boolean mRegistered;
@@ -69,8 +80,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (TextUtils.isEmpty(action)) return;
-
+            if (action == null) return;
             switch (action) {
                 case ACTION_PLAY_MORE_CLICK: {
                     onPlayMoreCardClick();
@@ -85,43 +95,39 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         if (result.currentDramaItem == null) return;
         if (result.currentDramaItem.currentItem == null) return;
 
-        int currentDramaIndex = mSceneView.pageView().getCurrentItem();
-        int targetDramaIndex = result.currentDramaIndex;
 
-        // 1. find dramaItemIndex first
-        VideoItem targetDramaCurrentVideoItem = mSceneView.pageView().getItem(targetDramaIndex);
-        final VideoItem targetDramaTargetVideoItem = result.currentDramaItem.currentItem;
-        if (!TextUtils.equals(EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaCurrentVideoItem)),
-                EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaTargetVideoItem)))) {
-            for (int i = 0; i < mSceneView.pageView().getItemCount(); i++) {
-                final VideoItem videoItem = mSceneView.pageView().getItem(i);
-                if (TextUtils.equals(EpisodeVideo.getDramaId(EpisodeVideo.get(videoItem)),
-                        EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaTargetVideoItem)))) {
-                    targetDramaIndex = i;
-                    targetDramaCurrentVideoItem = videoItem;
-                    break;
-                }
+        // 1. Find targetDramaIndex and targetDramaCurrentVideoItem first
+        int targetDramaIndex = -1;
+        Item targetDramaCurrentVideoItem = null;
+        final Item targetDramaTargetVideoItem = result.currentDramaItem.currentItem;
+        for (int i = 0; i < mSceneView.pageView().getItemCount(); i++) {
+            final Item item = mSceneView.pageView().getItem(i);
+            if (TextUtils.equals(EpisodeVideo.getDramaId(EpisodeVideo.get(item)),
+                    EpisodeVideo.getDramaId(EpisodeVideo.get(targetDramaTargetVideoItem)))) {
+                targetDramaIndex = i;
+                targetDramaCurrentVideoItem = item;
+                break;
             }
         }
-
         if (targetDramaIndex == -1 || targetDramaCurrentVideoItem == null) {
+            L.d(DramaRecommendVideoFragment.this, "onActivityResult", "can't find target drama! return", DramaItem.dump(result.currentDramaItem));
             return;
         }
 
-        L.d(DramaRecommendVideoFragment.this, "onActivityResult");
-
-        // 2. replace videoItem
-        if (!VideoItem.mediaEquals(targetDramaCurrentVideoItem, targetDramaTargetVideoItem)) {
+        // 2. Replace target drama current videoItem
+        final int currentDramaIndex = mSceneView.pageView().getCurrentItem();
+        if (!ItemHelper.comparator().compare(targetDramaCurrentVideoItem, targetDramaTargetVideoItem)) {
             L.d(DramaRecommendVideoFragment.this, "onActivityResult",
+                    "replace target drama current item",
                     "currentDramaIndex=" + currentDramaIndex,
                     "targetDramaIndex=" + targetDramaIndex,
-                    "targetDramaCurrentVideoItem=" + VideoItem.dump(targetDramaCurrentVideoItem),
-                    "targetDramaTargetVideoItem=" + VideoItem.dump(targetDramaTargetVideoItem));
+                    "targetDramaCurrentVideoItem=" + ItemHelper.dump(targetDramaCurrentVideoItem),
+                    "targetDramaTargetVideoItem=" + ItemHelper.dump(targetDramaTargetVideoItem));
             mSceneView.pageView().stop();
             mSceneView.pageView().replaceItem(targetDramaIndex, targetDramaTargetVideoItem);
         }
 
-        // 3. set current item to target drama index
+        // 3. ViewPager switch to target drama
         if (targetDramaIndex != currentDramaIndex) {
             L.d(DramaRecommendVideoFragment.this, "onActivityResult", "setCurrentItem", currentDramaIndex, targetDramaIndex);
             mSceneView.pageView().stop();
@@ -134,7 +140,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetEpisodeRecommend();
+        mRemoteApi = new MockGetEpisodeRecommendMultiItems();
     }
 
     @Override
@@ -156,15 +162,53 @@ public class DramaRecommendVideoFragment extends BaseFragment {
 
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
         mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.RECOMMEND, mSceneView.pageView(), mSpeedIndicator));
-        mSceneView.pageView().addPlaybackListener(event -> {
-            if (event.code() == PlayerEvent.State.COMPLETED) {
-                onPlayerStateCompleted(event);
-            }
-        });
+        mSceneView.pageView().setViewHolderFactory(new RecommendDramaVideoViewHolderFactory());
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
         refresh();
+    }
+
+    private class RecommendDramaVideoViewHolderFactory implements ViewHolder.Factory {
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            switch (viewType) {
+                case ItemType.ITEM_TYPE_VIDEO: {
+                    final DramaEpisodeVideoViewHolder viewHolder = new DramaEpisodeVideoViewHolder(
+                            new FrameLayout(parent.getContext()),
+                            DramaVideoLayer.Type.RECOMMEND,
+                            mSceneView.pageView(),
+                            mSpeedIndicator);
+                    final VideoView videoView = viewHolder.videoView;
+                    final PlaybackController controller = videoView == null ? null : videoView.controller();
+                    if (controller != null) {
+                        controller.addPlaybackListener(new Dispatcher.EventListener() {
+                            @Override
+                            public void onEvent(Event event) {
+                                if (event.code() == PlayerEvent.State.COMPLETED) {
+                                    onDramaPlayCompleted(event);
+                                }
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+                case ItemType.ITEM_TYPE_AD: {
+                    ShortVideoDrawADItemViewHolder viewHolder = new ShortVideoDrawADItemViewHolder(
+                            new FrameLayout(parent.getContext()));
+                    if (viewHolder.mockAdVideoView != null) {
+                        viewHolder.mockAdVideoView.setAdVideoListener(new MockShortVideoAdVideoView.MockAdVideoListener() {
+                            @Override
+                            public void onAdVideoCompleted(Ad ad) {
+                                onAdVideoPlayCompleted(ad);
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+            }
+            throw new IllegalArgumentException("unsupported type!");
+        }
     }
 
     @Override
@@ -188,7 +232,17 @@ public class DramaRecommendVideoFragment extends BaseFragment {
     }
 
     private void onPlayMoreCardClick() {
-        final VideoView videoView = mSceneView.pageView().getCurrentItemVideoView();
+        final List<DramaItem> dramaItems = DramaItem.createByEpisodeVideoItems(
+                ItemHelper.toItems(VideoItem.findVideoItems(mSceneView.pageView().getItems())));
+        final int currentDramaIndex = DramaItem.findDramaItemPosition(dramaItems,
+                mSceneView.pageView().getCurrentItemModel());
+        if (currentDramaIndex < 0) return;
+
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        VideoView videoView = null;
+        if (viewHolder instanceof DramaEpisodeVideoViewHolder) {
+            videoView = ((DramaEpisodeVideoViewHolder) viewHolder).videoView;
+        }
         if (videoView == null) return;
         final PlaybackController controller = videoView.controller();
         boolean continuesPlayback = false;
@@ -196,56 +250,82 @@ public class DramaRecommendVideoFragment extends BaseFragment {
             continuesPlayback = controller.player() != null;
             controller.unbindPlayer();
         }
-        mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(DramaItem.createByEpisodes(mSceneView.pageView().getItems()), mSceneView.pageView().getCurrentItem(), continuesPlayback));
+        mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(
+                dramaItems,
+                currentDramaIndex,
+                continuesPlayback));
     }
 
-    private void onPlayerStateCompleted(Event event) {
-        VideoItem videoItem = mSceneView.pageView().getCurrentItemModel();
-        if (videoItem == null) return;
-        EpisodeVideo episodeVideo = EpisodeVideo.get(videoItem);
+
+    private void onAdVideoPlayCompleted(Ad ad) {
+        playNext();
+    }
+
+    private void onDramaPlayCompleted(Event event) {
+        final Item item = mSceneView.pageView().getCurrentItemModel();
+        if (!(item instanceof VideoItem)) return;
+        final VideoItem videoItem = (VideoItem) item;
+        final EpisodeVideo episodeVideo = EpisodeVideo.get(videoItem);
         if (episodeVideo == null) return;
         if (episodeVideo.episodeInfo == null || episodeVideo.episodeInfo.dramaInfo == null) return;
-
         if (EpisodeVideo.isLastEpisode(episodeVideo)) {
             // play next recommend
             final Player player = event.owner(Player.class);
             if (player != null && !player.isLooping()) {
-                final int currentPosition = mSceneView.pageView().getCurrentItem();
-                final int nextPosition = currentPosition + 1;
-                if (nextPosition < mSceneView.pageView().getItemCount()) {
-                    mSceneView.pageView().setCurrentItem(nextPosition, true);
-                }
+                playNext();
             }
         } else {
-            // goto detail play next
-            final List<DramaItem> dramaItems = DramaItem.createByEpisodes(mSceneView.pageView().getItems());
-            final DramaItem currentDrama = dramaItems.get(mSceneView.pageView().getCurrentItem());
-            if (currentDrama != null) {
-                currentDrama.currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(episodeVideo) + 1;
-            }
-            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(dramaItems, mSceneView.pageView().getCurrentItem(), true));
+            final List<DramaItem> dramaItems = DramaItem.createByEpisodeVideoItems(
+                    ItemHelper.toItems(VideoItem.findVideoItems(mSceneView.pageView().getItems())));
+            final int currentDramaIndex = DramaItem.findDramaItemPosition(dramaItems,
+                    mSceneView.pageView().getCurrentItemModel());
+
+            if (dramaItems == null) return;
+            if (currentDramaIndex < 0) return;
+
+            final DramaItem currentDramaItem = dramaItems.get(currentDramaIndex);
+            if (currentDramaItem == null) return;
+
+            currentDramaItem.currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(episodeVideo) + 1;
+            mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(dramaItems, currentDramaIndex, true));
+        }
+    }
+
+    private void playNext() {
+        final int currentPosition = mSceneView.pageView().getCurrentItem();
+        final int nextPosition = currentPosition + 1;
+        final int total = mSceneView.pageView().getItemCount();
+        if (nextPosition < total) {
+            L.d(this, "playNext", "current", currentPosition, "next", nextPosition, "total", total);
+            mSceneView.pageView().setCurrentItem(nextPosition, true);
+        } else {
+            L.d(this, "playNext", "current", currentPosition, "total", total, "end");
         }
     }
 
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getRecommendEpisodeVideoItems(0, mBook.pageSize(), new RemoteApi.Callback<List<EpisodeVideo>>() {
+        mRemoteApi.getRecommendEpisodeVideoItems(0, mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<EpisodeVideo> result) {
-                L.d(this, "refresh", "success");
+            public void onSuccess(List<Item> items) {
+                L.d(this, "refresh", "success", ItemHelper.dump(items));
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(new Page<>(EpisodeVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
+
+                List<VideoItem> videoItems = VideoItem.findVideoItems(items);
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                 VideoItem.syncProgress(videoItems, true);
+
+                mBook.firstPage(new Page<>(items, 0, Page.TOTAL_INFINITY));
                 mSceneView.dismissRefreshing();
-                mSceneView.pageView().setItems(videoItems);
+                mSceneView.pageView().setItems(items);
             }
 
             @Override
             public void onError(Exception e) {
                 L.d(this, "refresh", e, "error");
                 if (getActivity() == null) return;
+
                 mSceneView.dismissRefreshing();
                 Toast.makeText(getActivity(), String.valueOf(e), Toast.LENGTH_LONG).show();
             }
@@ -256,16 +336,19 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getRecommendEpisodeVideoItems(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<EpisodeVideo>>() {
+            mRemoteApi.getRecommendEpisodeVideoItems(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
                 @Override
-                public void onSuccess(List<EpisodeVideo> page) {
-                    L.d(this, "loadMore", "success", mBook.nextPageIndex());
+                public void onSuccess(List<Item> items) {
+                    L.d(this, "loadMore", "success", mBook.nextPageIndex(), ItemHelper.dump(items));
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(new Page<>(EpisodeVideo.toVideoItems(page), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
+
+                    List<VideoItem> videoItems = VideoItem.findVideoItems(items);
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                     VideoItem.syncProgress(videoItems, true);
+
+                    mBook.addPage(new Page<>(items, mBook.nextPageIndex(), Page.TOTAL_INFINITY));
                     mSceneView.dismissLoadingMore();
-                    mSceneView.pageView().appendItems(videoItems);
+                    mSceneView.pageView().appendItems(items);
                 }
 
                 @Override

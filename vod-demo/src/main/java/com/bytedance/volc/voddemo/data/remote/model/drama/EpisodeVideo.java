@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.google.gson.annotations.SerializedName;
 
@@ -44,6 +45,7 @@ public class EpisodeVideo extends BaseVideo {
     }
 
     public static boolean isLastEpisode(EpisodeVideo episode) {
+        if (episode == null) return false;
         return getEpisodeNumber(episode) >= getTotalEpisodeNumber(episode);
     }
 
@@ -84,12 +86,14 @@ public class EpisodeVideo extends BaseVideo {
         return episode.episodeInfo.episodeDesc;
     }
 
-    public static int episodeNumber2VideoItemIndex(List<VideoItem> videoItems, int episodeNumber) {
-        for (int i = 0; i < videoItems.size(); i++) {
-            VideoItem videoItem = videoItems.get(i);
-            EpisodeVideo episode = EpisodeVideo.get(videoItem);
-            if (EpisodeVideo.getEpisodeNumber(episode) == episodeNumber) {
-                return i;
+    public static int episodeNumber2VideoItemIndex(List<Item> items, int episodeNumber) {
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            if (item instanceof VideoItem) {
+                EpisodeVideo episode = EpisodeVideo.get(item);
+                if (EpisodeVideo.getEpisodeNumber(episode) == episodeNumber) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -107,8 +111,21 @@ public class EpisodeVideo extends BaseVideo {
     }
 
     public static String dump(EpisodeVideo episode) {
+        if (!L.ENABLE_LOG) return null;
         if (episode == null) return null;
-        return L.obj2String(episode) + " " + episode.vid + " " + EpisodeVideo.getDramaId(episode) + " " + EpisodeVideo.getEpisodeNumber(episode) + "/" + EpisodeVideo.getTotalEpisodeNumber(episode);
+        return L.obj2String(episode)
+                + "[" + EpisodeVideo.getTotalEpisodeNumber(episode) + "/" + EpisodeVideo.getEpisodeNumber(episode) + "]"
+                + "[" + EpisodeVideo.getDramaId(episode) + "/" + episode.vid + "]";
+    }
+
+    public static String dump(List<EpisodeVideo> episodes) {
+        if (!L.ENABLE_LOG) return null;
+
+        StringBuilder sb = new StringBuilder();
+        for (EpisodeVideo video : episodes) {
+            sb.append(dump(video)).append("\n");
+        }
+        return sb.toString();
     }
 }
 

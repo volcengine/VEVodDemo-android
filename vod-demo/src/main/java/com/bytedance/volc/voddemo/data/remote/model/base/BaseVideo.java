@@ -24,7 +24,9 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.model.parser.PlayInfoJson2MediaSourceParser;
 
 import org.json.JSONException;
@@ -47,6 +49,8 @@ public class BaseVideo implements Serializable {
 
     @Nullable
     private static VideoItem createVideoItem(BaseVideo video) {
+        if (video == null) return null;
+
         if (!TextUtils.isEmpty(video.playAuthToken)) {
             // vid + playAuthToken
             return VideoItem.createVidItem(
@@ -111,6 +115,8 @@ public class BaseVideo implements Serializable {
 
     @Nullable
     public static VideoItem toVideoItem(BaseVideo video) {
+        if (video == null) return null;
+
         VideoItem videoItem = createVideoItem(video);
         if (videoItem != null) {
             videoItem.putExtra(EXTRA_BASE_VIDEO, video);
@@ -132,8 +138,9 @@ public class BaseVideo implements Serializable {
     }
 
     @Nullable
-    public static <T extends BaseVideo> T get(VideoItem videoItem) {
-        if (videoItem == null) return null;
+    public static <T extends BaseVideo> T get(Item item) {
+        if (!(item instanceof VideoItem)) return null;
+        VideoItem videoItem = (VideoItem) item;
         return (T) videoItem.getExtra(EXTRA_BASE_VIDEO, BaseVideo.class);
     }
 }

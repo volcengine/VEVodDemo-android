@@ -47,12 +47,10 @@ public class DramaDetailVideoActivityResultContract extends ActivityResultContra
     }
 
     public static class DramaDetailVideoOutput implements Serializable {
-        public int currentDramaIndex;
         public DramaItem currentDramaItem;
         public final boolean continuesPlayback;
 
-        public DramaDetailVideoOutput(int currentDramaIndex, DramaItem currentDramaItem, boolean continuesPlayback) {
-            this.currentDramaIndex = currentDramaIndex;
+        public DramaDetailVideoOutput( DramaItem currentDramaItem, boolean continuesPlayback) {
             this.currentDramaItem = currentDramaItem;
             this.continuesPlayback = continuesPlayback;
         }

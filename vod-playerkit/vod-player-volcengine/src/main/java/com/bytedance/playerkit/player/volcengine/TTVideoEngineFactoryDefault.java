@@ -56,8 +56,10 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
     @Override
     public TTVideoEngine setup(Context context, TTVideoEngine player, MediaSource mediaSource) {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
-        player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, L.ENABLE_LOG ? 1 : 0);
+        if (L.ENABLE_LOG) {
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG,  1);
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_TMP_LOG, 1);
+        }
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEBUG_UI_NOTIFY, 1);

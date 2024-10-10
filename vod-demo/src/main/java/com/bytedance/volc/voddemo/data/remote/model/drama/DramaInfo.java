@@ -18,6 +18,8 @@
 
 package com.bytedance.volc.voddemo.data.remote.model.drama;
 
+import com.bytedance.playerkit.utils.L;
+
 import java.io.Serializable;
 
 public class DramaInfo implements Serializable {
@@ -31,6 +33,6 @@ public class DramaInfo implements Serializable {
 
     public static String dump(DramaInfo dramaInfo) {
         if (dramaInfo == null) return null;
-        return dramaInfo.dramaId + " " + dramaInfo.dramaTitle + " " + dramaInfo.totalEpisodeNumber;
+        return L.obj2String(dramaInfo) + "[id:" + dramaInfo.dramaId + " title:" + dramaInfo.dramaTitle + " total:" + dramaInfo.totalEpisodeNumber +"]";
     }
 }

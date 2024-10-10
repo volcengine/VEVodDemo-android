@@ -53,8 +53,8 @@ public class DramaGestureLayer extends BaseLayer {
 
     private final WeakReference<DramaGestureContract> mContractRef;
 
-    public DramaGestureLayer(WeakReference<DramaGestureContract> listenerRef) {
-        this.mContractRef = listenerRef;
+    public DramaGestureLayer(DramaGestureContract contract) {
+        this.mContractRef = new WeakReference<>(contract);
     }
 
     @Nullable

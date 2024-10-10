@@ -48,4 +48,9 @@
     <string name="vevod_mini_drama_paying">支付中...</string>
     <string name="vevod_mini_drama_pay_success_start_playback">支付成功，开始播放</string>
     <string name="vevod_mini_drama_unlock_operation_error">解锁操作失败！</string>
+    <string name="vevod_short_video_multi_type_with_desc">短视频多 ViewType</string>
+    <string name="vevod_mock_short_video_ad_layer_title">火山引擎视频点播</string>
+    <string name="vevod_mock_short_video_ad_layer_ad">广告</string>
+    <string name="vevod_mock_short_video_ad_layer_content">专业一站式解决方案，最低 1 折搭建音视频业务！</string>
+    <string name="vevod_mock_short_video_ad_layer_button_text">查看详情</string>
 </resources>

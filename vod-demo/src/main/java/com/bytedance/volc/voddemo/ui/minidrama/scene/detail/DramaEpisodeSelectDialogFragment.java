@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseBottomDialogFragment;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
@@ -41,12 +42,13 @@ import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.utils.AdaptiveSpacingItemDecoration;
 
+import java.util.List;
 import java.util.Locale;
 
 public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
 
     public static final String ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK = "action_drama_episode_select_dialog_click";
-    public static final String EXTRA_VIDOE_ITEM = "extra_video_item";
+    public static final String EXTRA_ITEM = "extra_video_item";
     public static final String EXTRA_DRAMA_ITEM = "extra_drama_item";
 
     public static DramaEpisodeSelectDialogFragment newInstance(DramaItem dramaItem) {
@@ -92,8 +94,10 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
 
     private void onEpisodeNumberItemClick(ItemAdapter.ViewHolder holder) {
         VideoItem videoItem = (VideoItem) holder.itemView.getTag();
+        if (videoItem == null) return;
+
         Intent intent = new Intent(ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK);
-        intent.putExtra(EXTRA_VIDOE_ITEM, videoItem);
+        intent.putExtra(EXTRA_ITEM, videoItem);
         LocalBroadcastManager.getInstance(requireActivity()).sendBroadcast(intent);
         holder.itemView.postDelayed(this::dismiss, 100); // delay 100MS would make selection changing be visible
     }
@@ -165,8 +169,8 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
 
         @Override
         public int getItemCount() {
-            if (mDramaItem != null && mDramaItem.episodeVideoItems != null) {
-                return mDramaItem.episodeVideoItems.size();
+            if (mDramaItem != null && mDramaItem.dramaInfo != null) {
+                return mDramaItem.dramaInfo.totalEpisodeNumber;
             }
             return 0;
         }
@@ -188,17 +192,45 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
                 if (dramaItem == null) return;
                 if (dramaItem.episodeVideoItems == null) return;
 
-                final VideoItem videoItem = dramaItem.episodeVideoItems.get(position);
-                final int episodeNumber = EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(videoItem));
+                final int itemIndex = adapterPosition2ItemIndex(position, dramaItem.episodeVideoItems);
+                if (itemIndex >= dramaItem.episodeVideoItems.size() || itemIndex < 0) {
+                    return;
+                }
+                final Item item = dramaItem.episodeVideoItems.get(itemIndex);
+                if (!(item instanceof VideoItem)) return;
+                if (!(dramaItem.currentItem instanceof VideoItem)) return;
+
+                final int episodeNumber = EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(item));
                 final int currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(dramaItem.currentItem));
 
                 indexView.setText(String.valueOf(episodeNumber));
                 playingView.setVisibility(episodeNumber == currentEpisodeNumber ? View.VISIBLE : View.GONE);
                 itemView.setSelected(episodeNumber == currentEpisodeNumber);
-                lockView.setVisibility(EpisodeVideo.isLocked(videoItem) ? View.VISIBLE : View.GONE);
+                lockView.setVisibility(EpisodeVideo.isLocked((VideoItem) item) ? View.VISIBLE : View.GONE);
 
-                itemView.setTag(videoItem);
+                itemView.setTag(item);
             }
         }
+    }
+
+    private static int episodeNumber2AdapterPosition(int episodeNumber) {
+        return episodeNumber - 1;
+    }
+
+    private static int adapterPosition2EpisodeNumber(int adapterPosition) {
+        return adapterPosition + 1;
+    }
+
+    private static int adapterPosition2ItemIndex(int adapterPosition, List<Item> items) {
+        int episodeNumber = adapterPosition2EpisodeNumber(adapterPosition);
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            if (item instanceof VideoItem) {
+                if (episodeNumber == EpisodeVideo.getEpisodeNumber(EpisodeVideo.get(item))) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 }

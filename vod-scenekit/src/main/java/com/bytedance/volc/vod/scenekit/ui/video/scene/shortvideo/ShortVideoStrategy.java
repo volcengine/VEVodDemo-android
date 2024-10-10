@@ -24,6 +24,7 @@ import com.bytedance.playerkit.player.volcengine.VolcEngineStrategy;
 import com.bytedance.playerkit.player.volcengine.VolcScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 
 import java.util.List;
 
@@ -35,20 +36,20 @@ public class ShortVideoStrategy {
         VolcEngineStrategy.setEnabled(VolcScene.SCENE_SHORT_VIDEO, enable);
     }
 
-    public static void setItems(List<VideoItem> videoItems) {
+    public static void setItems(List<Item> items) {
         if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_STRATEGY)) return;
 
-        if (videoItems == null) return;
+        if (items == null) return;
 
-        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(videoItems));
+        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(VideoItem.findVideoItems(items)));
     }
 
-    public static void appendItems(List<VideoItem> videoItems) {
+    public static void appendItems(List<Item> items) {
         if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_STRATEGY)) return;
 
-        if (videoItems == null) return;
+        if (items == null) return;
 
-        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(videoItems));
+        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(VideoItem.findVideoItems(items)));
     }
 
     public static boolean renderFrame(VideoView videoView) {
@@ -65,4 +66,6 @@ public class ShortVideoStrategy {
         }
         return false;
     }
+
+
 }

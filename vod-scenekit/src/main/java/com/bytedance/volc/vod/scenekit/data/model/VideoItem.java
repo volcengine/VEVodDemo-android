@@ -35,13 +35,14 @@ import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSR;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class VideoItem extends ExtraObject implements Serializable {
+public class VideoItem extends ExtraObject implements Item, Serializable {
     public static final String EXTRA_VIDEO_ITEM = "extra_video_item";
 
     public static final int SOURCE_TYPE_EMPTY = -1;
@@ -231,7 +232,8 @@ public class VideoItem extends ExtraObject implements Serializable {
         return playScene;
     }
 
-    public static boolean mediaEquals(VideoItem item1, VideoItem item2) {
+    public static boolean itemEquals(VideoItem item1, VideoItem item2) {
+        if (item1 == item2) return true;
         if (item1 == null || item2 == null) return false;
         return TextUtils.equals(item1.vid, item2.vid);
     }
@@ -357,6 +359,23 @@ public class VideoItem extends ExtraObject implements Serializable {
         videoItem.syncProgress = syncProgress;
     }
 
+    @Nullable
+    public static List<VideoItem> findVideoItems(List<Item> items) {
+        if (items == null) return null;
+        final List<VideoItem> videoItems = new ArrayList<>();
+        for (Item item : items) {
+            if (item.itemType() == ItemType.ITEM_TYPE_VIDEO) {
+                videoItems.add((VideoItem) item);
+            }
+        }
+        return videoItems;
+    }
+
+    public static VideoItem findVideoItem(Item item) {
+        if (item.itemType() != ItemType.ITEM_TYPE_VIDEO) return null;
+        return (VideoItem) item;
+    }
+
     public String dump() {
         return L.obj2String(this) + " " + vid + " " + mapSourceType(sourceType);
     }
@@ -371,10 +390,18 @@ public class VideoItem extends ExtraObject implements Serializable {
     @Nullable
     public static String dump(List<VideoItem> videoItems) {
         if (!L.ENABLE_LOG) return null;
+        if (videoItems == null) return null;
         StringBuilder sb = new StringBuilder();
         for (VideoItem videoItem : videoItems) {
             sb.append(dump(videoItem)).append("\n");
         }
         return sb.toString();
     }
+
+    @Override
+    public int itemType() {
+        return ItemType.ITEM_TYPE_VIDEO;
+    }
+
+
 }

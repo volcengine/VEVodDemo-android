@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,8 +38,10 @@ import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
@@ -45,12 +49,18 @@ import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SimpleProgressBarLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.viewholder.ShortVideoItemViewHolder;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
-import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
+import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
+import com.bytedance.volc.voddemo.ui.video.data.mock.MockGetFeedStreamMultiItems;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamMultiItemsApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 
@@ -58,13 +68,12 @@ import java.util.List;
 
 
 public class ShortVideoFragment extends BaseFragment {
-
-    private GetFeedStreamApi mRemoteApi;
-    private String mAccount;
-
-    private final Book<VideoItem> mBook = new Book<>(10);
+    private GetFeedStreamMultiItemsApi mRemoteApi;
+    private final Book<Item> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
     private OrientationHelper mOrientationHelper;
+
+    private AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();
 
     public ShortVideoFragment() {
         // Required empty public constructor
@@ -81,8 +90,7 @@ public class ShortVideoFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetFeedStream();
-        mAccount = VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID);
+        mRemoteApi = new MockGetFeedStreamMultiItems(VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID));
         mOrientationHelper = new OrientationHelper(requireActivity(), null);
         mOrientationHelper.setOrientationDelta(45);
         mOrientationHelper.enable();
@@ -105,15 +113,49 @@ public class ShortVideoFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         mSceneView = (ShortVideoSceneView) view;
         mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().addPlaybackListener(event -> {
-            if (event.code() == PlayerEvent.State.COMPLETED) {
-                onPlayerStateCompleted(event);
-            }
-        });
+        mSceneView.pageView().setViewHolderFactory(new ShortVideoAdViewHolderFactory());
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
+
         refresh();
         registerBroadcast();
+    }
+
+    private class ShortVideoAdViewHolderFactory implements ViewHolder.Factory {
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            switch (viewType) {
+                case ItemType.ITEM_TYPE_VIDEO: {
+                    ShortVideoItemViewHolder viewHolder = new ShortVideoItemViewHolder(new FrameLayout(parent.getContext()));
+                    PlaybackController controller = viewHolder.videoView == null ? null : viewHolder.videoView.controller();
+                    if (controller != null) {
+                        controller.addPlaybackListener(new Dispatcher.EventListener() {
+                            @Override
+                            public void onEvent(Event event) {
+                                if (event.code() == PlayerEvent.State.COMPLETED) {
+                                    onPlayerStateCompleted(event);
+                                }
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+                case ItemType.ITEM_TYPE_AD: {
+                    ShortVideoDrawADItemViewHolder viewHolder = new ShortVideoDrawADItemViewHolder(new FrameLayout(parent.getContext()));
+                    if (viewHolder.mockAdVideoView != null) {
+                        viewHolder.mockAdVideoView.setAdVideoListener(new MockShortVideoAdVideoView.MockAdVideoListener() {
+                            @Override
+                            public void onAdVideoCompleted(Ad ad) {
+                                playNext();
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+            }
+            throw new IllegalArgumentException("unsupported type!");
+        }
     }
 
     @Override
@@ -126,26 +168,31 @@ public class ShortVideoFragment extends BaseFragment {
         final Player player = event.owner(Player.class);
         if (player != null && !player.isLooping() &&
                 VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
-            final int currentPosition = mSceneView.pageView().getCurrentItem();
-            final int nextPosition = currentPosition + 1;
-            if (nextPosition < mSceneView.pageView().getItemCount()) {
-                mSceneView.pageView().setCurrentItem(nextPosition, true);
-            }
+            playNext();
+        }
+    }
+
+    private void playNext() {
+        final int currentPosition = mSceneView.pageView().getCurrentItem();
+        final int nextPosition = currentPosition + 1;
+        if (nextPosition < mSceneView.pageView().getItemCount()) {
+            mSceneView.pageView().setCurrentItem(nextPosition, true);
         }
     }
 
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<BaseVideo> result) {
+            public void onSuccess(List<Item> items) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(new Page<>(BaseVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
-                VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                 mSceneView.dismissRefreshing();
-                mSceneView.pageView().setItems(videoItems);
+                mBook.firstPage(new Page<>(items, 0, Page.TOTAL_INFINITY));
+
+                VideoItem.tag(VideoItem.findVideoItems(items), PlayScene.map(PlayScene.SCENE_SHORT), null);
+                mSceneView.pageView().setItems(items);
             }
 
             @Override
@@ -162,15 +209,16 @@ public class ShortVideoFragment extends BaseFragment {
         if (mBook.hasMore()) {
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
                 @Override
-                public void onSuccess(List<BaseVideo> result) {
+                public void onSuccess(List<Item> items) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(new Page<>(BaseVideo.toVideoItems(result), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
-                    VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
                     mSceneView.dismissLoadingMore();
-                    mSceneView.pageView().appendItems(videoItems);
+                    mBook.addPage(new Page<>(items, mBook.nextPageIndex(), Page.TOTAL_INFINITY));
+
+                    VideoItem.tag(VideoItem.findVideoItems(items), PlayScene.map(PlayScene.SCENE_SHORT), null);
+                    mSceneView.pageView().appendItems(items);
                 }
 
                 @Override
@@ -188,9 +236,12 @@ public class ShortVideoFragment extends BaseFragment {
         }
     }
 
-
     private void enterFullScreen(MediaSource mediaSource) {
-        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemVideoView();
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        if (!(viewHolder instanceof ShortVideoItemViewHolder)) {
+            return;
+        }
+        VideoView videoView = ((ShortVideoItemViewHolder) viewHolder).videoView;
         if (videoView == null) return;
 
         if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;
@@ -214,7 +265,11 @@ public class ShortVideoFragment extends BaseFragment {
      * Sync playback states in FullScreenFragment
      */
     private void onExitFullScreen(MediaSource mediaSource, boolean continuesPlayback) {
-        VideoView videoView = (VideoView) mSceneView.pageView().getCurrentItemVideoView();
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        if (!(viewHolder instanceof ShortVideoItemViewHolder)) {
+            return;
+        }
+        VideoView videoView = ((ShortVideoItemViewHolder) viewHolder).videoView;
         if (videoView == null) return;
 
         if (!MediaSource.mediaEquals(videoView.getDataSource(), mediaSource)) return;

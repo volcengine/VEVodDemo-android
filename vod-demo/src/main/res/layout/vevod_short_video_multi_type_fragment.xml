@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (C) 2024 bytedance
+  ~ Copyright (C) 2021 bytedance
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   ~
-  ~ Create Date : 2024/3/22
+  ~ Create Date : 2021/12/28
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.bytedance.volc.vod.scenekit.ui.video.scene.shortmulti.ShortVideoMultiTypeSceneView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context="com.bytedance.volc.voddemo.ui.video.scene.shortmulti.ShortVideoMultiTypeFragment" />

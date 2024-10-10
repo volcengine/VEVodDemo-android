@@ -42,12 +42,16 @@ import retrofit2.Response;
 public class GetFeedStream implements GetFeedStreamApi {
 
     private final List<Call<?>> mCalls = Collections.synchronizedList(new ArrayList<>());
+    private final String mAccount;
+    public GetFeedStream(String account) {
+        mAccount = account;
+    }
 
     @Override
-    public void getFeedStream(String account, int pageIndex, int pageSize, Callback<List<BaseVideo>> callback) {
+    public void getFeedStream(int pageIndex, int pageSize, Callback<List<BaseVideo>> callback) {
         final HandlerCallback<List<BaseVideo>> mainCallback = new HandlerCallback<>(callback);
         final GetFeedStreamRequest request = new GetFeedStreamRequest(
-                account,
+                mAccount,
                 pageIndex * pageSize,
                 pageSize,
                 Params.Value.format(),

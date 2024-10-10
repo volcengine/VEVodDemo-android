@@ -37,7 +37,6 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.recommend.DramaRecommendVideoFragment;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
 
 import java.util.Locale;
 
@@ -48,7 +47,7 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
     public static final String INTERCEPT_START_PLAYBACK_REASON_LOCKED = "locked";
     public static final String INTERCEPT_START_PLAYBACK_REASON_EMPTY = "empty";
 
-    private final DramaVideoViewFactory.Type mType;
+    private final Type mType;
     private TextView title;
     private TextView desc;
     private TextView continuePlayMoreDesc;
@@ -56,7 +55,12 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
     private View likeView;
     private View collectView;
 
-    public DramaVideoLayer(DramaVideoViewFactory.Type type) {
+    public enum Type {
+        DETAIL,
+        RECOMMEND
+    }
+
+    public DramaVideoLayer(Type type) {
         this.mType = type;
     }
 
@@ -110,7 +114,7 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
         View continuePlayMoreView = view.findViewById(R.id.continuePlayMoreView);
         continuePlayMoreDesc = view.findViewById(R.id.continuePlayMoreDesc);
         continuePlayMoreView.setOnClickListener(v -> LocalBroadcastManager.getInstance(v.getContext()).sendBroadcast(new Intent(DramaRecommendVideoFragment.ACTION_PLAY_MORE_CLICK)));
-        continuePlayMoreView.setVisibility(mType == DramaVideoViewFactory.Type.DETAIL ? View.GONE : View.VISIBLE);
+        continuePlayMoreView.setVisibility(mType == Type.DETAIL ? View.GONE : View.VISIBLE);
 
         likeView = view.findViewById(R.id.likeView);
         likeView.setOnClickListener(v -> likeView.setSelected(!likeView.isSelected()));
@@ -148,7 +152,7 @@ public class DramaVideoLayer extends AnimateLayer implements VideoView.VideoView
             continuePlayMoreDesc.setText(String.format(Locale.getDefault(), continuePlayMoreDesc.getResources().getString(R.string.vevod_mini_drama_video_layer_continue_play_more_desc), EpisodeVideo.getTotalEpisodeNumber(episode)));
         }
         if (desc != null) {
-            if (mType == DramaVideoViewFactory.Type.DETAIL) {
+            if (mType == Type.DETAIL) {
                 desc.setText(EpisodeVideo.getEpisodeDesc(episode));
             } else {
                 desc.setText(String.format(Locale.getDefault(), desc.getResources().getString(R.string.vevod_mini_drama_video_layer_bottom_desc), EpisodeVideo.getEpisodeNumber(episode), EpisodeVideo.getEpisodeDesc(episode)));

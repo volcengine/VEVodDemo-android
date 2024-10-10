@@ -28,12 +28,6 @@
         android:layout_alignParentTop="true"
         android:background="@drawable/vevod_mini_drama_top_shadow" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="280dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/vevod_mini_drama_bottom_shadow" />
-
     <LinearLayout
         android:id="@+id/infoCards"
         android:layout_width="match_parent"

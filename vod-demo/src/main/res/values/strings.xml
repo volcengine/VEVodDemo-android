@@ -22,6 +22,7 @@
     <string name="vevod_vod_solutions">Video solutions in one station</string>
 
     <string name="vevod_short_video_with_desc">Short Video</string>
+    <string name="vevod_short_video_multi_type_with_desc">Short Video MultiType</string>
     <string name="vevod_long_video">Long Video</string>
     <string name="vevod_feed_video_with_desc">Feed Video</string>
 
@@ -51,5 +52,9 @@
     <string name="vevod_mini_drama_paying">Unlocking...</string>
     <string name="vevod_mini_drama_pay_success_start_playback">Unlock success. Start playback.</string>
     <string name="vevod_mini_drama_unlock_operation_error">"Unlock Operation Error! "</string>
+    <string name="vevod_mock_short_video_ad_layer_title">VolcEngine Vod</string>
+    <string name="vevod_mock_short_video_ad_layer_ad">AD</string>
+    <string name="vevod_mock_short_video_ad_layer_content">Professional one-stop solution, build audio and video business at a minimum discount of 10%!</string>
+    <string name="vevod_mock_short_video_ad_layer_button_text">Check the details</string>
 
 </resources>

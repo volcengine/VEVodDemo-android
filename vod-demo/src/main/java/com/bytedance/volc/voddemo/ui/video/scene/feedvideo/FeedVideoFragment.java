@@ -83,8 +83,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mRemoteApi = new GetFeedStream();
-        mAccount = VideoSettings.stringValue(VideoSettings.FEED_VIDEO_SCENE_ACCOUNT_ID);
+        mRemoteApi = new GetFeedStream(VideoSettings.stringValue(VideoSettings.FEED_VIDEO_SCENE_ACCOUNT_ID));
     }
 
     @Override
@@ -116,7 +115,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStream(mAccount, 0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
             @Override
             public void onSuccess(List<BaseVideo> result) {
                 L.d(this, "refresh", "success");
@@ -145,7 +144,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
             if (mSceneView.isLoadingMore()) return;
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStream(mAccount, mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
                 @Override
                 public void onSuccess(List<BaseVideo> result) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());

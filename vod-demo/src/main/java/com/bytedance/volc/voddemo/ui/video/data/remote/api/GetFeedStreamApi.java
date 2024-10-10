@@ -24,7 +24,7 @@ import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import java.util.List;
 
 public interface GetFeedStreamApi {
-    void getFeedStream(String account, int pageIndex, int pageSize, RemoteApi.Callback<List<BaseVideo>> callback);
+    void getFeedStream(int pageIndex, int pageSize, RemoteApi.Callback<List<BaseVideo>> callback);
 
     void cancel();
 }

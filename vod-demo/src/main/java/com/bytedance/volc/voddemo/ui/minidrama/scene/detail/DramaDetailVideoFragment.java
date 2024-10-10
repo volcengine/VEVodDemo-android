@@ -23,7 +23,7 @@ import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVi
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.EXTRA_OUTPUT;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodePayDialogFragment.ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK;
-import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.EXTRA_VIDOE_ITEM;
+import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.EXTRA_ITEM;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer.ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG;
 
 import android.content.BroadcastReceiver;
@@ -33,6 +33,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,25 +47,34 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
-import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.data.model.DrawADItem;
+import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
 import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
-import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetDramaDetail;
-import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailApi;
+import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetDramaDetailMultiItems;
+import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailMultiItemsApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoOutput;
-import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.DramaVideoViewFactory;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.EpisodeSelectorViewHolder;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.SpeedIndicatorViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.DramaEpisodeVideoViewHolder;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,13 +86,14 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private int mInitDramaIndex;
     private int mCurrentDramaIndex;
     private boolean mContinuesPlayback;
-    private GetDramaDetailApi mRemoteApi;
+    private GetDramaDetailMultiItemsApi mRemoteApi;
     private ShortVideoSceneView mSceneView;
     private EpisodeSelectorViewHolder mEpisodeSelector;
     private SpeedIndicatorViewHolder mSpeedIndicator;
     private DramaEpisodeSelectDialogFragment mSelectDialogFragment;
     private DramaEpisodePayDialogFragment mPayDialogFragment;
     private boolean mRegistered;
+
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -89,9 +101,9 @@ public class DramaDetailVideoFragment extends BaseFragment {
             if (action == null) return;
             switch (action) {
                 case ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK: {
-                    final VideoItem videoItem = (VideoItem) intent.getSerializableExtra(EXTRA_VIDOE_ITEM);
-                    if (videoItem != null) {
-                        onSelectDramaEpisodeItemClicked(videoItem);
+                    final Item item = (Item) intent.getSerializableExtra(EXTRA_ITEM);
+                    if (item != null) {
+                        onSelectDramaEpisodeItemClicked(item);
                     }
                     break;
                 }
@@ -103,7 +115,10 @@ public class DramaDetailVideoFragment extends BaseFragment {
                     break;
                 }
                 case ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG:
-                    showEpisodePayDialog(EpisodeVideo.get(mSceneView.pageView().getCurrentItemModel()));
+                    Item item = mSceneView.pageView().getCurrentItemModel();
+                    if (!(item instanceof VideoItem)) return;
+                    final VideoItem videoItem = (VideoItem) item;
+                    showEpisodePayDialog(EpisodeVideo.get(videoItem));
                     break;
             }
         }
@@ -115,37 +130,46 @@ public class DramaDetailVideoFragment extends BaseFragment {
 
     @Override
     public boolean onBackPressed() {
+        if (mSceneView.pageView().onBackPressed()) {
+            return true;
+        }
         final DramaItem currentDramaItem = mDramaItems.get(mCurrentDramaIndex);
         if (currentDramaItem == null) {
             return super.onBackPressed();
         }
 
-        final VideoView videoView = mSceneView.pageView().getCurrentItemVideoView();
-        if (videoView == null) {
+        if (currentDramaItem.currentItem == null) {
             return super.onBackPressed();
         }
-        final VideoLayerHost layerHost = videoView.layerHost();
-        if (layerHost != null && layerHost.onBackPressed()) {
-            return true;
-        }
-
         boolean continuesPlayback = false;
-        if (EpisodeVideo.isLocked(currentDramaItem.currentItem)) {
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        if (viewHolder == null) {
+            return super.onBackPressed();
+        }
+        if (viewHolder instanceof DramaEpisodeVideoViewHolder) {
+            if (EpisodeVideo.isLocked((VideoItem) currentDramaItem.currentItem)) {
+                if (currentDramaItem.lastUnlockedItem != null) {
+                    currentDramaItem.currentItem = currentDramaItem.lastUnlockedItem;
+                }
+            } else {
+                if (mContinuesPlayback) {
+                    continuesPlayback = true;
+                    final VideoView videoView = ((DramaEpisodeVideoViewHolder) viewHolder).videoView;
+                    final PlaybackController controller = videoView != null ? videoView.controller() : null;
+                    if (controller != null) {
+                        controller.unbindPlayer();
+                    }
+                }
+            }
+        } else if (viewHolder instanceof ShortVideoDrawADItemViewHolder) {
             if (currentDramaItem.lastUnlockedItem != null) {
                 currentDramaItem.currentItem = currentDramaItem.lastUnlockedItem;
             }
-        } else {
-            if (mContinuesPlayback) {
-                continuesPlayback = true;
-                final PlaybackController controller = videoView.controller();
-                if (controller != null) {
-                    controller.unbindPlayer();
-                }
-            }
         }
-        L.d(this, "onBackPressed", DramaItem.dump(currentDramaItem), VideoItem.dump(currentDramaItem.currentItem));
+        L.d(this, "onBackPressed", "continuesPlayback", continuesPlayback,
+                DramaItem.dump(currentDramaItem), ItemHelper.dump(currentDramaItem.currentItem));
         Intent intent = new Intent();
-        intent.putExtra(EXTRA_OUTPUT, new DramaDetailVideoOutput(mCurrentDramaIndex, currentDramaItem, continuesPlayback));
+        intent.putExtra(EXTRA_OUTPUT, new DramaDetailVideoOutput(currentDramaItem, continuesPlayback));
         requireActivity().setResult(RESULT_CODE_EXIT, intent);
         return super.onBackPressed();
     }
@@ -154,7 +178,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mRemoteApi = new MockGetDramaDetail();
+        mRemoteApi = new MockGetDramaDetailMultiItems();
 
         final DramaDetailVideoInput input = parseInput();
 
@@ -216,46 +240,48 @@ public class DramaDetailVideoFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mSpeedIndicator = new SpeedIndicatorViewHolder(view);
+        mSpeedIndicator.showSpeedIndicator(false);
 
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
         mSceneView.pageView().setLifeCycle(getLifecycle());
+        mSceneView.pageView().setViewHolderFactory(new DetailDramaVideoViewHolderFactory());
         mSceneView.setRefreshEnabled(false);
         mSceneView.setLoadMoreEnabled(true);
         mSceneView.setOnLoadMoreListener(this::load);
-        mSceneView.pageView().setVideoViewFactory(new DramaVideoViewFactory(DramaVideoViewFactory.Type.DETAIL, mSceneView.pageView(), mSpeedIndicator));
-        mSceneView.pageView().addPlaybackListener(event -> {
-            if (event.code() == PlayerEvent.State.COMPLETED) {
-                onPlayerStateCompleted(event);
-            }
-        });
         mSceneView.pageView().viewPager().registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 L.d(this, "onPageSelected", position);
-                final VideoItem videoItem = mSceneView.pageView().getItem(position);
-                final EpisodeVideo episode = EpisodeVideo.get(videoItem);
-                final String dramaId = EpisodeVideo.getDramaId(episode);
-
-                DramaItem currentDrama = mDramaItems.get(mCurrentDramaIndex);
-                if (currentDrama == null || currentDrama.dramaInfo == null) {
-                    return;
-                }
-                if (TextUtils.equals(currentDrama.dramaInfo.dramaId, dramaId)) {
-                    if (!VideoItem.mediaEquals(currentDrama.currentItem, videoItem)) {
-                        currentDrama.currentItem = videoItem;
-                        onDramaEpisodeChanged(currentDrama);
+                final Item item = mSceneView.pageView().getItem(position);
+                if (item instanceof DrawADItem) {
+                    setActionBarTitle("");
+                } else if (item instanceof VideoItem) {
+                    final EpisodeVideo episode = EpisodeVideo.get(item);
+                    final String dramaId = EpisodeVideo.getDramaId(episode);
+                    DramaItem currentDrama = mDramaItems.get(mCurrentDramaIndex);
+                    if (currentDrama == null) {
                         return;
                     }
-                }
-                for (int i = 0; i < mDramaItems.size(); i++) {
-                    final DramaItem item = mDramaItems.get(i);
-                    if (item != null && TextUtils.equals(item.dramaInfo.dramaId, dramaId)) {
-                        if (mCurrentDramaIndex != i) {
-                            mCurrentDramaIndex = i;
-                            currentDrama = item;
-                            currentDrama.currentItem = videoItem;
+                    if (TextUtils.equals(currentDrama.dramaInfo.dramaId, dramaId)) {
+                        if (currentDrama.currentItem == null || !ItemHelper.comparator().compare(currentDrama.currentItem, item)) {
+                            currentDrama.currentItem = item;
                             onDramaEpisodeChanged(currentDrama);
                             return;
+                        }
+                    }
+
+                    for (int i = 0; i < mDramaItems.size(); i++) {
+                        final DramaItem dramaItem = mDramaItems.get(i);
+                        if (dramaItem.dramaInfo == null) continue; // TODO
+
+                        if (TextUtils.equals(dramaItem.dramaInfo.dramaId, dramaId)) {
+                            if (mCurrentDramaIndex != i) {
+                                mCurrentDramaIndex = i;
+                                currentDrama = dramaItem;
+                                currentDrama.currentItem = item;
+                                onDramaEpisodeChanged(currentDrama);
+                                return;
+                            }
                         }
                     }
                 }
@@ -270,16 +296,57 @@ public class DramaDetailVideoFragment extends BaseFragment {
         initData();
     }
 
+    private class DetailDramaVideoViewHolderFactory implements ViewHolder.Factory {
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            switch (viewType) {
+                case ItemType.ITEM_TYPE_VIDEO: {
+                    final DramaEpisodeVideoViewHolder viewHolder = new DramaEpisodeVideoViewHolder(
+                            new FrameLayout(parent.getContext()),
+                            DramaVideoLayer.Type.DETAIL,
+                            mSceneView.pageView(),
+                            mSpeedIndicator);
+                    final VideoView videoView = viewHolder.videoView;
+                    final PlaybackController controller = videoView == null ? null : videoView.controller();
+                    if (controller != null) {
+                        controller.addPlaybackListener(new Dispatcher.EventListener() {
+                            @Override
+                            public void onEvent(Event event) {
+                                if (event.code() == PlayerEvent.State.COMPLETED) {
+                                    onPlayerStateCompleted(event);
+                                }
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+                case ItemType.ITEM_TYPE_AD: {
+                    ShortVideoDrawADItemViewHolder viewHolder = new ShortVideoDrawADItemViewHolder(
+                            new FrameLayout(parent.getContext()));
+                    if (viewHolder.mockAdVideoView != null) {
+                        viewHolder.mockAdVideoView.setAdVideoListener(new MockShortVideoAdVideoView.MockAdVideoListener() {
+                            @Override
+                            public void onAdVideoCompleted(Ad ad) {
+                                onAdVideoPlayCompleted(ad);
+                            }
+                        });
+                    }
+                    return viewHolder;
+                }
+            }
+            throw new IllegalArgumentException("unsupported type!");
+        }
+    }
+
     private void onDramaEpisodeChanged(DramaItem dramaItem) {
         if (dramaItem == null) return;
         if (dramaItem.currentItem == null) return;
+        if (!(dramaItem.currentItem instanceof VideoItem)) return;
 
-        L.d(this, "onDramaEpisodeChanged", EpisodeVideo.dump(EpisodeVideo.get(dramaItem.currentItem)));
+        L.d(this, "onDramaEpisodeChanged", EpisodeVideo.dump((EpisodeVideo) EpisodeVideo.get(dramaItem.currentItem)));
         final EpisodeVideo episodeVideo = EpisodeVideo.get(dramaItem.currentItem);
-        if (episodeVideo == null) return;
-
-        setActionBarTitle(episodeVideo);
-
+        setActionBarTitle(String.format(getString(R.string.vevod_mini_drama_detail_video_episode_number_desc), EpisodeVideo.getEpisodeNumber(episodeVideo)));
         mEpisodeSelector.bind(dramaItem.dramaInfo);
         syncEpisodeSelectDialog(dramaItem);
 
@@ -331,7 +398,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
                 load(initDramaItem);
             }
         } else {
-            final List<VideoItem> items = new ArrayList<>();
+            final List<Item> items = new ArrayList<>();
             items.add(initDramaItem.currentItem);
             setItems(items);
             onDramaEpisodeChanged(initDramaItem);
@@ -339,15 +406,17 @@ public class DramaDetailVideoFragment extends BaseFragment {
         }
     }
 
-    private void setItems(List<VideoItem> items) {
-        VideoItem.tag(items, PlayScene.map(PlayScene.SCENE_SHORT), null);
-        VideoItem.syncProgress(items, true);
+    private void setItems(List<Item> items) {
+        List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+        VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
+        VideoItem.syncProgress(videoItems, true);
         mSceneView.pageView().setItems(items);
     }
 
-    private void appendItems(List<VideoItem> items) {
-        VideoItem.tag(items, PlayScene.map(PlayScene.SCENE_SHORT), null);
-        VideoItem.syncProgress(items, true);
+    private void appendItems(List<Item> items) {
+        List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+        VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
+        VideoItem.syncProgress(videoItems, true);
         mSceneView.pageView().appendItems(items);
     }
 
@@ -360,23 +429,28 @@ public class DramaDetailVideoFragment extends BaseFragment {
         if (dramaItem == null) return;
         if (dramaItem.dramaInfo == null) return;
         if (dramaItem.episodeVideoItems == null) return;
-        if (!TextUtils.equals(dramaItem.dramaInfo.dramaId, EpisodeVideo.getDramaId(unlockedEpisode)))
+
+        if (!TextUtils.equals(dramaItem.dramaInfo.dramaId, EpisodeVideo.getDramaId(unlockedEpisode))) {
             return;
+        }
+
         // 1. replace unlocked videoItem in dramaItem.episodeVideoItems
         for (int i = 0; i < dramaItem.episodeVideoItems.size(); i++) {
-            VideoItem videoItem = dramaItem.episodeVideoItems.get(i);
-            if (VideoItem.mediaEquals(videoItem, unlockedVideoItem)) {
+            final Item item = dramaItem.episodeVideoItems.get(i);
+            if (ItemHelper.comparator().compare(item, unlockedVideoItem)) {
                 dramaItem.episodeVideoItems.set(i, unlockedVideoItem);
                 break;
             }
         }
+
         // 2. refresh dramaItem.currentItem and dramaItem.lastUnlockedItem
-        if (VideoItem.mediaEquals(dramaItem.currentItem, unlockedVideoItem)) {
+        if (ItemHelper.comparator().compare(dramaItem.currentItem, unlockedVideoItem)) {
             dramaItem.currentItem = unlockedVideoItem;
-            dramaItem.lastUnlockedItem = null;
+            dramaItem.lastUnlockedItem = unlockedVideoItem;
         }
+
         // 3. replace item in adapter
-        final int position = mSceneView.pageView().indexOf(unlockedVideoItem);
+        final int position = mSceneView.pageView().findItemPosition(unlockedVideoItem, ItemHelper.comparator());
         if (position >= 0) {
             mSceneView.pageView().replaceItem(position, unlockedVideoItem);
             dismissEpisodePayDialog();
@@ -384,33 +458,41 @@ public class DramaDetailVideoFragment extends BaseFragment {
     }
 
     private void onPlayerStateCompleted(Event event) {
-        // play next recommend
         final Player player = event.owner(Player.class);
         if (player != null && !player.isLooping()) {
-            final int currentPosition = mSceneView.pageView().getCurrentItem();
-            final int nextPosition = currentPosition + 1;
-            if (nextPosition < mSceneView.pageView().getItemCount()) {
-                final VideoItem videoItem = mSceneView.pageView().getCurrentItemModel();
-                final VideoItem nextItem = mSceneView.pageView().getItem(nextPosition);
-                mSceneView.pageView().setCurrentItem(nextPosition, true);
+            playNext();
+        }
+    }
 
-                if (EpisodeVideo.isLastEpisode(EpisodeVideo.get(videoItem))) {
-                    Toast.makeText(requireActivity(), getString(R.string.vevod_mini_drama_play_next_drama_hint) + EpisodeVideo.getDramaTitle(EpisodeVideo.get(nextItem)), Toast.LENGTH_SHORT).show();
-                }
+    private void onAdVideoPlayCompleted(Ad ad) {
+        // play next recommend
+        playNext();
+    }
+
+    private void playNext() {
+        final int currentPosition = mSceneView.pageView().getCurrentItem();
+        final int nextPosition = currentPosition + 1;
+        if (nextPosition < mSceneView.pageView().getItemCount()) {
+            final Item videoItem = mSceneView.pageView().getCurrentItemModel();
+            final Item nextItem = mSceneView.pageView().getItem(nextPosition);
+            mSceneView.pageView().setCurrentItem(nextPosition, true);
+
+            if (EpisodeVideo.isLastEpisode(EpisodeVideo.get(videoItem))) {
+                Toast.makeText(requireActivity(), getString(R.string.vevod_mini_drama_play_next_drama_hint) + EpisodeVideo.getDramaTitle(EpisodeVideo.get(nextItem)), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void onSelectDramaEpisodeItemClicked(VideoItem videoItem) {
-        int position = mSceneView.pageView().indexOf(videoItem);
-        if (position != -1) {
+    private void onSelectDramaEpisodeItemClicked(Item item) {
+        final int position = mSceneView.pageView().findItemPosition(item, ItemHelper.comparator());
+        if (position >= 0) {
             mSceneView.pageView().setCurrentItem(position, false);
         }
     }
 
-    private void setActionBarTitle(EpisodeVideo episode) {
+    private void setActionBarTitle(String title) {
         if (!(getActivity() instanceof AppCompatActivity)) return;
-        String title = String.format(getString(R.string.vevod_mini_drama_detail_video_episode_number_desc), EpisodeVideo.getEpisodeNumber(episode));
+
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(title);
@@ -452,14 +534,17 @@ public class DramaDetailVideoFragment extends BaseFragment {
     }
 
     private void setCurrentItemByEpisodeNumber(int episodeNumber) {
-        List<VideoItem> videoItems = mSceneView.pageView().getItems();
-        int position = EpisodeVideo.episodeNumber2VideoItemIndex(videoItems, episodeNumber);
-        if (0 <= position && position < videoItems.size()) {
+        List<Item> items = mSceneView.pageView().getItems();
+        int position = EpisodeVideo.episodeNumber2VideoItemIndex(items, episodeNumber);
+        if (0 <= position && position < items.size()) {
             mSceneView.pageView().setCurrentItem(position, false);
         }
     }
 
     private void load() {
+        if (mSceneView.isLoadingMore()) {
+            return;
+        }
         final DramaItem current = mDramaItems.get(mCurrentDramaIndex);
         if (current == null) {
             return;
@@ -476,29 +561,26 @@ public class DramaDetailVideoFragment extends BaseFragment {
         } else {
             dramaItem = current;
         }
+
         load(dramaItem);
     }
 
-    private void load(DramaItem dramaItem) {
-        if (mSceneView.isLoadingMore()) {
-            return;
-        }
+    private void load(@NonNull DramaItem dramaItem) {
         mSceneView.showLoadingMore();
         L.d(this, "load", "start", DramaItem.dump(dramaItem));
-        mRemoteApi.getDramaDetail(0, -1, dramaItem.dramaInfo.dramaId, null, new RemoteApi.Callback<List<EpisodeVideo>>() {
+        mRemoteApi.getDramaDetail(0, -1, dramaItem.dramaInfo.dramaId, null, new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<EpisodeVideo> episodeVideos) {
-                L.d(this, "load", "success", DramaItem.dump(dramaItem), episodeVideos);
+            public void onSuccess(List<Item> items) {
+                L.d(this, "load", "success", DramaItem.dump(dramaItem), ItemHelper.dump(items));
                 if (getActivity() == null) return;
                 mSceneView.dismissLoadingMore();
-                List<VideoItem> items = EpisodeVideo.toVideoItems(episodeVideos);
                 dramaItem.episodeVideoItems = items;
                 dramaItem.episodesAllLoaded = true;
                 final DramaItem initDrama = mDramaItems.get(mInitDramaIndex);
-                if (initDrama != null && initDrama.dramaInfo != null && dramaItem == initDrama) {
+                if (dramaItem == initDrama) {
                     setItems(items);
-                    if (initDrama.currentEpisodeNumber >= 1) {
-                        setCurrentItemByEpisodeNumber(initDrama.currentEpisodeNumber);
+                    if (dramaItem.currentEpisodeNumber >= 1) {
+                        setCurrentItemByEpisodeNumber(dramaItem.currentEpisodeNumber);
                     }
                 } else {
                     appendItems(items);

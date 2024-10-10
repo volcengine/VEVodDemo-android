@@ -19,6 +19,7 @@
 package com.bytedance.volc.voddemo.ui.minidrama.data.business.model;
 
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.model.drama.DramaInfo;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 
@@ -36,24 +37,35 @@ public class DramaItem implements Serializable {
         return items;
     }
 
-    public static List<DramaItem> createByEpisodes(List<VideoItem> videoItems) {
-        final List<DramaItem> items = new ArrayList<>();
-        for (VideoItem videoItem : videoItems) {
-            items.add(new DramaItem(videoItem));
+    public static List<DramaItem> createByEpisodeVideoItems(List<Item> items) {
+        if (items == null) return null;
+        final List<DramaItem> dramaItems = new ArrayList<>();
+        for (Item item : items) {
+            dramaItems.add(new DramaItem(item));
         }
-        return items;
+        return dramaItems;
+    }
+
+    public static int findDramaItemPosition(List<DramaItem> dramaItems, Item item) {
+        for (int i = 0; dramaItems != null && i < dramaItems.size(); i++) {
+            DramaItem dramaItem = dramaItems.get(i);
+            if (dramaItem != null && dramaItem.currentItem == item) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public final DramaInfo dramaInfo;
     public int currentEpisodeNumber;
-    public VideoItem currentItem;
-    public List<VideoItem> episodeVideoItems;
+    public Item currentItem;
+    public List<Item> episodeVideoItems;
     public boolean episodesAllLoaded;
-    public VideoItem lastUnlockedItem;
+    public Item lastUnlockedItem;
 
-    public DramaItem(VideoItem currentItem) {
+    public DramaItem(Item currentItem) {
         this.currentItem = currentItem;
-        this.dramaInfo = EpisodeVideo.getDramaInfo(EpisodeVideo.get(currentItem));
+        this.dramaInfo = currentItem instanceof VideoItem ? EpisodeVideo.getDramaInfo(EpisodeVideo.get(currentItem)) : null;
     }
 
     public DramaItem(DramaInfo dramaInfo, int currentEpisodeNumber) {

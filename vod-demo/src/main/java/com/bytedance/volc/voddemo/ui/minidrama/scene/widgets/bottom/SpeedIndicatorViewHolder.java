@@ -31,8 +31,10 @@ import androidx.core.content.res.ResourcesCompat;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaGestureLayer;
+import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.DramaEpisodeVideoViewHolder;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -59,7 +61,11 @@ public class SpeedIndicatorViewHolder implements DramaGestureLayer.DramaGestureC
     @Override
     public void showSpeedIndicator(boolean show) {
         if (show) {
-            VideoView videoView = mSceneView.pageView().getCurrentItemVideoView();
+            final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+            if (!(viewHolder instanceof DramaEpisodeVideoViewHolder)) {
+                return;
+            }
+            VideoView videoView = ((DramaEpisodeVideoViewHolder) viewHolder).videoView;
             if (videoView == null) return;
             final Player player = videoView.player();
             if (player == null || !player.isPlaying()) return;

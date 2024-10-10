@@ -46,13 +46,17 @@ public class SampleShortVideoActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ArrayList<VideoItem> videoItems = (ArrayList<VideoItem>) getIntent().getSerializableExtra(EXTRA_VIDEO_ITEMS);
+        if (videoItems == null) {
+            finish();
+            return;
+        }
 
         mSceneView = new ShortVideoSceneView(this);
         mSceneView.setRefreshEnabled(false);
         mSceneView.setLoadMoreEnabled(false);
 
         mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().setItems(videoItems);
+        mSceneView.pageView().setItems(new ArrayList<>(videoItems));
         setContentView(mSceneView);
 
         UIUtils.setSystemBarTheme(

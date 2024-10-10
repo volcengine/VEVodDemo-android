@@ -42,6 +42,7 @@ import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.settingskit.SettingItem;
 import com.bytedance.volc.voddemo.impl.BuildConfig;
+import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.video.AppUrlRefreshFetcher;
 
@@ -82,6 +83,13 @@ public class VodSDK {
                 }
             }
         });
+
+        if (VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_AD)
+                || VideoSettings.booleanValue(VideoSettings.DRAMA_DETAIL_ENABLE_AD)
+                || VideoSettings.booleanValue(VideoSettings.DRAMA_RECOMMEND_ENABLE_AD)) {
+            // preload AD data for demo
+            AdInjectStrategy.init();
+        }
 
         VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
                 .setAppId(appId)

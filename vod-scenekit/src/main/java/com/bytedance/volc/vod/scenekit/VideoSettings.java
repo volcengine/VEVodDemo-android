@@ -50,13 +50,13 @@ import java.util.List;
 
 public class VideoSettings {
     public static final String KEY = "AppSettings";
-
     public static final String CATEGORY_DEBUG = "调试选项";
     public static final String CATEGORY_SHORT_VIDEO = "短视频";
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
     public static final String CATEGORY_DETAIL_VIDEO = "视频详情页";
     public static final String CATEGORY_MINI_DRAMA_VIDEO = "短剧";
+    public static final String CATEGORY_AD = "广告";
     public static final String CATEGORY_QUALITY = "清晰度设置";
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
 
@@ -64,6 +64,7 @@ public class VideoSettings {
     public static final String SHORT_VIDEO_ENABLE_STRATEGY = "short_video_enable_strategy";
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
     public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
+    public static final String SHORT_VIDEO_ENABLE_AD = "short_video_enable_ad";
 
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
     public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
@@ -74,6 +75,12 @@ public class VideoSettings {
 
     public static final String DRAMA_VIDEO_SCENE_ACCOUNT_ID = "drama_video_scene_account_id";
     public static final String DRAMA_VIDEO_PREVENT_SCREEN_SHOT = "drama_video_prevent_screen_shot";
+    public static final String DRAMA_DETAIL_ENABLE_AD = "drama_detail_enable_ad";
+    public static final String DRAMA_RECOMMEND_ENABLE_AD = "drama_recommend_enable_ad";
+
+    public static final String AD_VIDEO_ACCOUNT_ID = "ad_video_account_id";
+    public static final String AD_VIDEO_SHOW_INTERVAL = "ad_video_show_interval";
+    public static final String AD_VIDEO_PREFETCH_MAX_COUNT = "ad_video_prefetch_max_count";
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
@@ -181,6 +188,7 @@ public class VideoSettings {
         createLongVideoSettings(settings);
         createDetailVideoSettings(settings);
         createDramaSettings(settings);
+        createAdSettings(settings);
         createQualitySettings(settings);
         createCommonSettings(settings);
         return settings;
@@ -273,6 +281,17 @@ public class VideoSettings {
                         return null;
                     }
                 }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_SHORT_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_SHORT_VIDEO,
+                        SHORT_VIDEO_ENABLE_AD,
+                        "短视频开启流内广告",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
     }
 
     private static void createFeedVideoSettings(List<SettingItem> settings) {
@@ -349,6 +368,64 @@ public class VideoSettings {
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
                         Boolean.TRUE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_MINI_DRAMA_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_MINI_DRAMA_VIDEO,
+                        DRAMA_DETAIL_ENABLE_AD,
+                        "短剧详情开启流内广告",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_MINI_DRAMA_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_MINI_DRAMA_VIDEO,
+                        DRAMA_RECOMMEND_ENABLE_AD,
+                        "短剧推荐开启流内广告",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
+    }
+
+    private static void createAdSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_AD));
+        settings.add(SettingItem.createOptionItem(CATEGORY_AD,
+                new Option(
+                        Option.TYPE_EDITABLE_TEXT,
+                        CATEGORY_AD,
+                        AD_VIDEO_ACCOUNT_ID,
+                        "Mock 广告账号",
+                        Option.STRATEGY_IMMEDIATELY,
+                        String.class,
+                        /*"mock-ad-video",*/ "short-video",
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_AD,
+                new Option(
+                        Option.TYPE_EDITABLE_TEXT,
+                        CATEGORY_AD,
+                        AD_VIDEO_SHOW_INTERVAL,
+                        "广告展示间隔",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        5,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_AD,
+                new Option(
+                        Option.TYPE_EDITABLE_TEXT,
+                        CATEGORY_AD,
+                        AD_VIDEO_PREFETCH_MAX_COUNT,
+                        "广告预获取条数",
+                        Option.STRATEGY_RESTART_APP,
+                        Integer.class,
+                        10,
                         null)));
     }
 
