@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoModel;
+import com.ss.ttvideoengine.model.VideoRef;
 
 import org.json.JSONObject;
 
@@ -88,11 +89,15 @@ public class VolcVideoModelCache {
         @Nullable
         static IVideoModel create(String jsonModel) {
             if (TextUtils.isEmpty(jsonModel)) return null;
+            JSONObject json;
+            VideoRef ref = new VideoRef();
             try {
+                json = new JSONObject(jsonModel);
+                ref.extractFields(json);
                 VideoModel model = new VideoModel();
-                model.extractFields(new JSONObject(jsonModel));
+                model.setVideoRef(ref);
                 return model;
-            } catch (Throwable e) {
+            } catch (Throwable throwable) {
                 return null;
             }
         }

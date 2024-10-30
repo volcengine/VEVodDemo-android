@@ -32,6 +32,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SampleSourceParser {
 
@@ -40,8 +42,30 @@ public class SampleSourceParser {
             JSONArray array = new JSONArray(input);
             return createVideoItems(array);
         } catch (JSONException e) {
-            return createVideoItems(input.split("\n"));
+            try {
+                JSONObject object = new JSONObject(input);
+                return createVideoModelVideoItem(object);
+            } catch (JSONException ex) {
+                return createVideoItems(input.split("\n"));
+            }
         }
+    }
+
+    private static ArrayList<VideoItem> createVideoModelVideoItem(JSONObject object) {
+        String videoId = null;
+        if (object.has("video_id")
+                && object.has("status")) {
+            videoId = object.optString("video_id");
+
+        } else if (object.has("Vid")
+            && object.has("Status")) {
+            videoId = object.optString("Vid");
+        } else {
+            return null;
+        }
+        ArrayList<VideoItem> items = new ArrayList<>();
+        items.add(VideoItem.createVideoModelItem(videoId, object.toString(), null, 0, null, null));
+        return items;
     }
 
     private static ArrayList<VideoItem> createVideoItems(JSONArray jsonArray) {
