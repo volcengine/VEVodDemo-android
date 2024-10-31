@@ -18,6 +18,8 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import static com.ss.ttvideoengine.strategy.StrategyManager.VERSION_2;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -34,9 +36,9 @@ import com.pandora.common.env.Env;
 import com.pandora.common.env.config.Config;
 import com.pandora.common.env.config.VodConfig;
 import com.pandora.vod.VodSDK;
-import com.ss.ttvideoengine.BaseAppInfo;
 import com.ss.ttvideoengine.DataLoaderHelper;
 import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.strategy.StrategyManager;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -144,6 +146,8 @@ public class VolcPlayerInit {
         if (L.ENABLE_LOG) {
             VodSDK.openAllVodLog();
         }
+
+        StrategyManager.setVersion(VERSION_2);
 
         if (VolcConfigGlobal.ENABLE_HLS_CACHE_MODULE) {
             TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_HLS_PROXY, 1);
