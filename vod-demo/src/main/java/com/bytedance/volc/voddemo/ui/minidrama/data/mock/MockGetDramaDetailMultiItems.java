@@ -44,7 +44,7 @@ public class MockGetDramaDetailMultiItems implements GetDramaDetailMultiItemsApi
                 List<VideoItem> videoItems = EpisodeVideo.toVideoItems(result);
                 List<Item> items = ItemHelper.toItems(videoItems);
                 if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.DRAMA_DETAIL_ENABLE_AD)) {
-                    mAdInjectStrategy.injectAd(true, items);
+                    mAdInjectStrategy.injectAd(false, items);
                 }
                 callback.onSuccess(items);
             }

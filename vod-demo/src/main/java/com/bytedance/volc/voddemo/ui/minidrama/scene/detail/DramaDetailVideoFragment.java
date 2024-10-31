@@ -545,23 +545,26 @@ public class DramaDetailVideoFragment extends BaseFragment {
         if (mSceneView.isLoadingMore()) {
             return;
         }
-        final DramaItem current = mDramaItems.get(mCurrentDramaIndex);
-        if (current == null) {
-            return;
-        }
-        final DramaItem dramaItem;
-        if (current.episodesAllLoaded) {
-            int nextIndex = mCurrentDramaIndex + 1;
-            if (nextIndex >= mDramaItems.size()) {
-                mSceneView.finishLoadingMore();
-                L.d(this, "load", "end");
+
+        DramaItem dramaItem = null;
+        int index = mCurrentDramaIndex;
+        while (index < mDramaItems.size()) {
+            final DramaItem item = mDramaItems.get(index);
+            if (item == null) {
                 return;
             }
-            dramaItem = mDramaItems.get(nextIndex);
-        } else {
-            dramaItem = current;
+            if (item.episodesAllLoaded) {
+                index++;
+            } else {
+                dramaItem = item;
+                break;
+            }
         }
-
+        if (dramaItem == null) {
+            mSceneView.finishLoadingMore();
+            L.d(this, "load", "end");
+            return;
+        }
         load(dramaItem);
     }
 
