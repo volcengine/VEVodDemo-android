@@ -31,7 +31,7 @@ Demo 中实现了常见的三种播放场景：
 ```java
 public class App extends Application {
    private static final String APP_ID = "your app id";
-   // 比如：VEVodDemo-android/app/assets/license2/vod.lic 路径下的 assets uri 对应为：assets:///license2/vod.lic
+   // 比如：VEVodDemo-android/app/src/main/assets/license2/vod.lic 路径下的 assets uri 对应为：assets:///license2/vod.lic
    private static final String LICENSE_URI = "your license assets uri";
    // ... 省略
 }
