@@ -43,7 +43,7 @@ project.ext {
     bytedance = [
             ttsdkPlayerEdition   : "premium", // supported value: "premium", "standard", "lite"
             ttsdkPlayerExtensions: "super_resolution,abr",
-            ttsdkVersion         : "1.44.2.3",
+            ttsdkVersion         : "1.44.3.4",
             applogVersion        : "6.15.4"
     ]
     versionCode = 3
