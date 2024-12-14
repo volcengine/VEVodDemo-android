@@ -150,6 +150,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
             if (EpisodeVideo.isLocked((VideoItem) currentDramaItem.currentItem)) {
                 if (currentDramaItem.lastUnlockedItem != null) {
                     currentDramaItem.currentItem = currentDramaItem.lastUnlockedItem;
+                } else {
+                    currentDramaItem.currentItem = null;
                 }
             } else {
                 if (mContinuesPlayback) {
