@@ -129,6 +129,8 @@ public class ViewPager2ChildFixSameDirectionScrollLayout extends FrameLayout {
                     }
                 }
             }
+        } else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            getParent().requestDisallowInterceptTouchEvent(false);
         }
     }
 }
