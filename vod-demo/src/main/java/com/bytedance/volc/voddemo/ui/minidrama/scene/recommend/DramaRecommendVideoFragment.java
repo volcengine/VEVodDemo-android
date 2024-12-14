@@ -287,6 +287,7 @@ public class DramaRecommendVideoFragment extends BaseFragment {
             if (currentDramaItem == null) return;
 
             currentDramaItem.currentEpisodeNumber = EpisodeVideo.getEpisodeNumber(episodeVideo) + 1;
+            currentDramaItem.currentItem = null;
             mDramaDetailPageLauncher.launch(new DramaDetailVideoInput(dramaItems, currentDramaIndex, true));
         }
     }
