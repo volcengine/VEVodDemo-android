@@ -112,6 +112,8 @@ public class ViewPager2ChildFrameLayout extends FrameLayout {
                     getParent().requestDisallowInterceptTouchEvent(false);
                 }
             }
+        } else if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            getParent().requestDisallowInterceptTouchEvent(false);
         }
     }
 }
