@@ -34,15 +34,15 @@ public class LongVideoItemDecoration extends RecyclerView.ItemDecoration {
         final int position = parent.getChildAdapterPosition(view);
         final RecyclerView.Adapter<?> adapter = parent.getAdapter();
         final int type = adapter.getItemViewType(position);
-        if (type == LongVideoAdapter.Item.TYPE_HEADER_BANNER) {
+        if (type == LongVideoAdapter.LongVideoItem.TYPE_HEADER_BANNER) {
             outRect.set(0, 0, 0, 0);
-        } else if (type == LongVideoAdapter.Item.TYPE_GROUP_TITLE) {
+        } else if (type == LongVideoAdapter.LongVideoItem.TYPE_GROUP_TITLE) {
             outRect.set(0, (int) UIUtils.dip2Px(view.getContext(), 6), 0, 0);
-        } else if (type == LongVideoAdapter.Item.TYPE_VIDEO_ITEM) {
+        } else if (type == LongVideoAdapter.LongVideoItem.TYPE_VIDEO_ITEM) {
             int titlePosition = -1;
             for (int i = position - 1; i >= 0; i--) {
                 int viewType = adapter.getItemViewType(i);
-                if (viewType == LongVideoAdapter.Item.TYPE_GROUP_TITLE) {
+                if (viewType == LongVideoAdapter.LongVideoItem.TYPE_GROUP_TITLE) {
                     titlePosition = i;
                     break;
                 }

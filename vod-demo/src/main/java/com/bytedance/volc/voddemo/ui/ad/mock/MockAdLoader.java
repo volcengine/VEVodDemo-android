@@ -20,8 +20,9 @@ package com.bytedance.volc.voddemo.ui.ad.mock;
 
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.ui.ad.api.AdLoader;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
@@ -29,6 +30,7 @@ import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * Mock impl of AdLoader
  */
@@ -48,7 +50,7 @@ public class MockAdLoader implements AdLoader {
     }
 
     private final GetFeedStreamApi mMockADApi;
-    private final List<BaseVideo> mVideos = new ArrayList<>();
+    private final List<Item> mItems = new ArrayList<>();
     public int mEndIndex;
     private final String mCodeId;
     private boolean mCanceled;
@@ -60,28 +62,28 @@ public class MockAdLoader implements AdLoader {
 
     @Override
     public void load(int type, int num, Callback callback) {
-        if (!mVideos.isEmpty()) {
+        if (!mItems.isEmpty()) {
             int start = mEndIndex;
             int end = mEndIndex = start + num;
             L.d(this, "load", "start", start, "end", end);
             final List<Ad> ads = new ArrayList<>();
             for (int i = start; i < end; i++) {
-                final BaseVideo video = mVideos.get(i % mVideos.size());
-                ads.add(new MockAd(video.vid, type, mCodeId, video));
+                final Item item = mItems.get(i % mItems.size());
+                if (item instanceof VideoItem) {
+                    VideoItem videoItem = (VideoItem) item;
+                    ads.add(new MockAd(videoItem.getVid(), type, mCodeId, videoItem));
+                }
             }
             callback.onSuccess(ads);
         } else {
-            mMockADApi.getFeedStream(0, 100, new RemoteApi.Callback<List<BaseVideo>>() {
+            mMockADApi.getFeedStream(0, 100, new RemoteApi.Callback<List<Item>>() {
                 @Override
-                public void onSuccess(List<BaseVideo> videos) {
-                    if (videos == null || videos.isEmpty()) {
+                public void onSuccess(List<Item> items) {
+                    if (items == null || items.isEmpty()) {
                         onError(new Exception("empty"));
                         return;
                     }
-                    for (BaseVideo video : videos) {
-                        video.vid = "ad_" + video.vid;
-                    }
-                    mVideos.addAll(videos);
+                    mItems.addAll(items);
                     load(type, num, callback);
                 }
 

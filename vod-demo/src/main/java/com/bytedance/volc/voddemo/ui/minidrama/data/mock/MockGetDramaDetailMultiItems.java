@@ -41,8 +41,7 @@ public class MockGetDramaDetailMultiItems implements GetDramaDetailMultiItemsApi
             @Override
             public void onSuccess(List<EpisodeVideo> result) {
                 MockAppServer.mockDramaDetailLockState(result);
-                List<VideoItem> videoItems = EpisodeVideo.toVideoItems(result);
-                List<Item> items = ItemHelper.toItems(videoItems);
+                List<Item> items = EpisodeVideo.toItems(result);
                 if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.DRAMA_DETAIL_ENABLE_AD)) {
                     mAdInjectStrategy.injectAd(false, items);
                 }

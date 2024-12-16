@@ -26,9 +26,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.volc.vod.scenekit.data.model.DrawADItem;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.ui.ad.api.AdMapper;
 import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
@@ -55,8 +55,8 @@ public class ShortVideoDrawADItemViewHolder extends ViewHolder {
         if (mItem != item) {
             mItem = item;
             Ad ad = AdMapper.instance().get(item);
-            final BaseVideo video = ad == null ? null : ad.get();
-            if (video == null) return;
+            final VideoItem videoItem = ad == null ? null : ad.get();
+            if (videoItem == null) return;
             mockAdVideoView.bind(ad);
         }
     }

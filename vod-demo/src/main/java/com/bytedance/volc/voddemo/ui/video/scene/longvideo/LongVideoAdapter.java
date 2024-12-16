@@ -52,7 +52,7 @@ import java.util.List;
 public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     interface OnItemClickListener {
-        void onItemClick(Item item, RecyclerView.ViewHolder holder);
+        void onItemClick(LongVideoItem item, RecyclerView.ViewHolder holder);
 
         void onHeaderItemClick(VideoItem item, RecyclerView.ViewHolder holder);
     }
@@ -63,7 +63,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         this.mItemClickListener = listener;
     }
 
-    public static class Item {
+    static class LongVideoItem {
         final static int TYPE_HEADER_BANNER = 1;
         final static int TYPE_GROUP_TITLE = 2;
         final static int TYPE_VIDEO_ITEM = 3;
@@ -74,15 +74,15 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         VideoItem videoItem;
     }
 
-    private final List<Item> mItems = new ArrayList<>();
+    private final List<LongVideoItem> mItems = new ArrayList<>();
 
-    public void setItems(List<Item> items) {
+    public void setItems(List<LongVideoItem> items) {
         mItems.clear();
         mItems.addAll(items);
         notifyDataSetChanged();
     }
 
-    public void appendItems(List<Item> items) {
+    public void appendItems(List<LongVideoItem> items) {
         int count = mItems.size();
         mItems.addAll(items);
         notifyItemRangeInserted(count, items.size());
@@ -123,18 +123,18 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     private boolean isFullSpanType(int type) {
-        return type == Item.TYPE_HEADER_BANNER || type == Item.TYPE_GROUP_TITLE;
+        return type == LongVideoItem.TYPE_HEADER_BANNER || type == LongVideoItem.TYPE_GROUP_TITLE;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
-            case Item.TYPE_HEADER_BANNER:
+            case LongVideoItem.TYPE_HEADER_BANNER:
                 return HeaderViewHolder.create(parent);
-            case Item.TYPE_GROUP_TITLE:
+            case LongVideoItem.TYPE_GROUP_TITLE:
                 return GroupTitleViewHolder.create(parent);
-            case Item.TYPE_VIDEO_ITEM:
+            case LongVideoItem.TYPE_VIDEO_ITEM:
                 return VideoItemViewHolder.create(parent);
             default:
                 throw new IllegalArgumentException();
@@ -143,7 +143,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        final Item item = getItem(position);
+        final LongVideoItem item = getItem(position);
         ((ItemViewHolder) holder).bind(position, item, mItems, mItemClickListener);
     }
 
@@ -158,7 +158,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     @NonNull
-    private Item getItem(int position) {
+    private LongVideoItem getItem(int position) {
         return mItems.get(position);
     }
 
@@ -171,7 +171,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         abstract void bind(int position, T item, List<T> items, OnItemClickListener onItemClickListener);
     }
 
-    static abstract class ItemViewHolder extends ViewHolder<Item> {
+    static abstract class ItemViewHolder extends ViewHolder<LongVideoItem> {
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -199,7 +199,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         @Override
-        void bind(int position, Item item, List<Item> items, OnItemClickListener onItemClickListener) {
+        void bind(int position, LongVideoItem item, List<LongVideoItem> items, OnItemClickListener onItemClickListener) {
             VideoItem videoItem = item.videoItem;
             Glide.with(cover).load(videoItem.getCover()).listener(new RequestListener<Drawable>() {
                 @Override
@@ -239,7 +239,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         @Override
-        void bind(int position, Item item, List<Item> items, OnItemClickListener onItemClickListener) {
+        void bind(int position, LongVideoItem item, List<LongVideoItem> items, OnItemClickListener onItemClickListener) {
             title.setText(item.title);
             itemView.setOnClickListener(v -> {
                 if (onItemClickListener != null) {
@@ -267,7 +267,7 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
 
         @Override
-        void bind(int position, Item item, List<Item> items, OnItemClickListener onItemClickListener) {
+        void bind(int position, LongVideoItem item, List<LongVideoItem> items, OnItemClickListener onItemClickListener) {
             adapter.bind(item, onItemClickListener);
         }
 
@@ -279,10 +279,10 @@ public class LongVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         static class HeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-            private Item mItem;
+            private LongVideoItem mItem;
             private OnItemClickListener mListener;
 
-            public void bind(Item item, OnItemClickListener listener) {
+            public void bind(LongVideoItem item, OnItemClickListener listener) {
                 if (mItem != item) {
                     this.mItem = item;
                     this.mListener = listener;

@@ -23,6 +23,7 @@ import static com.bytedance.volc.voddemo.data.remote.AppServer.generalApi;
 import androidx.annotation.NonNull;
 
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi.Callback;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi.HandlerCallback;
 import com.bytedance.volc.voddemo.data.remote.model.Params;
@@ -48,8 +49,8 @@ public class GetFeedStream implements GetFeedStreamApi {
     }
 
     @Override
-    public void getFeedStream(int pageIndex, int pageSize, Callback<List<BaseVideo>> callback) {
-        final HandlerCallback<List<BaseVideo>> mainCallback = new HandlerCallback<>(callback);
+    public void getFeedStream(int pageIndex, int pageSize, Callback<List<Item>> callback) {
+        final HandlerCallback<List<Item>> mainCallback = new HandlerCallback<>(callback);
         final GetFeedStreamRequest request = new GetFeedStreamRequest(
                 mAccount,
                 pageIndex * pageSize,
@@ -78,7 +79,8 @@ public class GetFeedStream implements GetFeedStreamApi {
                         mainCallback.onError(new IOException(response + "; " + result.responseMetadata.error));
                         return;
                     }
-                    mainCallback.onSuccess(result.result);
+                    List<Item> items = BaseVideo.toItems(result.result);
+                    mainCallback.onSuccess(items);
                 } else {
                     mainCallback.onError(new IOException(response.toString()));
                 }

@@ -41,13 +41,10 @@ public class MockGetEpisodeRecommendMultiItems implements GetEpisodeRecommendMul
         mGetEpisodeRecommend.getRecommendEpisodeVideoItems(pageIndex, pageSize, new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
             public void onSuccess(List<EpisodeVideo> result) {
-                List<VideoItem> videoItems = EpisodeVideo.toVideoItems(result);
-                List<Item> items = videoItems == null ? null : new ArrayList<>(videoItems);
-
+                List<Item> items = EpisodeVideo.toItems(result);
                 if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.DRAMA_RECOMMEND_ENABLE_AD)) {
                     mAdInjectStrategy.injectAd(pageIndex == 0, items);
                 }
-
                 callback.onSuccess(items);
             }
 
