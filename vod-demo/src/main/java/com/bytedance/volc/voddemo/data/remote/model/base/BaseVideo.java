@@ -138,6 +138,12 @@ public class BaseVideo implements Serializable {
     }
 
     @Nullable
+    public static List<Item> toItems(List<? extends BaseVideo> videos) {
+        List<VideoItem> videoItems = videos == null ?  null : BaseVideo.toVideoItems(videos);
+        return videoItems == null ? null : new ArrayList<>(videoItems);
+    }
+
+    @Nullable
     public static <T extends BaseVideo> T get(Item item) {
         if (!(item instanceof VideoItem)) return null;
         VideoItem videoItem = (VideoItem) item;

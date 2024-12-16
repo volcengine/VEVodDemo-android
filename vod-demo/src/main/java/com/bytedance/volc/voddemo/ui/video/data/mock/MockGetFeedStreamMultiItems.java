@@ -20,18 +20,15 @@ package com.bytedance.volc.voddemo.ui.video.data.mock;
 
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
-import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
-import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamMultiItemsApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 
 import java.util.List;
 
-public class MockGetFeedStreamMultiItems implements GetFeedStreamMultiItemsApi {
+public class MockGetFeedStreamMultiItems implements GetFeedStreamApi {
     private final GetFeedStream mGetFeedStream;
     private final AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();
 
@@ -41,13 +38,10 @@ public class MockGetFeedStreamMultiItems implements GetFeedStreamMultiItemsApi {
 
     @Override
     public void getFeedStream(int pageIndex, int pageSize, RemoteApi.Callback<List<Item>> callback) {
-//        mAdLoadStrategy.start();
-        mGetFeedStream.getFeedStream(pageIndex, pageSize, new RemoteApi.Callback<List<BaseVideo>>() {
+        mGetFeedStream.getFeedStream(pageIndex, pageSize, new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<BaseVideo> videos) {
+            public void onSuccess(List<Item> items) {
                 Asserts.checkMainThread();
-                final List<VideoItem> videoItems = BaseVideo.toVideoItems(videos);
-                final List<Item> items = ItemHelper.toItems(videoItems);
                 if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_AD)) {
                     mAdInjectStrategy.injectAd(pageIndex == 0, items);
                 }

@@ -18,7 +18,6 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene.longvideo;
 
-import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapter.Item;
 import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapter.OnItemClickListener;
 
 import android.os.Bundle;
@@ -47,10 +46,10 @@ import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.LoadMoreAble;
 import com.bytedance.volc.vod.scenekit.ui.widgets.load.impl.RecycleViewLoadMoreHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
@@ -63,9 +62,7 @@ import java.util.List;
 public class LongVideoFragment extends BaseFragment {
 
     private GetFeedStreamApi mRemoteApi;
-    private String mAccount;
-
-    private final Book<VideoItem> mBook = new Book<>(12);
+    private final Book<Item> mBook = new Book<>(12);
     private LongVideoAdapter mAdapter;
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mRecyclerView;
@@ -107,8 +104,8 @@ public class LongVideoFragment extends BaseFragment {
         mDataTrans = new LongVideoDataTrans(requireActivity());
         mAdapter = new LongVideoAdapter(new OnItemClickListener() {
             @Override
-            public void onItemClick(Item item, RecyclerView.ViewHolder holder) {
-                if (item.type == Item.TYPE_VIDEO_ITEM) {
+            public void onItemClick(LongVideoAdapter.LongVideoItem item, RecyclerView.ViewHolder holder) {
+                if (item.type == LongVideoAdapter.LongVideoItem.TYPE_VIDEO_ITEM) {
                     enterDetail(item.videoItem);
                 }
             }
@@ -202,14 +199,17 @@ public class LongVideoFragment extends BaseFragment {
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         showRefreshing();
-        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<BaseVideo> result) {
+            public void onSuccess(List<Item> items) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(new Page<>(BaseVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
+                mBook.firstPage(new Page<>(items, 0, Page.TOTAL_INFINITY));
+
+                List<VideoItem> videoItems = VideoItem.findVideoItems(items);
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
                 VideoItem.syncProgress(videoItems, true);
+
                 dismissRefreshing();
                 mDataTrans.setList(mAdapter, videoItems);
             }
@@ -257,14 +257,17 @@ public class LongVideoFragment extends BaseFragment {
             if (isLoadingMore()) return;
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
             showLoadingMore();
-            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
                 @Override
-                public void onSuccess(List<BaseVideo> result) {
+                public void onSuccess(List<Item> items) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(new Page<>(BaseVideo.toVideoItems(result), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
+                    mBook.addPage(new Page<>(items, mBook.nextPageIndex(), Page.TOTAL_INFINITY));
+
+                    List<VideoItem> videoItems = VideoItem.findVideoItems(items);
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_LONG), null);
                     VideoItem.syncProgress(videoItems, true);
+
                     dismissLoadingMore();
                     mDataTrans.append(mAdapter, videoItems);
                 }

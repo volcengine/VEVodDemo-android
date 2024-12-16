@@ -18,7 +18,7 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene.longvideo;
 
-import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapter.Item;
+import static com.bytedance.volc.voddemo.ui.video.scene.longvideo.LongVideoAdapter.LongVideoItem;
 
 import android.content.Context;
 
@@ -36,7 +36,7 @@ class LongVideoDataTrans {
 
     void setList(LongVideoAdapter adapter, List<VideoItem> videoItems) {
         resetConfig();
-        List<Item> items = createItems(videoItems);
+        List<LongVideoItem> items = createItems(videoItems);
         adapter.setItems(items);
     }
 
@@ -47,8 +47,8 @@ class LongVideoDataTrans {
     }
 
     @NonNull
-    private List<Item> createItems(List<VideoItem> videoItems) {
-        List<Item> items = new ArrayList<>();
+    private List<LongVideoItem> createItems(List<VideoItem> videoItems) {
+        List<LongVideoItem> items = new ArrayList<>();
         int index = 0;
         for (GroupConfig config : groupConfigs) {
             if (index >= videoItems.size()) break;
@@ -56,8 +56,8 @@ class LongVideoDataTrans {
 
             if (config.type != GroupConfig.TYPE_PAGER) {
                 if (config.index == 0) {
-                    Item titleItem = new Item();
-                    titleItem.type = Item.TYPE_GROUP_TITLE;
+                    LongVideoItem titleItem = new LongVideoItem();
+                    titleItem.type = LongVideoItem.TYPE_GROUP_TITLE;
                     titleItem.title = config.title;
                     items.add(titleItem);
                 }
@@ -67,8 +67,8 @@ class LongVideoDataTrans {
 
                 if (config.count == -1) {
                     while (index < videoItems.size()) {
-                        Item item = new Item();
-                        item.type = Item.TYPE_VIDEO_ITEM;
+                        LongVideoItem item = new LongVideoItem();
+                        item.type = LongVideoItem.TYPE_VIDEO_ITEM;
                         item.videoItem = videoItems.get(index);
                         items.add(item);
                         index++;
@@ -76,8 +76,8 @@ class LongVideoDataTrans {
                     }
                 } else {
                     for (int i = 0; i < config.count && index < videoItems.size(); i++) {
-                        Item item = new Item();
-                        item.type = Item.TYPE_VIDEO_ITEM;
+                        LongVideoItem item = new LongVideoItem();
+                        item.type = LongVideoItem.TYPE_VIDEO_ITEM;
                         item.videoItem = videoItems.get(index);
                         items.add(item);
                         index++;
@@ -88,16 +88,16 @@ class LongVideoDataTrans {
 
                 for (VideoItem videoItem : videoItems) {
                     if (config.ids.contains(videoItem.getVid())) {
-                        Item item = new Item();
-                        item.type = Item.TYPE_VIDEO_ITEM;
+                        LongVideoItem item = new LongVideoItem();
+                        item.type = LongVideoItem.TYPE_VIDEO_ITEM;
                         item.videoItem = videoItem;
                         items.add(item);
                     }
                 }
             } else if (config.type == GroupConfig.TYPE_PAGER) {
-                Item header = new Item();
+                LongVideoItem header = new LongVideoItem();
                 header.videoItems = new ArrayList<>();
-                header.type = Item.TYPE_HEADER_BANNER;
+                header.type = LongVideoItem.TYPE_HEADER_BANNER;
                 for (int i = 0; i < Math.min(videoItems.size(), config.count); i++) {
                     header.videoItems.add(videoItems.get(i));
                     index++;
@@ -110,7 +110,7 @@ class LongVideoDataTrans {
     }
 
     void append(LongVideoAdapter adapter, List<VideoItem> videoItems) {
-        List<Item> items = createItems(videoItems);
+        List<LongVideoItem> items = createItems(videoItems);
         adapter.appendItems(items);
     }
 

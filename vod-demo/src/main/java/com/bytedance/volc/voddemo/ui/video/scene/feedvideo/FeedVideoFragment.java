@@ -44,6 +44,7 @@ import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.impl.R;
@@ -58,7 +59,6 @@ import java.util.List;
 public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView.DetailPageNavigator {
 
     private GetFeedStreamApi mRemoteApi;
-    private String mAccount;
     private final Book<VideoItem> mBook = new Book<>(10);
     private FeedVideoSceneView mSceneView;
 
@@ -115,16 +115,19 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     private void refresh() {
         L.d(this, "refresh", "start", 0, mBook.pageSize());
         mSceneView.showRefreshing();
-        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+        mRemoteApi.getFeedStream(0, mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
             @Override
-            public void onSuccess(List<BaseVideo> result) {
+            public void onSuccess(List<Item> items) {
                 L.d(this, "refresh", "success");
                 if (getActivity() == null) return;
-                List<VideoItem> videoItems = mBook.firstPage(new Page<>(BaseVideo.toVideoItems(result), 0, Page.TOTAL_INFINITY));
+
+                List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+                mBook.firstPage(new Page<>(videoItems, 0, Page.TOTAL_INFINITY));
                 VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
                 VideoItem.syncProgress(videoItems, true);
+
                 mSceneView.dismissRefreshing();
-                if (!videoItems.isEmpty()) {
+                if (videoItems != null) {
                     mSceneView.pageView().setItems(videoItems);
                 }
             }
@@ -144,14 +147,17 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
             if (mSceneView.isLoadingMore()) return;
             mSceneView.showLoadingMore();
             L.d(this, "loadMore", "start", mBook.nextPageIndex(), mBook.pageSize());
-            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<BaseVideo>>() {
+            mRemoteApi.getFeedStream(mBook.nextPageIndex(), mBook.pageSize(), new RemoteApi.Callback<List<Item>>() {
                 @Override
-                public void onSuccess(List<BaseVideo> result) {
+                public void onSuccess(List<Item> items) {
                     L.d(this, "loadMore", "success", mBook.nextPageIndex());
                     if (getActivity() == null) return;
-                    List<VideoItem> videoItems = mBook.addPage(new Page<>(BaseVideo.toVideoItems(result), mBook.nextPageIndex(), Page.TOTAL_INFINITY));
+
+                    List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+                    mBook.addPage(new Page<>(videoItems, mBook.nextPageIndex(), Page.TOTAL_INFINITY));
                     VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_FEED), null);
                     VideoItem.syncProgress(videoItems, true);
+
                     mSceneView.dismissLoadingMore();
                     mSceneView.pageView().appendItems(videoItems);
                 }

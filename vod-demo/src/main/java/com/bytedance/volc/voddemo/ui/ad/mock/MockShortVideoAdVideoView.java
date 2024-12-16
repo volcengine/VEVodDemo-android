@@ -159,17 +159,14 @@ public class MockShortVideoAdVideoView extends FrameLayout implements LifecycleE
     public void bind(Ad ad) {
         if (mAd != ad) {
             mAd = ad;
-            final BaseVideo video = mAd == null ? null : mAd.get();
+            final VideoItem video = mAd == null ? null : mAd.get();
             if (video == null) return;
             bind(video);
         }
         startDetect();
     }
 
-    public void bind(BaseVideo video) {
-        if (video == null) return;
-
-        VideoItem videoItem = BaseVideo.toVideoItem(video);
+    public void bind(VideoItem videoItem) {
         if (videoItem == null) return;
 
         MediaSource mediaSource = mVideoView.getDataSource();

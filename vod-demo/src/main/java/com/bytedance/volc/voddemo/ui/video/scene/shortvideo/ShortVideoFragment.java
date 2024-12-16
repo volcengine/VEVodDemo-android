@@ -60,7 +60,7 @@ import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
 import com.bytedance.volc.voddemo.ui.video.data.mock.MockGetFeedStreamMultiItems;
-import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamMultiItemsApi;
+import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
 
@@ -68,7 +68,7 @@ import java.util.List;
 
 
 public class ShortVideoFragment extends BaseFragment {
-    private GetFeedStreamMultiItemsApi mRemoteApi;
+    private GetFeedStreamApi mRemoteApi;
     private final Book<Item> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
     private OrientationHelper mOrientationHelper;
