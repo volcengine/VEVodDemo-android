@@ -88,6 +88,17 @@ public class ShortVideoFragment extends BaseFragment {
     }
 
     @Override
+    public boolean onBackPressed() {
+        if (mSceneView.onBackPressed()) {
+            return true;
+        }
+        // For some device swipe back gesture break the Activity/Fragment lifecycle. Stop here to fix
+        // player release sequence bug.
+        mSceneView.pageView().stop();
+        return super.onBackPressed();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRemoteApi = new MockGetFeedStreamMultiItems(VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID));
