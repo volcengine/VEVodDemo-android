@@ -58,6 +58,7 @@ import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
+import com.bytedance.volc.vod.scenekit.ui.video.viewholder.ViewHolderAction;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
@@ -161,6 +162,10 @@ public class DramaDetailVideoFragment extends BaseFragment {
                     if (controller != null) {
                         controller.unbindPlayer();
                     }
+                } else {
+                    // For some device swipe back gesture break the Activity/Fragment lifecycle. Stop here to fix
+                    // player release sequence bug.
+                    viewHolder.executeAction(ViewHolderAction.ACTION_STOP);
                 }
             }
         } else if (viewHolder instanceof ShortVideoDrawADItemViewHolder) {
