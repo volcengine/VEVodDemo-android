@@ -38,8 +38,8 @@ public class GestureHelper implements GestureDetector.OnGestureListener,
     }
 
     public boolean onTouchEvent(View v, MotionEvent event) {
-        boolean handle = mGestureDetector.onTouchEvent(event) ||
-                (mScaleDetector.onTouchEvent(event) && event.getAction() != MotionEvent.ACTION_DOWN);
+        boolean handle = mGestureDetector.onTouchEvent(event);
+        handle = mScaleDetector.onTouchEvent(event) || handle;
         if (event.getAction() == MotionEvent.ACTION_UP) {
             handle = onUp(event) || handle;
         } else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
