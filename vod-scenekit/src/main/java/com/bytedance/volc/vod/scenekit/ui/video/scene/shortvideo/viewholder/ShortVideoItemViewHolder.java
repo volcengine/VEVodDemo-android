@@ -39,6 +39,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoBottomShadowLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
@@ -103,6 +104,7 @@ public class ShortVideoItemViewHolder extends VideoViewHolder {
         VideoView videoView = new VideoView(parent.getContext());
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
         layerHost.addLayer(new PlayerConfigLayer());
+        layerHost.addLayer(new SubtitleLayer());
         layerHost.addLayer(new ShortVideoCoverLayer());
         layerHost.addLayer(new ShortVideoBottomShadowLayer());
         layerHost.addLayer(new LoadingLayer());
