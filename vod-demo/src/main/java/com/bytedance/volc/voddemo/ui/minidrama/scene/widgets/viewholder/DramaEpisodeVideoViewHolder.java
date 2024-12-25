@@ -41,6 +41,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoBottomShadowLayer;
@@ -84,6 +85,7 @@ public class DramaEpisodeVideoViewHolder extends VideoViewHolder {
 
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
         layerHost.addLayer(new DramaGestureLayer(gestureContract));
+        layerHost.addLayer(new SubtitleLayer());
         layerHost.addLayer(new ShortVideoCoverLayer());
         layerHost.addLayer(new ShortVideoBottomShadowLayer());
         layerHost.addLayer(new DramaVideoLayer(type));

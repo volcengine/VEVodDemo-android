@@ -15,27 +15,19 @@
   ~
   ~ Create Date : 2023/6/12
   -->
-
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:layout_gravity="bottom|center"
-        android:layout_margin="10dp"
-        android:gravity="center"
-        android:shadowColor="@color/black"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="5"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        tools:text="hello" />
-
-</FrameLayout>
+    android:id="@+id/subtitle"
+    android:layout_width="wrap_content"
+    android:layout_height="64dp"
+    android:layout_gravity="bottom|center"
+    android:layout_margin="10dp"
+    android:gravity="center"
+    android:shadowColor="@color/black"
+    android:shadowDx="0"
+    android:shadowDy="0"
+    android:shadowRadius="5"
+    android:textColor="@color/white"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    tools:text="hello" />
