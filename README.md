@@ -4,6 +4,7 @@ VEVodDemo-android 是火山引擎视频云点播 SDK Android 端的开源 Demo. 
 `场景控件层（vod-scenekit）` 帮助业务快速搭建常见的点播场景。
 
 Demo 中实现了常见的三种播放场景：
+- 短剧场景 (Short Drama)  - 类红果短剧场景
 - 短视频场景（Short Video）- 类抖音首页竖版视频场景
 - 中视频场景（Feed Video） - 类西瓜视频 Feed 视频流场景
 - 长视频场景（Long Video） - 类爱奇艺/腾讯视频/优酷视频的电视剧/电影场景
