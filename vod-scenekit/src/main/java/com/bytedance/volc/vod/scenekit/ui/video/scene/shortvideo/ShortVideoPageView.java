@@ -353,7 +353,13 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
     private void onPause() {
         L.d(this, "onPause");
         ShortVideoStrategy.setEnabled(false);
-        pause();
+        ViewHolder viewHolder = getCurrentViewHolder();
+        if (viewHolder != null && viewHolder.isPaused()) {
+            mInterceptStartPlaybackOnResume = true;
+        } else {
+            mInterceptStartPlaybackOnResume = false;
+            pause();
+        }
     }
 
     private void onDestroy() {
