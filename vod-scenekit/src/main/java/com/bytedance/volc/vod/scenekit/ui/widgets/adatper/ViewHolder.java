@@ -66,4 +66,8 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
 
     public void executeAction(int action, @Nullable Object o) {
     }
+
+    public boolean isPaused() {
+        return false;
+    }
 }

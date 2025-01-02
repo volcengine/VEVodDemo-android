@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
@@ -100,6 +101,17 @@ public abstract class VideoViewHolder extends ViewHolder {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean isPaused() {
+        final VideoView videoView = videoView();
+        final Player player = videoView == null ? null : videoView.player();
+        if (player != null && (player.isPaused() || (!player.isLooping() && player.isCompleted()))) {
+            return true;
+        } else {
+            return super.isPaused();
+        }
     }
 
     private void actionOnPagerPeekStart() {
