@@ -290,7 +290,7 @@ public class VideoSettings {
                         "短视频开启流内广告",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
-                        Boolean.TRUE,
+                        Boolean.FALSE,
                         null)));
     }
 
@@ -378,7 +378,7 @@ public class VideoSettings {
                         "短剧详情开启流内广告",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
-                        Boolean.TRUE,
+                        Boolean.FALSE,
                         null)));
 
         settings.add(SettingItem.createOptionItem(CATEGORY_MINI_DRAMA_VIDEO,
@@ -389,7 +389,7 @@ public class VideoSettings {
                         "短剧推荐开启流内广告",
                         Option.STRATEGY_IMMEDIATELY,
                         Boolean.class,
-                        Boolean.TRUE,
+                        Boolean.FALSE,
                         null)));
     }
 
