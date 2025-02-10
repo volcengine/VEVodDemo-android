@@ -33,6 +33,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;
@@ -49,6 +50,7 @@ import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
@@ -124,7 +126,14 @@ public class DramaRecommendVideoFragment extends BaseFragment {
                     "targetDramaCurrentVideoItem=" + ItemHelper.dump(targetDramaCurrentVideoItem),
                     "targetDramaTargetVideoItem=" + ItemHelper.dump(targetDramaTargetVideoItem));
             mSceneView.pageView().stop();
+            /**
+             * onActivityResult current fragment lifeCycle state is STARTED, replaceItem can't start playback.
+             * see {@link ShortVideoPageView#togglePlayback(int)}
+             * so we need to setInterceptStartPlaybackOnResume(false), to startPlayback onResume.
+             * see {@link ShortVideoPageView#onResume()}
+             */
             mSceneView.pageView().replaceItem(targetDramaIndex, targetDramaTargetVideoItem);
+            mSceneView.pageView().setInterceptStartPlaybackOnResume(false);
         }
 
         // 3. ViewPager switch to target drama
