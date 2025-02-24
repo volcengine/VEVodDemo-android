@@ -67,13 +67,13 @@ public abstract class DisplayView {
     abstract void setSurfaceListener(SurfaceListener surfaceListener);
 
     interface SurfaceListener {
-        void onSurfaceAvailable(Surface surface, int width, int height);
+        default void onSurfaceAvailable(Surface surface, int width, int height) {/*empty*/}
 
-        void onSurfaceSizeChanged(Surface surface, int width, int height);
+        default void onSurfaceSizeChanged(Surface surface, int width, int height) {/*empty*/}
 
-        void onSurfaceUpdated(Surface surface);
+        default void onSurfaceUpdated(Surface surface) {/*empty*/}
 
-        void onSurfaceDestroy(Surface surface);
+        default void onSurfaceDestroy(Surface surface) {/*empty*/}
     }
 
     static class SurfaceDisplayView extends DisplayView {

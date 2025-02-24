@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.playback.VideoView.VideoViewListener;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
@@ -39,8 +38,8 @@ import com.bytedance.playerkit.utils.L;
  *
  * @see VideoLayerHost
  */
-public abstract class VideoLayer extends VideoViewListener.Adapter
-        implements VideoLayerHost.VideoLayerHostListener {
+public abstract class VideoLayer implements VideoView.VideoViewListener,
+         VideoLayerHost.VideoLayerHostListener {
 
     private View mLayerView;
     private VideoLayerHost mLayerHost;
@@ -62,6 +61,7 @@ public abstract class VideoLayer extends VideoViewListener.Adapter
 
     void unbindLayerHost(VideoLayerHost layerHost) {
         if (mLayerHost != null && mLayerHost == layerHost) {
+            layerHost.removeLayerView(this);
             VideoView videoView = layerHost.videoView();
             unbindVideoView(videoView);
             layerHost.removeVideoLayerHostListener(this);
