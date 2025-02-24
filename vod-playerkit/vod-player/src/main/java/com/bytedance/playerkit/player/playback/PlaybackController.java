@@ -564,7 +564,7 @@ public class PlaybackController {
         return mediaSource;
     }
 
-    static final class SurfaceListener extends VideoView.VideoViewListener.Adapter {
+    static final class SurfaceListener implements VideoView.VideoViewListener {
 
         final WeakReference<PlaybackController> controllerRef;
 

@@ -85,6 +85,8 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
 
     private int mPlayScene;
 
+    private boolean mEnableSurfaceUpdate;
+
     private Boolean mHasWindowFocus;
 
     public interface VideoViewPlaybackActionInterceptor {
@@ -110,108 +112,42 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
         }
     }
 
-    public interface ViewEventListener {
-        void onConfigurationChanged(Configuration newConfig);
+    public interface PlaybackActionInterceptListener {
 
-        void onWindowFocusChanged(boolean hasWindowFocus);
+        default void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason) {/*empty*/}
+
+        default void onVideoViewStopPlaybackIntercepted(VideoView videoView, String reason) {/*empty*/}
+
+        default void onVideoViewPausePlaybackIntercepted(VideoView videoView, String reason) {/*empty*/}
     }
 
-    public interface VideoViewListener extends DisplayView.SurfaceListener, ViewEventListener {
+    public interface ViewEventListener {
 
-        void onVideoViewBindController(PlaybackController controller);
+        default void onConfigurationChanged(Configuration newConfig) {/*empty*/}
 
-        void onVideoViewUnbindController(PlaybackController controller);
+        default void onWindowFocusChanged(boolean hasWindowFocus) {/*empty*/}
+    }
 
-        void onVideoViewBindDataSource(MediaSource dataSource);
+    public interface VideoViewListener extends
+            DisplayView.SurfaceListener,
+            ViewEventListener,
+            PlaybackActionInterceptListener {
 
-        void onVideoViewClick(VideoView videoView);
+        default void onVideoViewBindController(PlaybackController controller) {/*empty*/}
 
-        void onVideoViewDisplayModeChanged(@DisplayMode int oldMode, @DisplayMode int newMode);
+        default void onVideoViewUnbindController(PlaybackController controller) {/*empty*/}
 
-        void onVideoViewDisplayViewCreated(View displayView);
+        default void onVideoViewBindDataSource(MediaSource dataSource) {/*empty*/}
 
-        void onVideoViewDisplayViewChanged(View oldView, View newView);
+        default void onVideoViewClick(VideoView videoView) {/*empty*/}
 
-        void onVideoViewPlaySceneChanged(int fromScene, int toScene);
+        default void onVideoViewDisplayModeChanged(@DisplayMode int oldMode, @DisplayMode int newMode) {/*empty*/}
 
-        void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason);
+        default void onVideoViewDisplayViewCreated(View displayView) {/*empty*/}
 
-        void onVideoViewStopPlaybackIntercepted(VideoView videoView, String reason);
+        default void onVideoViewDisplayViewChanged(View oldView, View newView) {/*empty*/}
 
-        void onVideoViewPausePlaybackIntercepted(VideoView videoView, String reason);
-
-        class Adapter implements VideoViewListener {
-
-            @Override
-            public void onVideoViewBindController(PlaybackController controller) {
-            }
-
-            @Override
-            public void onVideoViewUnbindController(PlaybackController controller) {
-            }
-
-            @Override
-            public void onVideoViewBindDataSource(MediaSource dataSource) {
-            }
-
-            @Override
-            public void onVideoViewClick(VideoView videoView) {
-            }
-
-            @Override
-            public void onVideoViewDisplayViewChanged(View oldView, View newView) {
-            }
-
-            public void onVideoViewDisplayModeChanged(@DisplayMode int fromMode, @DisplayMode int toMode) {
-            }
-
-            @Override
-            public void onVideoViewDisplayViewCreated(View displayView) {
-            }
-
-            @Override
-            public void onVideoViewPlaySceneChanged(int fromScene, int toScene) {
-            }
-
-            @Override
-            public void onVideoViewStartPlaybackIntercepted(VideoView videoView, String reason) {
-
-            }
-
-            @Override
-            public void onVideoViewStopPlaybackIntercepted(VideoView videoView, String reason) {
-
-            }
-
-            @Override
-            public void onVideoViewPausePlaybackIntercepted(VideoView videoView, String reason) {
-
-            }
-
-            @Override
-            public void onConfigurationChanged(Configuration newConfig) {
-            }
-
-            @Override
-            public void onWindowFocusChanged(boolean hasWindowFocus) {
-            }
-
-            @Override
-            public void onSurfaceAvailable(Surface surface, int width, int height) {
-            }
-
-            @Override
-            public void onSurfaceSizeChanged(Surface surface, int width, int height) {
-            }
-
-            @Override
-            public void onSurfaceUpdated(Surface surface) {
-            }
-
-            @Override
-            public void onSurfaceDestroy(Surface surface) {
-            }
-        }
+        default void onVideoViewPlaySceneChanged(int fromScene, int toScene) {/*empty*/}
     }
 
     public VideoView(@NonNull Context context) {
@@ -300,10 +236,11 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
 
     @Override
     public void onSurfaceUpdated(Surface surface) {
-        // do nothing
-        // for (VideoViewListener listener : mListeners) {
-        //     listener.onSurfaceUpdated(surface);
-        // }
+        if (mEnableSurfaceUpdate) {
+            for (VideoViewListener listener : mListeners) {
+                listener.onSurfaceUpdated(surface);
+            }
+        }
     }
 
     @Override
@@ -536,6 +473,14 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
         return mPlayScene;
     }
 
+    public void setEnableSurfaceUpdate(boolean enable) {
+        mEnableSurfaceUpdate = enable;
+    }
+
+    public boolean isEnableSurfaceUpdate() {
+        return mEnableSurfaceUpdate;
+    }
+
     /**
      * @return The {@link VideoLayerHost} instance
      */
@@ -572,7 +517,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
         final String reason = interceptPlaybackAction(interceptor -> interceptor.onVideoViewInterceptStartPlayback(VideoView.this));
         if (!TextUtils.isEmpty(reason)) {
             L.d(this, "startPlayback", "intercepted! " + reason);
-            for (VideoViewListener listener : mListeners) {
+            for (PlaybackActionInterceptListener listener : mListeners) {
                 listener.onVideoViewStartPlaybackIntercepted(this, reason);
             }
             return;
@@ -590,7 +535,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
         final String reason = interceptPlaybackAction(interceptor -> interceptor.onVideoViewInterceptStopPlayback(VideoView.this));
         if (!TextUtils.isEmpty(reason)) {
             L.d(this, "stopPlayback", "intercepted! " + reason);
-            for (VideoViewListener listener : mListeners) {
+            for (PlaybackActionInterceptListener listener : mListeners) {
                 listener.onVideoViewStopPlaybackIntercepted(this, reason);
             }
             return;
@@ -611,7 +556,7 @@ public class VideoView extends RatioFrameLayout implements Dispatcher.EventListe
         final String reason = interceptPlaybackAction(interceptor -> interceptor.onVideoViewInterceptPausePlayback(VideoView.this));
         if (!TextUtils.isEmpty(reason)) {
             L.d(this, "pausePlayback", "intercepted! " + reason);
-            for (VideoViewListener listener : mListeners) {
+            for (PlaybackActionInterceptListener listener : mListeners) {
                 listener.onVideoViewPausePlaybackIntercepted(this, reason);
             }
             return;

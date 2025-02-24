@@ -265,10 +265,11 @@ public class VideoLayerHost {
      * @param layerClazz class of layer
      * @return the removed {@link VideoLayer} instance
      */
+    @Nullable
     public final VideoLayer removeLayer(Class<? extends VideoLayer> layerClazz) {
         for (VideoLayer layer : mLayers) {
             if (layerClazz.isInstance(layer)) {
-                mLayers.remove(layer);
+                removeLayer(layer);
                 return layer;
             }
         }
@@ -280,8 +281,7 @@ public class VideoLayerHost {
      */
     public final void removeLayer(VideoLayer layer) {
         if (layer != null) {
-            if (mLayers.contains(layer)) {
-                removeLayerView(layer);
+            if (mLayers.remove(layer)) {
                 layer.unbindLayerHost(this);
             }
         }
@@ -293,11 +293,10 @@ public class VideoLayerHost {
      * @param index index of layer
      * @return the removed {@link VideoLayer} instance
      */
+    @Nullable
     public final VideoLayer removeLayer(int index) {
-        final VideoLayer layer = mLayers.remove(index);
-        if (layer != null) {
-            layer.unbindLayerHost(this);
-        }
+        final VideoLayer layer = mLayers.get(index);
+        removeLayer(layer);
         return layer;
     }
 
@@ -307,10 +306,11 @@ public class VideoLayerHost {
      * @param tag tag of layer
      * @return the removed {@link VideoLayer} instance
      */
+    @Nullable
     public final VideoLayer removeLayer(String tag) {
         for (VideoLayer layer : mLayers) {
             if (TextUtils.equals(layer.tag(), tag)) {
-                mLayers.remove(layer);
+                removeLayer(layer);
                 return layer;
             }
         }
@@ -322,8 +322,7 @@ public class VideoLayerHost {
      */
     public final void removeAllLayers() {
         for (VideoLayer layer : mLayers) {
-            mLayers.remove(layer);
-            layer.unbindLayerHost(this);
+            removeLayer(layer);
         }
     }
 
