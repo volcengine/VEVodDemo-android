@@ -42,6 +42,7 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
+import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.BaseLayer;
@@ -72,8 +73,13 @@ public class CoverLayer extends BaseLayer {
     }
 
     @Override
-    public void onVideoViewBindDataSource(MediaSource dataSource) {
+    protected void onBindLayerHost(@NonNull VideoLayerHost layerHost) {
         show();
+    }
+
+    @Override
+    public void onVideoViewBindDataSource(MediaSource dataSource) {
+        load();
     }
 
     @Override
@@ -130,12 +136,6 @@ public class CoverLayer extends BaseLayer {
             }
         }
     };
-
-    @Override
-    public void show() {
-        super.show();
-        load();
-    }
 
     protected void load() {
         final ImageView imageView = getView();
