@@ -21,7 +21,6 @@ package com.bytedance.playerkit.player.playback;
 import static com.bytedance.playerkit.player.source.MediaSource.mediaEquals;
 import static com.bytedance.playerkit.utils.event.Dispatcher.EventListener;
 
-import android.os.Build;
 import android.os.Looper;
 import android.view.Surface;
 
@@ -31,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.PlayerKit;
 import com.bytedance.playerkit.player.playback.event.ActionPreparePlayback;
 import com.bytedance.playerkit.player.playback.event.ActionStartPlayback;
 import com.bytedance.playerkit.player.playback.event.ActionStopPlayback;
@@ -66,7 +66,8 @@ import java.lang.ref.WeakReference;
  * <p>{@link Player} instance will be bounded automatically when you calling
  * {@link #startPlayback()}. {@link Player} instance will be unbound and recycled when you calling
  * {@link #stopPlayback()}. A {@link PlayerPool} instance is required to fetch the player instance.
- * Using {@link PlayerPool#DEFAULT} if the PlayerPool is not passed by constructor.
+ * Using {@link com.bytedance.playerkit.player.PlayerKit.PlayerKitConfig#playerPool} if the
+ * PlayerPool is not passed by constructor.
  *
  * <p>You should always Calling {@link #startPlayback()} and {@link #stopPlayback()} to start or
  * stop a playback instead calling {@link Player#prepare(MediaSource)} + {@link Player#start()} to
@@ -178,7 +179,7 @@ public class PlaybackController {
 
     @MainThread
     public PlaybackController() {
-        this(PlayerPool.DEFAULT, Player.Factory.Default.get());
+        this(PlayerKit.config().playerPool, PlayerKit.config().playerFactory);
     }
 
     @MainThread

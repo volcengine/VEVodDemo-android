@@ -146,6 +146,8 @@ public class L {
             return s.substring(s.lastIndexOf('.'));
         } else if (o instanceof Class<?>) {
             return ((Class<?>) o).getSimpleName();
+        } else if (o instanceof Thread) {
+            return o.getClass().getSimpleName() + '@' + Integer.toHexString(o.hashCode()) + "#" + ((Thread) o).getName();
         } else {
             return o.getClass().getSimpleName() + '@' + Integer.toHexString(o.hashCode());
         }

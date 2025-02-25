@@ -37,10 +37,13 @@ import com.ss.ttvideoengine.TTVideoEngine;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
+class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
+        // wait initResult for asyncInit mode
+        VolcPlayerInit.waitInitAsyncResult();
+
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         final TTVideoEngine player;
         if (volcConfig.enableEngineLooper) {
@@ -50,12 +53,7 @@ public class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         } else {
             player = new TTVideoEngine(context, VolcEditions.engineCoreType());
         }
-        return setup(context, player, mediaSource);
-    }
 
-    @Override
-    public TTVideoEngine setup(Context context, TTVideoEngine player, MediaSource mediaSource) {
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         if (L.ENABLE_LOG) {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG,  1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_TMP_LOG, 1);

@@ -104,8 +104,8 @@ public class VideoQuality {
                 final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
                 config.displaySizeConfig = displaySizeConfig;
 
-                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.getContext());
-                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.getContext());
+                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
+                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
                 displaySizeConfig.screenWidth = screenWidth;
                 displaySizeConfig.screenHeight = screenHeight;
@@ -121,8 +121,8 @@ public class VideoQuality {
                 final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
                 config.displaySizeConfig = displaySizeConfig;
 
-                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.getContext());
-                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.getContext());
+                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
+                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
                 displaySizeConfig.screenWidth = screenWidth;
                 displaySizeConfig.screenHeight = screenHeight;
@@ -142,8 +142,8 @@ public class VideoQuality {
                 final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
                 config.displaySizeConfig = displaySizeConfig;
 
-                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.getContext());
-                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.getContext());
+                final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
+                final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
                 displaySizeConfig.screenWidth = screenWidth;
                 displaySizeConfig.screenHeight = screenHeight;

@@ -36,9 +36,9 @@ public class VideoSubtitle {
     public static String subtitle2String(Subtitle subtitle) {
         switch (subtitle.getLanguageId()) {
             case LANGUAGE_ID_CN:
-                return VolcPlayerInit.getContext().getString(R.string.vevod_subtitle_language_cn);
+                return VolcPlayerInit.config().context.getString(R.string.vevod_subtitle_language_cn);
             case LANGUAGE_ID_US:
-                return VolcPlayerInit.getContext().getString(R.string.vevod_subtitle_language_english);
+                return VolcPlayerInit.config().context.getString(R.string.vevod_subtitle_language_english);
         }
         return null;
     }

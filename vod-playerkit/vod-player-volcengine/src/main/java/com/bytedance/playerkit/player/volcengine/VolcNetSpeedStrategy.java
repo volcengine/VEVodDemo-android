@@ -20,7 +20,7 @@ package com.bytedance.playerkit.player.volcengine;
 
 import com.ss.ttvideoengine.strategy.StrategyManager;
 
-public class VolcNetSpeedStrategy {
+class VolcNetSpeedStrategy {
 
     static void init() {
         if (!VolcConfigGlobal.ENABLE_SPEED_TEST_STRATEGY_INIT) return;

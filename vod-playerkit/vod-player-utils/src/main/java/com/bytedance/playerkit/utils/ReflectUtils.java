@@ -20,6 +20,10 @@ package com.bytedance.playerkit.utils;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -67,6 +71,7 @@ public class ReflectUtils {
         }
         return null;
     }
+
     public static void setStaticFiledValue(Class<?> owner, Class<?> filedClass, String filedName, Object staticFiled) {
         Field targetField = null;
         Field[] fields = owner.getDeclaredFields();
@@ -85,6 +90,19 @@ public class ReflectUtils {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    @NonNull
+    public static <T> T newInstance(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            Constructor<?> constructor = clazz.getDeclaredConstructor(null);
+            constructor.setAccessible(true); // 允许访问私有构造函数
+            return (T) constructor.newInstance();
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException |
+                 NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 }

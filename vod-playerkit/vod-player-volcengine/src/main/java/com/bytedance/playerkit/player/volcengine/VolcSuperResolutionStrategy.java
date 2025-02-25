@@ -40,7 +40,7 @@ public class VolcSuperResolutionStrategy {
         }
     }
 
-    static boolean isEnableSuperResolution(VolcConfig volcConfig) {
+    static boolean isInitSuperResolution(VolcConfig volcConfig) {
         return isIntegrate(PLAYER_EXTENSION_SUPER_RESOLUTION) &&
                 VolcEditions.isSupportSuperResolution() &&
                 volcConfig != null &&
@@ -49,8 +49,8 @@ public class VolcSuperResolutionStrategy {
                 volcConfig.superResolutionConfig.enableSuperResolutionAbility;
     }
 
-    static boolean isUseSuperResolution(VolcConfig volcConfig) {
-        return isEnableSuperResolution(volcConfig) &&
+    static boolean isEnableSuperResolutionOnStartup(VolcConfig volcConfig) {
+        return isInitSuperResolution(volcConfig) &&
                 volcConfig != null &&
                 volcConfig.superResolutionConfig != null &&
                 volcConfig.superResolutionConfig.enableSuperResolutionOnStartup;
@@ -59,7 +59,7 @@ public class VolcSuperResolutionStrategy {
     static void initSuperResolution(Context context, TTVideoEngine player, MediaSource mediaSource, Track track) {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
-        if (!isEnableSuperResolution(volcConfig)) return;
+        if (!isInitSuperResolution(volcConfig)) return;
 
         final VolcSuperResolutionConfig srConfig = volcConfig.superResolutionConfig;
 
@@ -104,7 +104,7 @@ public class VolcSuperResolutionStrategy {
 
         // 开启超分
         if (!VolcQualityStrategy.isEnableStartupABRSuperResolutionDowngrade(volcConfig)) {
-            setEnabled(player, isUseSuperResolution(volcConfig));
+            setEnabled(player, isEnableSuperResolutionOnStartup(volcConfig));
         }
     }
 

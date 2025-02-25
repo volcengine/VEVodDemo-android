@@ -23,6 +23,7 @@ import com.bytedance.playerkit.player.volcengine.VolcScene;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FeedVideoStrategy {
@@ -38,14 +39,15 @@ public class FeedVideoStrategy {
 
         if (videoItems == null) return;
 
-        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(videoItems));
+        final List<VideoItem> videoItemsCopy = new ArrayList<>(videoItems);
+        VolcEngineStrategy.setMediaSourcesAsync(() -> VideoItem.toMediaSources(videoItemsCopy));
     }
 
     public static void appendItems(List<VideoItem> videoItems) {
         if (!VideoSettings.booleanValue(VideoSettings.FEED_VIDEO_ENABLE_PRELOAD)) return;
 
         if (videoItems == null) return;
-
-        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(videoItems));
+        final List<VideoItem> videoItemsCopy = new ArrayList<>(videoItems);
+        VolcEngineStrategy.addMediaSourcesAsync(() -> VideoItem.toMediaSources(videoItemsCopy));
     }
 }

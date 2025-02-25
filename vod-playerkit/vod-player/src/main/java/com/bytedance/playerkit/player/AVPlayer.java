@@ -24,7 +24,6 @@ import static com.bytedance.playerkit.player.source.Track.TRACK_TYPE_VIDEO;
 import static com.bytedance.playerkit.player.source.Track.TrackType;
 import static com.bytedance.playerkit.player.source.Track.mapTrackType;
 
-import android.content.Context;
 import android.os.Looper;
 import android.view.Surface;
 
@@ -41,7 +40,6 @@ import com.bytedance.playerkit.player.event.ActionSetLooping;
 import com.bytedance.playerkit.player.event.ActionSetSpeed;
 import com.bytedance.playerkit.player.event.ActionSetSurface;
 import com.bytedance.playerkit.player.event.ActionStart;
-import com.bytedance.playerkit.player.event.ActionStop;
 import com.bytedance.playerkit.player.event.InfoAudioRenderingStart;
 import com.bytedance.playerkit.player.event.InfoBufferingEnd;
 import com.bytedance.playerkit.player.event.InfoBufferingStart;
@@ -72,8 +70,6 @@ import com.bytedance.playerkit.player.event.StatePrepared;
 import com.bytedance.playerkit.player.event.StatePreparing;
 import com.bytedance.playerkit.player.event.StateReleased;
 import com.bytedance.playerkit.player.event.StateStarted;
-import com.bytedance.playerkit.player.event.StateStopped;
-import com.bytedance.playerkit.player.legacy.PlayerLegacy;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.SubtitleText;
@@ -101,10 +97,10 @@ import java.util.Objects;
  */
 public class AVPlayer extends ExtraObject implements Player {
     private final Dispatcher mDispatcher;
+    private final String mPlayerType;
 
-    private final Context mContext;
-    private PlayerAdapter mPlayer;
     private Surface mSurface;
+    private PlayerAdapter mPlayer;
     private MediaSource mMediaSource;
     @PlayerState
     private int mState;
@@ -123,13 +119,12 @@ public class AVPlayer extends ExtraObject implements Player {
     @ScalingMode
     private int mVideoScalingMode = SCALING_MODE_DEFAULT;
 
-    public AVPlayer(Context context,
-                    PlayerAdapter.Factory playerFactory,
+    public AVPlayer(PlayerAdapter.Factory playerFactory,
                     Looper eventLooper) {
-        L.d(this, "constructor");
+        L.d(this, "constructor", playerFactory.type());
         final Listener listener = new Listener(this);
-        this.mContext = context.getApplicationContext();
         this.mDispatcher = new Dispatcher(eventLooper);
+        this.mPlayerType = playerFactory.type();
         this.mPlayer = playerFactory.create(eventLooper);
         this.mPlayer.setListener(listener);
         setState(STATE_IDLE);
@@ -464,8 +459,8 @@ public class AVPlayer extends ExtraObject implements Player {
     }
 
     @Override
-    public PlayerLegacy legacy() {
-        return null;
+    public String getType() {
+        return mPlayerType;
     }
 
     @Override

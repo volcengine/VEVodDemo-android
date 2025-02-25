@@ -41,7 +41,8 @@ public class ShortVideoStrategy {
 
         if (items == null) return;
 
-        VolcEngineStrategy.setMediaSources(VideoItem.toMediaSources(VideoItem.findVideoItems(items)));
+        final List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+        VolcEngineStrategy.setMediaSourcesAsync(() -> VideoItem.toMediaSources(videoItems));
     }
 
     public static void appendItems(List<Item> items) {
@@ -49,7 +50,8 @@ public class ShortVideoStrategy {
 
         if (items == null) return;
 
-        VolcEngineStrategy.addMediaSources(VideoItem.toMediaSources(VideoItem.findVideoItems(items)));
+        final List<VideoItem> videoItems = VideoItem.findVideoItems(items);
+        VolcEngineStrategy.addMediaSourcesAsync(() -> VideoItem.toMediaSources(videoItems));
     }
 
     public static boolean renderFrame(VideoView videoView) {

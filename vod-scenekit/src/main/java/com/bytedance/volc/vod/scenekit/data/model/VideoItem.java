@@ -243,25 +243,29 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
     }
 
     private static MediaSource createMediaSource(VideoItem videoItem) {
+        final MediaSource mediaSource;
         if (videoItem.sourceType == VideoItem.SOURCE_TYPE_EMPTY) {
-            MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, "PlayAuthTokenPlaceHolder");
-            return mediaSource;
+            mediaSource = MediaSource.createIdSource(videoItem.vid, "PlayAuthTokenPlaceHolder");
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
-            MediaSource mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
+            mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
             mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken);
-            return mediaSource;
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
-            MediaSource mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
+            mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
             mediaSource.setSubtitles(videoItem.subtitles);
-            return mediaSource;
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
-            MediaSource mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
+            mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
             Mapper.updateVideoModelMediaSource(mediaSource);
             mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken); // TODO
-            return mediaSource;
         } else {
             throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
         }
+        if (!TextUtils.isEmpty(videoItem.cover)) {
+            mediaSource.setCoverUrl(videoItem.cover);
+        }
+        if (videoItem.duration > 0) {
+            mediaSource.setDuration(videoItem.duration);
+        }
+        return mediaSource;
     }
 
     @NonNull
@@ -311,12 +315,6 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
     public static void set(MediaSource mediaSource, VideoItem videoItem) {
         if (mediaSource == null) return;
 
-        if (!TextUtils.isEmpty(videoItem.cover)) {
-            mediaSource.setCoverUrl(videoItem.cover);
-        }
-        if (videoItem.duration > 0) {
-            mediaSource.setDuration(videoItem.duration);
-        }
         mediaSource.putExtra(EXTRA_VIDEO_ITEM, videoItem);
     }
 

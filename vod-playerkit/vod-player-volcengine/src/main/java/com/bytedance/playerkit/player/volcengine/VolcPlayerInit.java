@@ -18,239 +18,190 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.ss.ttvideoengine.strategy.StrategyManager.VERSION_2;
+import android.annotation.SuppressLint;
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.cache.CacheKeyFactory;
-import com.bytedance.playerkit.player.cache.CacheLoader;
-import com.bytedance.playerkit.player.source.SubtitleSelector;
-import com.bytedance.playerkit.player.source.TrackSelector;
-import com.bytedance.playerkit.utils.Asserts;
+import com.bytedance.playerkit.player.PlayerKit;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig.AppInfo;
 import com.bytedance.playerkit.utils.L;
-import com.pandora.common.env.Env;
-import com.pandora.common.env.config.Config;
-import com.pandora.common.env.config.VodConfig;
-import com.pandora.vod.VodSDK;
-import com.ss.ttvideoengine.DataLoaderHelper;
-import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.strategy.StrategyManager;
 
-import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import java.util.concurrent.FutureTask;
 
 public class VolcPlayerInit {
 
-    private final static AtomicBoolean sInited = new AtomicBoolean(false);
+    public interface InitCallback {
+        int RESULT_SUCCESS = 1;
+        int RESULT_ERROR = -1;
 
-    private static Context sContext;
-    private static CacheKeyFactory sCacheKeyFactory;
-    private static TrackSelector sTrackSelector;
-    private static SubtitleSelector sSubtitleSelector;
+        void onInitResult(int result);
+    }
 
-    public static VolcConfigUpdater sConfigUpdater;
+    public static final int INIT_STATE_IDLE = 0;
+    public static final int INIT_STATE_INITING = 1;
+    public static final int INIT_STATE_SUCCESS = 2;
+    public static final int INIT_STATE_ERROR = 3;
 
-    public static VolcSourceRefreshStrategy.VolcUrlRefreshFetcher.Factory sUrlRefreshFetcherFactory;
+    public static String mapState(int state) {
+        switch (state) {
+            case INIT_STATE_IDLE:
+                return "IDLE";
+            case INIT_STATE_INITING:
+                return "INITING";
+            case INIT_STATE_SUCCESS:
+                return "SUCCESS";
+            case INIT_STATE_ERROR:
+                return "ERROR";
+            default:
+                throw new IllegalArgumentException("unsupported state " + state);
+        }
+    }
 
+    private static int sInitState;
+    private static volatile FutureTask<Void> sInitFuture;
+
+    public static void initSync() {
+        waitInitAsyncResult();
+        final VolcPlayerInitConfig config = config();
+        if (isInitState(INIT_STATE_INITING, INIT_STATE_SUCCESS, INIT_STATE_ERROR)) {
+            L.d(VolcPlayerInit.class, "initSync", "return", mapState(getInitState()));
+            return;
+        }
+        if (config == null) {
+            L.e(VolcPlayerInit.class, "initSync", "return", "config is null! Invoke config first.");
+            return;
+        }
+        setInitState(INIT_STATE_INITING);
+        L.d(VolcPlayerInit.class, "initSync", "start");
+        final long startTime = System.currentTimeMillis();
+        try {
+            TTSDKVodInit.initVod(config);
+            setInitState(INIT_STATE_SUCCESS);
+            L.d(VolcPlayerInit.class, "initSync", "success", "time:" + (System.currentTimeMillis() - startTime));
+        } catch (RuntimeException e) {
+            setInitState(INIT_STATE_ERROR);
+            L.e(VolcPlayerInit.class, "initSync", e, "error", "time:" + (System.currentTimeMillis() - startTime));
+        }
+    }
+
+    public static synchronized void initAsync(InitCallback initCallback) {
+        if (isInitState(INIT_STATE_INITING, INIT_STATE_SUCCESS, INIT_STATE_ERROR)) {
+            L.d(VolcPlayerInit.class, "initAsync", "return", mapState(getInitState()));
+            return;
+        }
+        final VolcPlayerInitConfig config = config();
+        if (config == null) {
+            L.e(VolcPlayerInit.class, "initAsync", "return", "config is null! Invoke config first.");
+            return;
+        }
+        setInitState(INIT_STATE_INITING);
+        final Boolean isMessageQueueIdle = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ?
+                config.workerHandler.getLooper().getQueue().isIdle() : null;
+        final long startTime = System.currentTimeMillis();
+        L.d(VolcPlayerInit.class, "initAsync", "start",
+                config.workerHandler.getLooper().getThread(),
+                "isMessageQueueIdle:" + isMessageQueueIdle, startTime);
+        sInitFuture = new FutureTask<>(() -> {
+            try {
+                L.d(VolcPlayerInit.class, "initAsync", "running",
+                        "time:" + (System.currentTimeMillis() - startTime));
+                TTSDKVodInit.initVod(config);
+                setInitState(INIT_STATE_SUCCESS);
+                L.d(VolcPlayerInit.class, "initAsync", "success",
+                        "time:" + (System.currentTimeMillis() - startTime));
+                if (initCallback != null) {
+                    config.workerHandler.post(() -> initCallback.onInitResult(InitCallback.RESULT_SUCCESS));
+                }
+            } catch (Exception e) {
+                setInitState(INIT_STATE_ERROR);
+                L.e(VolcPlayerInit.class, "initAsync", e, "error",
+                        "time:" + (System.currentTimeMillis() - startTime));
+                if (initCallback != null) {
+                    config.workerHandler.post(() -> initCallback.onInitResult(InitCallback.RESULT_ERROR));
+                }
+                throw e;
+            }
+            return null;
+        });
+        config.workerHandler.post(sInitFuture);
+    }
+
+    public static void waitInitAsyncResult() {
+        if (sInitFuture != null && !sInitFuture.isDone()) {
+            final long startTime = System.currentTimeMillis();
+            L.d(VolcPlayerInit.class, "waitInitAsyncResult", "wait", Thread.currentThread(), mapState(getInitState()), startTime);
+            try {
+                sInitFuture.get();
+                L.d(VolcPlayerInit.class, "waitInitAsyncResult", "return", mapState(getInitState()),
+                        "time:" + (System.currentTimeMillis() - startTime));
+            } catch (Exception e) {
+                L.e(VolcPlayerInit.class, "waitInitAsyncResult", e, "return", mapState(getInitState()),
+                        "time:" + (System.currentTimeMillis() - startTime));
+            }
+        }
+    }
+
+    private static synchronized boolean isInitState(int... states) {
+        for (int state : states) {
+            if (sInitState == state) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static synchronized void setInitState(int newState) {
+        int state = sInitState;
+        sInitState = newState;
+        L.d(VolcPlayerInit.class, "setInitState", mapState(state), mapState(newState));
+    }
+
+    public static synchronized int getInitState() {
+        return sInitState;
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private static VolcPlayerInitConfig sConfig;
+
+    public static synchronized void config(VolcPlayerInitConfig config) {
+        if (config == null) {
+            L.e(VolcPlayerInit.class, "config", "return", "config is null");
+            return;
+        }
+        if (sConfig != null) {
+            L.w(VolcPlayerInit.class, "config", "return", "already config");
+            return;
+        }
+        L.d(VolcPlayerInit.class, "config", config, AppInfo.dump(config.appInfo));
+        sConfig = config;
+        PlayerKit.config(config.playerKitConfig);
+    }
+
+    public static synchronized VolcPlayerInitConfig config() {
+        return sConfig;
+    }
+
+    public static void setUserUniqueId(@Nullable String userUniqueId) {
+        TTSDKVodInit.setUserUniqueId(userUniqueId);
+    }
+
+    public static void initAppLog() {
+        TTSDKVodInit.initAppLog();
+    }
+
+    public static void startAppLog() {
+        TTSDKVodInit.startAppLog();
+    }
 
     public static String getDeviceId() {
-        return VolcPlayer.getDeviceId();
+        return TTSDKVodInit.getDeviceId();
     }
 
     public static String getSDKVersion() {
-        return Env.getVersion();
+        return TTSDKVodInit.getTTSDKVersion();
     }
 
-    public static void init(final Context context, AppInfo appInfo) {
-        init(context,
-                appInfo,
-                CacheKeyFactory.DEFAULT,
-                TrackSelector.DEFAULT,
-                new VolcSubtitleSelector(),
-                VolcConfigUpdater.DEFAULT,
-                null);
-    }
-
-    public static void init(@NonNull Context context,
-                            @NonNull AppInfo appInfo,
-                            @Nullable CacheKeyFactory cacheKeyFactory,
-                            @Nullable TrackSelector trackSelector,
-                            @Nullable SubtitleSelector subtitleSelector,
-                            @Nullable VolcConfigUpdater configUpdater,
-                            @Nullable VolcSourceRefreshStrategy.VolcUrlRefreshFetcher.Factory urlRefreshFetcherFactory) {
-
-        if (sInited.getAndSet(true)) return;
-
-        sContext = context.getApplicationContext();
-
-        if (trackSelector != null) {
-            sTrackSelector = trackSelector;
-        } else {
-            sTrackSelector = TrackSelector.DEFAULT;
-        }
-        if (cacheKeyFactory != null) {
-            sCacheKeyFactory = cacheKeyFactory;
-        } else {
-            sCacheKeyFactory = CacheKeyFactory.DEFAULT;
-        }
-        if (subtitleSelector != null) {
-            sSubtitleSelector = subtitleSelector;
-        } else {
-            sSubtitleSelector = new VolcSubtitleSelector();
-        }
-        if (configUpdater != null) {
-            sConfigUpdater = configUpdater;
-        } else {
-            sConfigUpdater = VolcConfigUpdater.DEFAULT;
-        }
-
-        sUrlRefreshFetcherFactory = urlRefreshFetcherFactory;
-
-        initVOD(context, appInfo);
-
-        CacheLoader.Default.set(new VolcCacheLoader(context, new VolcCacheTask.Factory(context)));
-
-        Player.Factory.Default.set(new VolcPlayerFactory(context));
-    }
-
-    public static Context getContext() {
-        return sContext;
-    }
-
-    public static TrackSelector getTrackSelector() {
-        return sTrackSelector;
-    }
-
-    public static SubtitleSelector getSubtitleSelector() {
-        return sSubtitleSelector;
-    }
-
-    public static CacheKeyFactory getCacheKeyFactory() {
-        return sCacheKeyFactory;
-    }
-
-    public static VolcConfigUpdater getConfigUpdater() {
-        return sConfigUpdater;
-    }
-
-    public static File cacheDir(Context context) {
-        return new File(context.getCacheDir(), "bytedance/playerkit/volcplayer/video_cache");
-    }
-
-    private static void initVOD(Context context, AppInfo appInfo) {
-        if (L.ENABLE_LOG) {
-            VodSDK.openAllVodLog();
-        }
-
-        StrategyManager.setVersion(VERSION_2);
-
-        if (VolcConfigGlobal.ENABLE_HLS_CACHE_MODULE) {
-            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_HLS_PROXY, 1);
-        }
-        if (VolcConfigGlobal.ENABLE_USE_ORIGINAL_URL) {
-            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_ENABLE_USE_ORIGINAL_URL, 1);
-        }
-        if (VolcConfigGlobal.ENABLE_USE_BACKUP_URL) {
-            TTVideoEngine.setIntValue(DataLoaderHelper.DATALOADER_KEY_INT_ALLOW_TRY_THE_LAST_URL, 1);
-        }
-        File videoCacheDir = cacheDir(context);
-        if (!videoCacheDir.exists()) videoCacheDir.mkdirs();
-        VodConfig.Builder vodBuilder = new VodConfig.Builder(context)
-                .setCacheDirPath(videoCacheDir.getAbsolutePath())
-                .setMaxCacheSize(300 * 1024 * 1024);
-
-        if (VolcConfigGlobal.ENABLE_ECDN &&
-                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_ECDN)) {
-            L.d(VolcPlayerInit.class, "initVOD", "ecdn fileKeyRegularExpression", VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION);
-            TTVideoEngine.setStringValue(DataLoaderHelper.DATALOADER_KEY_STRING_VDP_FILE_KEY_REGULAR_EXPRESSION, VolcConfig.ECDN_FILE_KEY_REGULAR_EXPRESSION);
-            vodBuilder.setLoaderType(2);
-        }
-
-        Env.init(new Config.Builder()
-                .setApplicationContext(context)
-                .setAppID(appInfo.appId)
-                .setAppName(appInfo.appName)
-                // 合法版本号应大于、等于 2 个分隔符，如："1.3.2"
-                .setAppVersion(appInfo.appVersion)
-                .setAppChannel(appInfo.appChannel)
-                // 将 license 文件拷贝到 app 的 assets 文件夹中，并设置 LicenseUri
-                // 下面 LicenseUri 对应工程中 assets 路径为：assets/license/vod.lic
-                .setLicenseUri(appInfo.licenseUri)
-                // 可不设置，默认值见下表
-                .setVodConfig(vodBuilder.build())
-                .build());
-
-        VolcEngineStrategy.init();
-        VolcNetSpeedStrategy.init();
-        VolcSuperResolutionStrategy.init();
-        VolcQualityStrategy.init();
-        VolcSourceRefreshStrategy.init(sUrlRefreshFetcherFactory);
-    }
-
-
-    public static class AppInfo {
-        public final String appId;
-        public final String appName;
-        public final String appChannel;
-        public final String appVersion;
-        public final String licenseUri;
-
-        private AppInfo(Builder builder) {
-            this.appId = builder.appId;
-            this.appName = builder.appName;
-            this.appChannel = builder.appChannel;
-            this.appVersion = builder.appVersion;
-            this.licenseUri = builder.licenseUri;
-        }
-
-        public static class Builder {
-            private String appId;
-            private String appName;
-            private String appChannel;
-            private String appVersion;
-            private String licenseUri;
-
-            public Builder setAppId(@NonNull String appId) {
-                Asserts.checkNotNull(appId, "appId shouldn't be null");
-                this.appId = appId;
-                return this;
-            }
-
-            public Builder setAppName(@NonNull String appName) {
-                Asserts.checkNotNull(appName, "appName shouldn't be null");
-                this.appName = appName;
-                return this;
-            }
-
-            public Builder setAppChannel(@Nullable String appChannel) {
-                this.appChannel = appChannel;
-                return this;
-            }
-
-            public Builder setAppVersion(@NonNull String appVersion) {
-                Asserts.checkNotNull(appVersion, "appVersion shouldn't be null");
-                this.appVersion = appVersion;
-                return this;
-            }
-
-            public Builder setLicenseUri(@NonNull String licenseUri) {
-                Asserts.checkNotNull(licenseUri, "licenseUri shouldn't be null");
-                this.licenseUri = licenseUri;
-                return this;
-            }
-
-            public AppInfo build() {
-                Asserts.checkNotNull(appId, "appId shouldn't be null");
-                Asserts.checkNotNull(appName, "appName shouldn't be null");
-                Asserts.checkNotNull(appVersion, "appVersion shouldn't be null");
-                Asserts.checkNotNull(licenseUri, "licenseUri shouldn't be null");
-                return new AppInfo(this);
-            }
-        }
+    public static void clearDiskCache() {
+        TTSDKVodInit.clearDiskCache();
     }
 }

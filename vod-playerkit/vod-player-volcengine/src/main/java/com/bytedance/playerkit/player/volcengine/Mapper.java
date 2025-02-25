@@ -257,7 +257,7 @@ public class Mapper {
         if (mediaSource == mediaSource1) return t1;
         if (mediaSource.getTracks() == mediaSource1.getTracks()) return t1;
 
-        CacheKeyFactory cacheKeyFactory = VolcPlayerInit.getCacheKeyFactory();
+        CacheKeyFactory cacheKeyFactory = VolcPlayerInit.config().cacheKeyFactory;
 
         List<Track> tracks = mediaSource.getTracks();
         for (Track track : tracks) {
@@ -641,7 +641,7 @@ public class Mapper {
         JSONObject object = new JSONObject();
         try {
             String subtitleUrl = subtitle.getUrl();
-            String subtitleCacheKey = VolcPlayerInit.getCacheKeyFactory().generateCacheKey(subtitleUrl);
+            String subtitleCacheKey = VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(subtitleUrl);
             String subtitleProxyUrl = DataLoaderHelper.getDataLoader().proxyUrl(subtitleCacheKey, subtitleUrl);
             object.put("url", subtitleProxyUrl);
             object.put("language_id", subtitle.getLanguageId());

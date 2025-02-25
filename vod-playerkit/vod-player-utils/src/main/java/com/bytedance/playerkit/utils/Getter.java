@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2021/12/3
+ * Create Date : 2025/2/27
  */
 
-package com.bytedance.playerkit.player.legacy;
+package com.bytedance.playerkit.utils;
 
-public interface PlayerLegacy {
+public interface Getter <Result>{
 
+    Result get();
 }
