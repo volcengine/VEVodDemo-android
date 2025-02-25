@@ -29,7 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.cache.CacheLoader;
 import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
@@ -51,6 +50,7 @@ import java.util.List;
 public class VideoSettings {
     public static final String KEY = "AppSettings";
     public static final String CATEGORY_DEBUG = "调试选项";
+    public static final String CATEGORY_INIT = "初始化配置";
     public static final String CATEGORY_SHORT_VIDEO = "短视频";
     public static final String CATEGORY_FEED_VIDEO = "中视频";
     public static final String CATEGORY_LONG_VIDEO = "长视频";
@@ -84,6 +84,10 @@ public class VideoSettings {
 
     public static final String DEBUG_ENABLE_LOG_LAYER = "debug_enable_log_layer";
     public static final String DEBUG_ENABLE_DEBUG_TOOL = "debug_enable_debug_tool";
+
+    public static final String INIT_ENABLE_LOGCAT = "init_enable_logcat";
+    public static final String INIT_ENABLE_ASSERTS = "init_enable_asserts";
+    public static final String INIT_ENABLE_VOD_SDK_ASYNC_INIT = "init_vod_sdk_async_init";
 
     public static final String QUALITY_ENABLE_STARTUP_ABR = "quality_enable_startup_abr";
     public static final String QUALITY_VIDEO_QUALITY_USER_SELECTED = "quality_video_quality_user_selected";
@@ -183,6 +187,7 @@ public class VideoSettings {
     private static List<SettingItem> createSettings() {
         List<SettingItem> settings = new ArrayList<>();
         createDebugSettings(settings);
+        createInitSettings(settings);
         createShortVideoSettings(settings);
         createFeedVideoSettings(settings);
         createLongVideoSettings(settings);
@@ -221,6 +226,40 @@ public class VideoSettings {
                 "输入播放源",
                 null,
                 sEventListener));
+    }
+
+    private static void createInitSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_INIT));
+        settings.add(SettingItem.createOptionItem(CATEGORY_INIT,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_INIT,
+                        INIT_ENABLE_LOGCAT,
+                        "开启 Logcat 输出",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_INIT,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_INIT,
+                        INIT_ENABLE_ASSERTS,
+                        "开启 Debug 断言",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.TRUE,
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_INIT,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_INIT,
+                        INIT_ENABLE_VOD_SDK_ASYNC_INIT,
+                        "开启异步初始化点播 SDK",
+                        Option.STRATEGY_RESTART_APP,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
     }
 
     private static void createShortVideoSettings(List<SettingItem> settings) {
@@ -698,7 +737,7 @@ public class VideoSettings {
             if (mIsGetting) return;
             mIsGetting = true;
             new Thread(() -> {
-                long videoFileSize = FileUtils.getFileSize(CacheLoader.Default.get().getCacheDir());
+                long videoFileSize = FileUtils.getFileSize(VolcPlayerInit.config().playerCacheDir);
                 long imageFileSize = FileUtils.getFileSize(Glide.getPhotoCacheDir(sContext));
                 long size = imageFileSize + videoFileSize;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -719,9 +758,9 @@ public class VideoSettings {
 
                 Toast.makeText(context, "Cleaning cache...", Toast.LENGTH_SHORT).show();
                 new Thread(() -> {
-                    CacheLoader.Default.get().clearCache();
+                    VolcPlayerInit.clearDiskCache();
                     Glide.get(context).clearDiskCache();
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             mIsGetting = false;
@@ -732,7 +771,7 @@ public class VideoSettings {
                                 adapter.notifyItemChanged(holder.getAbsoluteAdapterPosition());
                             }
                         }
-                    });
+                    }, 1000);
                 }).start();
             }
         }

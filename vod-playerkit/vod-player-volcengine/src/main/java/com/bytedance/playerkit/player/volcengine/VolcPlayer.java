@@ -102,26 +102,25 @@ class VolcPlayer implements PlayerAdapter {
     private Subtitle mPendingSubtitle;
     private Subtitle mCurrentSubtitle;
 
-    public static String getDeviceId() {
-        return TTVideoEngine.getDeviceID();
-    }
-
-    public static class Factory implements PlayerAdapter.Factory {
-        private final Context mContext;
+    static class Factory implements PlayerAdapter.Factory {
         private final MediaSource mMediaSource;
 
-        public Factory(Context context, MediaSource mediaSource) {
-            this.mContext = context;
+        public Factory(MediaSource mediaSource) {
             this.mMediaSource = mediaSource;
         }
 
         @Override
-        public VolcPlayer create(Looper eventLooper) {
-            return new VolcPlayer(mContext, mMediaSource, false);
+        public PlayerAdapter create(Looper eventLooper) {
+            return new VolcPlayer(mMediaSource, false);
         }
 
-        public VolcPlayer preCreate(Looper eventLooper) {
-            return new VolcPlayer(mContext, mMediaSource, true);
+        @Override
+        public String type() {
+            return "TTVideoEngine";
+        }
+
+        public PlayerAdapter preCreate(Looper eventLooper) {
+            return new VolcPlayer(mMediaSource, true);
         }
     }
 
@@ -151,23 +150,24 @@ class VolcPlayer implements PlayerAdapter {
         }
     }
 
-    private VolcPlayer(final Context context, MediaSource mediaSource, boolean preCreate) {
-        L.d(this, "constructor", "APP_ID", AppInfo.mAppID, "DEVICE_ID", getDeviceId());
+    private VolcPlayer(MediaSource mediaSource, boolean preCreate) {
+        L.d(this, "constructor", "APP_ID", AppInfo.mAppID, "DEVICE_ID", VolcPlayerInit.getDeviceId());
         this.mHandler = new Handler(Looper.myLooper() == null ? Looper.getMainLooper() : Looper.myLooper());
-        this.mContext = context;
+        this.mContext = VolcPlayerInit.config().context;
         this.mListenerAdapter = new ListenerAdapter(this);
         this.mPreCreatePlayer = preCreate;
-        VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
+        VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
+        final TTVideoEngineFactory engineFactory = VolcPlayerInit.config().videoEngineFactory;
         TTVideoEngine player;
         if (preCreate) {
-            player = TTVideoEngineFactory.Default.get().create(mContext, mediaSource);
+            player = engineFactory.create(mContext, mediaSource);
             EngineParams.get(player).mPreCreatedPlayerInstance = this;
             mStartWhenPrepared = false;
             L.d(this, "constructor", "preCreate", mPlayer, MediaSource.dump(mediaSource));
         } else {
             player = VolcEngineStrategy.removePreRenderEngine(mediaSource);
             if (player == null) {
-                player = TTVideoEngineFactory.Default.get().create(mContext, mediaSource);
+                player = engineFactory.create(mContext, mediaSource);
                 mStartWhenPrepared = true;
                 L.d(this, "constructor", "create", mPlayer, MediaSource.dump(mediaSource));
             } else {
@@ -717,7 +717,7 @@ class VolcPlayer implements PlayerAdapter {
                     final List<Track> tracks = VolcPlayer.this.getTracks(trackType);
                     Track selected = result.track;
                     if (selected == null) {
-                        selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY,
+                        selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY,
                                 trackType,
                                 tracks,
                                 mediaSource);
@@ -766,7 +766,7 @@ class VolcPlayer implements PlayerAdapter {
             return;
         }
 
-        final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(mediaSource, VolcPlayerInit.getCacheKeyFactory());
+        final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(mediaSource, VolcPlayerInit.config().cacheKeyFactory);
         if (videoModelSource == null) {
             // TODO error
             return;
@@ -790,7 +790,7 @@ class VolcPlayer implements PlayerAdapter {
                 public void onStartupTrackSelected(VolcQualityStrategy.StartupTrackResult result) {
                     Track selected = result.track;
                     if (selected == null) {
-                        selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
+                        selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                     }
                     VolcPlayer.this.setSelectedTrack(trackType, selected);
                     VolcPlayer.this.setPendingTrack(trackType, selected);
@@ -823,7 +823,7 @@ class VolcPlayer implements PlayerAdapter {
             Track selected = getSelectedTrack(trackType);
 
             if (selected == null) {
-                selected = VolcPlayerInit.getTrackSelector().selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
+                selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                 setSelectedTrack(trackType, selected);
                 setPendingTrack(trackType, selected);
                 if (mListener != null) {
@@ -850,7 +850,7 @@ class VolcPlayer implements PlayerAdapter {
         if (subtitle != null) return subtitle;
 
         if (subtitles != null && !subtitles.isEmpty()) {
-            subtitle = VolcPlayerInit.getSubtitleSelector().selectSubtitle(mediaSource, mediaSource.getSubtitles());
+            subtitle = VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, mediaSource.getSubtitles());
         }
         return subtitle;
     }
@@ -865,7 +865,7 @@ class VolcPlayer implements PlayerAdapter {
         final DirectUrlSource directUrlSource = Mapper.mediaSource2DirectUrlSource(
                 mediaSource,
                 track,
-                VolcPlayerInit.getCacheKeyFactory());
+                VolcPlayerInit.config().cacheKeyFactory);
 
         if (directUrlSource == null) {
             // TODO error
@@ -1565,7 +1565,7 @@ class VolcPlayer implements PlayerAdapter {
                 params.mVideoWidth = width;
                 params.mVideoHeight = (int) (height / params.mSampleAspectRatio);
             }
-            L.d(player, "onVideoSizeChanged",width +"x" + height, params.mSampleAspectRatio , params.mVideoWidth + "x" + params.mVideoHeight);
+            L.d(player, "onVideoSizeChanged", width + "x" + height, params.mSampleAspectRatio, params.mVideoWidth + "x" + params.mVideoHeight);
 
             listener.onVideoSizeChanged(player, width, height);
         }

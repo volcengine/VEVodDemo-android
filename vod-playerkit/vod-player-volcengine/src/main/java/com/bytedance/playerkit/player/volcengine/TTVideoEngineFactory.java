@@ -25,20 +25,7 @@ import com.ss.ttvideoengine.TTVideoEngine;
 
 public interface TTVideoEngineFactory {
 
-    class Default {
-
-        private static TTVideoEngineFactory sInstance = new TTVideoEngineFactoryDefault();
-
-        public static TTVideoEngineFactory get() {
-            return sInstance;
-        }
-
-        public static void set(TTVideoEngineFactory instance) {
-            sInstance = instance;
-        }
-    }
+    TTVideoEngineFactory DEFAULT = new TTVideoEngineFactoryDefault();
 
     TTVideoEngine create(Context context, MediaSource mediaSource);
-
-    TTVideoEngine setup(Context context, TTVideoEngine ttVideoEngine, MediaSource mediaSource);
 }

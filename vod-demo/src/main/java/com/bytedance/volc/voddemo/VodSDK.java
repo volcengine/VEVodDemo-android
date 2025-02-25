@@ -25,7 +25,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
@@ -34,8 +33,8 @@ import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
 import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
-import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
@@ -69,9 +68,6 @@ public class VodSDK {
 
         sContext = context;
 
-        L.ENABLE_LOG = true;
-        Asserts.DEBUG = BuildConfig.DEBUG;
-
         VideoSettings.init(context, new SettingItem.OnEventListener() {
             @Override
             public void onEvent(int eventType, Context context1, SettingItem settingItem, RecyclerView.ViewHolder holder) {
@@ -83,13 +79,12 @@ public class VodSDK {
             }
         });
 
-        VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
-                .setAppId(appId)
-                .setAppName(appName)
-                .setAppChannel(appChannel)
-                .setAppVersion(appVersion)
-                .setLicenseUri(licenseUri)
-                .build();
+        // FIXME logcat 开关，上线请关闭
+        L.ENABLE_LOG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_LOGCAT) && BuildConfig.DEBUG;
+        // FIXME asserts 开关，上线请关闭
+        Asserts.DEBUG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_ASSERTS) && BuildConfig.DEBUG;
+
+
         final TrackSelector trackSelector = new TrackSelector() {
             @NonNull
             @Override
@@ -137,12 +132,35 @@ public class VodSDK {
             urlRefresherFactory = new AppUrlRefreshFetcher.Factory();
         }
 
-        VolcPlayerInit.init(context,
-                appInfo,
-                CacheKeyFactory.DEFAULT,
-                trackSelector,
-                new VolcSubtitleSelector(),
-                configUpdater,
-                urlRefresherFactory);
+        // PlayerKit 初始化 Step1：在 Application#onCreate 中设置 VolcPlayerInitConfig
+        // 仅设置 config 对象，不耗时，无敏感信息采集。
+        VolcPlayerInit.config(new VolcPlayerInitConfig.Builder()
+                .setContext(context)
+                .setAppInfo(new VolcPlayerInitConfig.AppInfo.Builder()
+                        .setAppId(appId)
+                        .setAppName(appName)
+                        .setAppChannel(appChannel)
+                        .setAppVersion(appVersion)
+                        .setLicenseUri(licenseUri)
+                        .build())
+                .setTrackSelector(trackSelector)
+                .setConfigUpdater(configUpdater)
+                .setUrlRefreshFetcherFactory(urlRefresherFactory)
+                .build()
+        );
+
+        // PlayerKit 初始化 Step2：初始化点播 SDK
+        if (VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_VOD_SDK_ASYNC_INIT)) {
+            // 异步初始化
+            // TODO：对初始化耗时不敏感的话，推荐使用同步初始化，不容易出错。
+            //  若使用异步初始化，上线前请充分测试，先灰度上线看一下效果，再全量上线。
+            VolcPlayerInit.initAsync((result) -> {
+                L.d("VodSDK", String.format("init result: %s", result > 0 ? "success" : "fail"));
+            });
+        } else {
+            // 同步初始化（推荐）
+            VolcPlayerInit.initSync();
+            L.d("VodSDK", String.format("init result: %s", "success"));
+        }
     }
 }

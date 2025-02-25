@@ -35,7 +35,6 @@ import com.bytedance.playerkit.player.event.StatePreparing;
 import com.bytedance.playerkit.player.event.StateReleased;
 import com.bytedance.playerkit.player.event.StateStarted;
 import com.bytedance.playerkit.player.event.StateStopped;
-import com.bytedance.playerkit.player.legacy.PlayerLegacy;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
@@ -336,23 +335,10 @@ public interface Player {
     }
 
     interface Factory {
-        class Default {
-            private static Factory sInstance;
-
-            public static synchronized void set(Factory factory) {
-                sInstance = factory;
-            }
-
-            public static synchronized Factory get() {
-                return sInstance;
-            }
-        }
-
         Player create(@NonNull MediaSource source);
     }
 
-    @Nullable
-    PlayerLegacy legacy();
+    String getType();
 
     void putExtra(@NonNull String key, @Nullable Object object);
 
@@ -590,7 +576,6 @@ public interface Player {
      * @throws IllegalStateException when player current state is not one of:
      *                               <ul>
      *                                 <li>{@link #STATE_IDLE}</li>
-     *                                 <li>{@link #STATE_PREPARING}</li>
      *                                 <li>{@link #STATE_STOPPED}</li>
      *                               </ul>
      * @see #getState()

@@ -18,26 +18,19 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import android.content.Context;
 import android.os.Looper;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 
 import com.bytedance.playerkit.player.AVPlayer;
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.adapter.PlayerAdapter;
 import com.bytedance.playerkit.player.source.MediaSource;
 
-class VolcPlayerFactory implements Player.Factory {
-    private final Context mContext;
-
-    VolcPlayerFactory(Context context) {
-        this.mContext = context.getApplicationContext();
-    }
-
+@Keep
+public class VolcPlayerFactory implements Player.Factory {
     @Override
     public Player create(@NonNull MediaSource source) {
-        PlayerAdapter.Factory factory = new VolcPlayer.Factory(mContext, source);
-        return new AVPlayer(mContext, factory, Looper.getMainLooper());
+        return new AVPlayer(new VolcPlayer.Factory(source), Looper.getMainLooper());
     }
 }

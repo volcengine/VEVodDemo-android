@@ -67,7 +67,8 @@ public class VolcSourceRefreshStrategy {
         }
     }
 
-    public static void init(VolcUrlRefreshFetcher.Factory factory) {
+    static void init() {
+        final VolcUrlRefreshFetcher.Factory factory = VolcPlayerInit.config().urlRefreshFetcherFactory;
         if (factory == null) return;
         TTVideoEngineSourceRefreshStrategy.setUrlFetcherFactory(new TTVideoEngineUrlFetcher.Factory() {
             @Override

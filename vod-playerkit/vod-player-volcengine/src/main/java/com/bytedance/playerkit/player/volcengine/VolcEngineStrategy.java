@@ -23,7 +23,6 @@ import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
-import android.content.Context;
 import android.os.Looper;
 import android.view.Surface;
 
@@ -33,6 +32,7 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
+import com.bytedance.playerkit.utils.Getter;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.PreloaderURLItem;
 import com.ss.ttvideoengine.PreloaderVidItem;
@@ -64,10 +64,9 @@ public class VolcEngineStrategy {
         TTVideoEngine.setEngineStrategyListener(new EngineStrategyListener() {
             @Override
             public TTVideoEngine createPreRenderEngine(StrategySource strategySource) {
-                final Context context = VolcPlayerInit.getContext();
                 final MediaSource mediaSource = (MediaSource) strategySource.tag();
                 final long recordPosition = ProgressRecorder.getProgress(mediaSource.getSyncProgressId());
-                final VolcPlayer player = new VolcPlayer.Factory(context, mediaSource).preCreate(Looper.getMainLooper());
+                final VolcPlayer player = (VolcPlayer) new VolcPlayer.Factory(mediaSource).preCreate(Looper.getMainLooper());
                 player.setListener(new VolcPlayerEventRecorder());
                 player.setDataSource(mediaSource);
                 player.setStartTime(recordPosition > 0 ? recordPosition : 0);
@@ -83,7 +82,7 @@ public class VolcEngineStrategy {
                 final PreloaderVidItem item = PreloadTaskFactory.super.createVidItem(source, preloadSize);
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return item; // error
-                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
+                VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
                 item.setFetchEndListener((videoModel, error) -> {
                     Mapper.updateMediaSource(mediaSource, videoModel);
                     final VolcConfig volcConfig = VolcConfig.get(mediaSource);
@@ -111,7 +110,7 @@ public class VolcEngineStrategy {
                 final PreloaderVideoModelItem item = PreloadTaskFactory.super.createVideoModelItem(source, preloadSize);
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return item; // error
-                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
+                VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
                 final VolcConfig volcConfig = VolcConfig.get(mediaSource);
                 Track playTrack = null;
                 if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
@@ -136,7 +135,7 @@ public class VolcEngineStrategy {
                 PreloaderURLItem item = PreloadTaskFactory.super.createUrlItem(source, preloadSize);
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return item; // error
-                VolcPlayerInit.getConfigUpdater().updateVolcConfig(mediaSource);
+                VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
                 return item;
             }
         });
@@ -149,54 +148,80 @@ public class VolcEngineStrategy {
         @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         List<Track> tracks = mediaSource.getTracks(trackType);
         if (tracks != null) {
-            return VolcPlayerInit.getTrackSelector().selectTrack(type, trackType, tracks, mediaSource);
+            return VolcPlayerInit.config().trackSelector.selectTrack(type, trackType, tracks, mediaSource);
         }
         return null;
     }
 
-    public synchronized static void setEnabled(int volcScene, boolean enabled) {
-        L.d(VolcEngineStrategy.class, "setEnabled", VolcScene.mapScene(volcScene), enabled);
-        if (sCurrentScene != volcScene) {
-            if (sSceneStrategyEnabled) {
-                clearSceneStrategy();
-                sSceneStrategyEnabled = false;
+    public static void setEnabled(int volcScene, boolean enabled) {
+        if (VolcPlayerInit.config() == null) return;
+
+        VolcPlayerInit.config().workerHandler.post(() -> {
+            L.d(VolcEngineStrategy.class, "setEnabled", VolcScene.mapScene(volcScene), enabled);
+            VolcPlayerInit.waitInitAsyncResult();
+
+            if (sCurrentScene != volcScene) {
+                if (sSceneStrategyEnabled) {
+                    TTVideoEngine.clearAllStrategy();
+                    sSceneStrategyEnabled = false;
+                }
             }
-        }
-        sCurrentScene = volcScene;
-        if (sSceneStrategyEnabled != enabled) {
-            sSceneStrategyEnabled = enabled;
-            if (enabled) {
-                setEnabled(volcScene);
-            } else {
-                clearSceneStrategy();
+            sCurrentScene = volcScene;
+            if (sSceneStrategyEnabled != enabled) {
+                sSceneStrategyEnabled = enabled;
+                if (enabled) {
+                    final int engineScene = Mapper.mapVolcScene2EngineScene(volcScene);
+                    switch (engineScene) {
+                        case STRATEGY_SCENE_SMALL_VIDEO:
+                            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
+                            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER, STRATEGY_SCENE_SMALL_VIDEO);
+                            break;
+                        case STRATEGY_SCENE_SHORT_VIDEO:
+                            TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SHORT_VIDEO);
+                            break;
+                    }
+                } else {
+                    TTVideoEngine.clearAllStrategy();
+                }
             }
-        }
+        });
     }
 
-    public static void clearSceneStrategy() {
-        TTVideoEngine.clearAllStrategy();
+    public static void setMediaSourcesAsync(Getter<List<MediaSource>> asyncGetter) {
+        if (VolcPlayerInit.config() == null) return;
+
+        VolcPlayerInit.config().workerHandler.post(() -> {
+            VolcPlayerInit.waitInitAsyncResult();
+
+            final List<MediaSource> mediaSources = asyncGetter.get();
+            if (mediaSources == null) return;
+            final List<StrategySource> strategySources = Mapper.mediaSources2StrategySources(
+                    mediaSources,
+                    VolcPlayerInit.config().cacheKeyFactory,
+                    VolcPlayerInit.config().trackSelector,
+                    TrackSelector.TYPE_PRELOAD);
+            if (strategySources == null) return;
+
+            TTVideoEngine.setStrategySources(strategySources);
+        });
     }
 
-    public static void setMediaSources(List<MediaSource> mediaSources) {
-        if (mediaSources == null) return;
-        List<StrategySource> strategySources = Mapper.mediaSources2StrategySources(
-                mediaSources,
-                VolcPlayerInit.getCacheKeyFactory(),
-                VolcPlayerInit.getTrackSelector(),
-                TrackSelector.TYPE_PRELOAD);
-        if (strategySources == null) return;
-        TTVideoEngine.setStrategySources(strategySources);
-    }
+    public static void addMediaSourcesAsync(Getter<List<MediaSource>> asyncGetter) {
+        if (VolcPlayerInit.config() == null) return;
 
-    public static void addMediaSources(List<MediaSource> mediaSources) {
-        if (mediaSources == null) return;
-        List<StrategySource> strategySources = Mapper.mediaSources2StrategySources(
-                mediaSources,
-                VolcPlayerInit.getCacheKeyFactory(),
-                VolcPlayerInit.getTrackSelector(),
-                TrackSelector.TYPE_PRELOAD);
-        if (strategySources == null) return;
-        TTVideoEngine.addStrategySources(strategySources);
+        VolcPlayerInit.config().workerHandler.post(() -> {
+            VolcPlayerInit.waitInitAsyncResult();
+
+            final List<MediaSource> mediaSources = asyncGetter.get();
+            if (mediaSources == null) return;
+            final List<StrategySource> strategySources = Mapper.mediaSources2StrategySources(
+                    mediaSources,
+                    VolcPlayerInit.config().cacheKeyFactory,
+                    VolcPlayerInit.config().trackSelector,
+                    TrackSelector.TYPE_PRELOAD);
+            if (strategySources == null) return;
+            TTVideoEngine.addStrategySources(strategySources);
+        });
     }
 
     @Nullable
@@ -214,25 +239,14 @@ public class VolcEngineStrategy {
         if (mediaSource == null) return;
         if (surface == null || !surface.isValid()) return;
 
+        VolcPlayerInit.waitInitAsyncResult();
+
         final TTVideoEngine player = getPreRenderEngine(mediaSource);
         if (player != null && player != StrategyManager.instance().getPlayEngine()) {
             player.setSurface(surface);
             player.forceDraw();
             frameInfo[0] = player.getVideoWidth();
             frameInfo[1] = player.getVideoHeight();
-        }
-    }
-
-    private static void setEnabled(int volcScene) {
-        final int engineScene = Mapper.mapVolcScene2EngineScene(volcScene);
-        switch (engineScene) {
-            case STRATEGY_SCENE_SMALL_VIDEO:
-                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SMALL_VIDEO);
-                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRE_RENDER, STRATEGY_SCENE_SMALL_VIDEO);
-                break;
-            case STRATEGY_SCENE_SHORT_VIDEO:
-                TTVideoEngine.enableEngineStrategy(STRATEGY_TYPE_PRELOAD, STRATEGY_SCENE_SHORT_VIDEO);
-                break;
         }
     }
 

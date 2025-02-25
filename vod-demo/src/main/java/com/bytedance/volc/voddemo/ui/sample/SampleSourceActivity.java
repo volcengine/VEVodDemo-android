@@ -37,7 +37,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.bytedance.playerkit.player.cache.CacheLoader;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseActivity;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
@@ -172,7 +172,7 @@ public class SampleSourceActivity extends BaseActivity {
 
     public void onCleanCacheClick(View view) {
         Toast.makeText(this, "Cleaning cache...", Toast.LENGTH_SHORT).show();
-        CacheLoader.Default.get().clearCache();
+        VolcPlayerInit.clearDiskCache();
         Toast.makeText(this, "Clean done!", Toast.LENGTH_SHORT).show();
     }
 }

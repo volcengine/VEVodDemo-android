@@ -18,7 +18,7 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.bytedance.playerkit.player.volcengine.VolcSuperResolutionStrategy.isEnableSuperResolution;
+import static com.bytedance.playerkit.player.volcengine.VolcSuperResolutionStrategy.isInitSuperResolution;
 
 import androidx.annotation.Nullable;
 
@@ -98,7 +98,7 @@ public class VolcQualityStrategy {
         });
 
         // 超分降档
-        if (isEnableSuperResolution(volcConfig) &&
+        if (isInitSuperResolution(volcConfig) &&
                 qualityConfig.enableSupperResolutionDowngrade) {
             player.initSRStrategyConfig(createSRConfig(volcConfig));
         }
@@ -134,7 +134,7 @@ public class VolcQualityStrategy {
 
         initGlobalConfig();
 
-        gearConfig.setIntValue(GearStrategy.KEY_ABR_WITH_SR, isEnableSuperResolution(volcConfig) ? 1 : 0);
+        gearConfig.setIntValue(GearStrategy.KEY_ABR_WITH_SR, isInitSuperResolution(volcConfig) ? 1 : 0);
         gearConfig.setIntValue(GearStrategy.KEY_SCREEN_WIDTH, displaySizeConfig.screenWidth);
         gearConfig.setIntValue(GearStrategy.KEY_SCREEN_HEIGHT, displaySizeConfig.screenHeight);
         gearConfig.setIntValue(GearStrategy.KEY_DISPLAY_WIDTH, displaySizeConfig.displayWidth);
@@ -164,7 +164,7 @@ public class VolcQualityStrategy {
         VolcConfig volcConfig = VolcConfig.get(mediaSource);
         final GearStrategyConfig gearConfig = new GearStrategyConfig();
         initConfig(gearConfig, volcConfig);
-        if (isEnableSuperResolution(volcConfig)) {
+        if (isInitSuperResolution(volcConfig)) {
             gearConfig.setObjectValue(GearStrategy.KEY_SR_STRATEGY_CONFIG, createSRConfig(volcConfig));
         }
         final Map<String, String> result = GearStrategy.select(videoModel, GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD, gearConfig);

@@ -28,4 +28,14 @@ public class VolcConfigGlobal {
     public static final boolean ENABLE_ECDN = false; // Not ready for now.
     public static final boolean ENABLE_STARTUP_ABR_INIT = true;
     public static final boolean ENABLE_USE_BACKUP_URL = true;
+
+    public static class CacheDir {
+        public static final String ROOT_DIR = "bytedance/playerkit/volcplayer";
+        public static final String PLAYER_CACHE_DIR = ROOT_DIR + "/video_cache";
+    }
+
+    public static class FilesDir {
+        public static final String ROOT_DIR = "bytedance/playerkit/volcplayer";
+        public static final String PLAYER_BMF_SR_BIN_DIR = ROOT_DIR + "/bmf";
+    }
 }

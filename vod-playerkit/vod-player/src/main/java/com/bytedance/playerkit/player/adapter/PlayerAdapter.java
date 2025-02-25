@@ -110,6 +110,8 @@ public interface PlayerAdapter {
 
     interface Factory {
         PlayerAdapter create(Looper eventLooper);
+
+        String type();
     }
 
     /**
@@ -131,7 +133,7 @@ public interface PlayerAdapter {
 
     void setVideoScalingMode(@Player.ScalingMode int mode);
 
-    void setDataSource(@NonNull MediaSource source) throws IOException;
+    void setDataSource(@NonNull MediaSource source) throws IllegalStateException;
 
     MediaSource getDataSource();
 
