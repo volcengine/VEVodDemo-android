@@ -55,7 +55,7 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         }
 
         if (L.ENABLE_LOG) {
-            player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG,  1);
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_OUTPUT_LOG, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_TMP_LOG, 1);
         }
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DATALOADER, 1);
@@ -64,6 +64,11 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_INT_ENABLE_ERROR_THROW_OPTIMIZE, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_GET_POSITION_SKIP_LOOPER, 1);
         player.setIntOption(TTVideoEngine.PLAYER_OPTION_POSITION_UPDATE_INTERVAL, 200);
+        // preRender support setStartTime
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_START_TIME_SKIP_AVSKIPSERIAL, 1);
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_OPTIMIZE_START_TIME_PRERENDER, 1);
+        // opt player memory usage
+        player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUX_NONBLOCK_READ, 0);
 
         if (volcConfig.codecStrategyType == VolcConfig.CODEC_STRATEGY_DISABLE) {
             switch (volcConfig.playerDecoderType) {
@@ -140,8 +145,6 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_INT_ENABLE_SOURCE_REFRESH_STRATEGY, 1);
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEG_ERROR, 1);
         }
-        // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_DEMUXER_RW_LOCK, 1);
-        // player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_SEEK_INTERRUPT, 1);
 
         if (!TextUtils.isEmpty(volcConfig.tag)) {
             player.setTag(volcConfig.tag);

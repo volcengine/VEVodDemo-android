@@ -18,19 +18,25 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer;
 
+import android.view.Surface;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bytedance.playerkit.player.playback.DisplayView;
+import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.PlayerEvent;
+import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
-import com.bytedance.playerkit.player.source.MediaSource;
-import com.bytedance.playerkit.player.utils.ProgressRecorder;
 import com.bytedance.playerkit.utils.L;
+import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoStrategy;
 
 public class ShortVideoCoverLayer extends CoverLayer {
+
     @Override
     public String tag() {
         return "short_video_cover";
@@ -41,6 +47,42 @@ public class ShortVideoCoverLayer extends CoverLayer {
         if (!VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_IMAGE_COVER)) return;
 
         super.load();
+    }
+
+    @Override
+    protected void onBindPlaybackController(@NonNull PlaybackController controller) {
+        controller.addPlaybackListener(mPlaybackListener);
+    }
+
+    @Override
+    protected void onUnbindPlaybackController(@NonNull PlaybackController controller) {
+        controller.removePlaybackListener(mPlaybackListener);
+    }
+
+    private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {
+
+        @Override
+        public void onEvent(Event event) {
+            switch (event.code()) {
+                case PlayerEvent.Action.SET_SURFACE: {
+                    Player player = player();
+                    if (player != null && player.isInPlaybackState()) {
+                        dismiss();
+                    }
+                    break;
+                }
+                case PlayerEvent.Info.VIDEO_RENDERING_START: {
+                    dismiss();
+                    break;
+                }
+            }
+        }
+    };
+
+    @Override
+    public void onSurfaceDestroy(Surface surface) {
+        L.d(this, "onSurfaceDestroy", surface);
+        show();
     }
 
     @Override
@@ -64,17 +106,9 @@ public class ShortVideoCoverLayer extends CoverLayer {
         final boolean rendered = ShortVideoStrategy.renderFrame(videoView);
         if (rendered) {
             L.d(this, "startPreRenderCover", reason, videoView, videoView.getSurface(), "preRender success");
-            if (!isPreRenderWithStartTime() && videoView.getDisplayViewType() == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
-                dismiss();
-            }
+            dismiss();
         } else {
             L.d(this, "startPreRenderCover", reason, videoView, videoView.getSurface(), "preRender failed");
         }
-    }
-
-    private boolean isPreRenderWithStartTime() {
-        MediaSource mediaSource = dataSource();
-        if (mediaSource == null) return false;
-        return ProgressRecorder.getProgress(mediaSource.getSyncProgressId()) > 0;
     }
 }
