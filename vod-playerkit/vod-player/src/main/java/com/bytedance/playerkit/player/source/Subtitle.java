@@ -34,10 +34,10 @@ public class Subtitle implements Serializable {
     private String language;
     private int languageId;
     private String url;
+    private String cacheKey;
     private long expire;
     private String format;
     private String subtitleDesc;
-
 
     public int getIndex() {
         return index;
@@ -79,6 +79,14 @@ public class Subtitle implements Serializable {
         this.url = url;
     }
 
+    public String getCacheKey() {
+        return cacheKey;
+    }
+
+    public void setCacheKey(String cacheKey) {
+        this.cacheKey = cacheKey;
+    }
+
     public long getExpire() {
         return expire;
     }
@@ -104,7 +112,7 @@ public class Subtitle implements Serializable {
     }
 
     public String dump() {
-        return String.format(Locale.getDefault(), "[%s %s]", L.obj2String(this), TextUtils.isEmpty(subtitleDesc) ? language : subtitleDesc);
+        return String.format(Locale.getDefault(), "%s %s", L.obj2String(this), TextUtils.isEmpty(subtitleDesc) ? language : subtitleDesc);
     }
 
     @Nullable

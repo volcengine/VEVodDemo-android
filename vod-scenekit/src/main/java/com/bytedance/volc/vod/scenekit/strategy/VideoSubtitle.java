@@ -20,10 +20,14 @@ package com.bytedance.volc.vod.scenekit.strategy;
 
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
-import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.settingskit.Option;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +35,7 @@ import java.util.List;
 public class VideoSubtitle {
     public static final int LANGUAGE_ID_CN = 1;  // 简体中文
     public static final int LANGUAGE_ID_US = 2;  // 英语
+    public static final List<Integer> LANGUAGE_IDS = Arrays.asList(LANGUAGE_ID_CN, LANGUAGE_ID_US);
 
     @Nullable
     public static String subtitle2String(Subtitle subtitle) {
@@ -44,6 +49,15 @@ public class VideoSubtitle {
     }
 
     public static List<Integer> createLanguageIds() {
-        return VolcSubtitleSelector.DEFAULT_LANGUAGE_IDS;
+        return LANGUAGE_IDS;
+    }
+
+    public static int getUserSelectedLanguageId(MediaSource mediaSource) {
+        return VideoSettings.intValue(VideoSettings.QUALITY_VIDEO_QUALITY_USER_SELECTED);
+    }
+
+    public static void setUserSelectedLanguageId(int playScene, int languageId) {
+        Option option = VideoSettings.option(VideoSettings.SUBTITLE_LANGUAGE_ID_USER_SELECTED);
+        option.userValues().saveValue(option, languageId);
     }
 }

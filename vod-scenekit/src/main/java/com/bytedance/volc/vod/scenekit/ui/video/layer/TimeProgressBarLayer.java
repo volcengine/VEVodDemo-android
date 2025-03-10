@@ -42,19 +42,18 @@ import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
-
+import com.bytedance.playerkit.utils.event.Dispatcher;
+import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.R;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.QualitySelectDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SpeedSelectDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.SubtitleSelectDialogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
 import com.bytedance.volc.vod.scenekit.utils.TimeUtils;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
-import com.bytedance.volc.vod.scenekit.ui.widgets.MediaSeekBar;
-import com.bytedance.playerkit.utils.event.Dispatcher;
-import com.bytedance.playerkit.utils.event.Event;
-import com.bytedance.volc.vod.scenekit.R;
 
 import java.util.List;
 
@@ -376,6 +375,13 @@ public class TimeProgressBarLayer extends AnimateLayer {
         }
     }
 
+    private void syncSubtitleLayer() {
+        SubtitleLayer subtitleLayer = layerHost() == null ? null : layerHost().findLayer(SubtitleLayer.class);
+        if (subtitleLayer != null) {
+            subtitleLayer.syncWithProgressBarState();
+        }
+    }
+
     @Override
     protected void onBindPlaybackController(@NonNull PlaybackController controller) {
         controller.addPlaybackListener(mPlaybackListener);
@@ -465,12 +471,19 @@ public class TimeProgressBarLayer extends AnimateLayer {
         sync();
     }
 
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        syncSubtitleLayer();
+    }
+
     private void sync() {
         syncTheme(getView());
         syncProgress();
         syncQuality();
         syncSpeed();
         syncSubtitle();
+        syncSubtitleLayer();
     }
 
     @Override

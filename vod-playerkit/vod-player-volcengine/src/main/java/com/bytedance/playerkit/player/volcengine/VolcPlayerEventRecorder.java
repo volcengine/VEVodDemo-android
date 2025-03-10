@@ -193,6 +193,13 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
+    public void onSubtitleCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleCacheHint,
+                new Object[]{cacheSize},
+                () -> mListener.onSubtitleCacheHint(mp, cacheSize)));
+    }
+
+    @Override
     public void onFrameInfoUpdate(@NonNull PlayerAdapter mp, int frameType, long pts, long clockTime) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onFrameInfoUpdate,
                 new Object[]{frameType, pts, clockTime},
@@ -237,7 +244,9 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
         static final int EVENT_onSubtitleWillChange = 21;
         static final int EVENT_onSubtitleChanged = 22;
         static final int EVENT_onSubtitleTextUpdate = 23;
-        static final int EVENT_onFrameInfoUpdate = 24;
+        static final int EVENT_onSubtitleCacheHint = 24;
+
+        static final int EVENT_onFrameInfoUpdate = 25;
 
         final int type;
 

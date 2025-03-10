@@ -37,6 +37,7 @@ import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.utils.FileUtils;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
+import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.settingskit.Option;
 import com.bytedance.volc.vod.settingskit.Options;
 import com.bytedance.volc.vod.settingskit.OptionsDefault;
@@ -58,6 +59,7 @@ public class VideoSettings {
     public static final String CATEGORY_MINI_DRAMA_VIDEO = "短剧";
     public static final String CATEGORY_AD = "广告";
     public static final String CATEGORY_QUALITY = "清晰度设置";
+    public static final String CATEGORY_SUBTITLE = "字幕设置";
     public static final String CATEGORY_COMMON_VIDEO = "通用配置";
 
     public static final String SHORT_VIDEO_SCENE_ACCOUNT_ID = "short_video_scene_account_id";
@@ -92,6 +94,11 @@ public class VideoSettings {
     public static final String QUALITY_ENABLE_STARTUP_ABR = "quality_enable_startup_abr";
     public static final String QUALITY_VIDEO_QUALITY_USER_SELECTED = "quality_video_quality_user_selected";
 
+    public static final String SUBTITLE_ENABLE = "subtitle_enable";
+    public static final String SUBTITLE_SOURCE_TYPE = "subtitle_source_type";
+    public static final String SUBTITLE_ENABLE_PRELOAD_STRATEGY = "subtitle_enable_preload_strategy";
+    public static final String SUBTITLE_LANGUAGE_ID_USER_SELECTED = "subtitle_language_id_user_selected";
+
     public static final String COMMON_CODEC_STRATEGY = "common_codec_strategy";
     public static final String COMMON_HARDWARE_DECODE = "common_hardware_decode";
     public static final String COMMON_SOURCE_TYPE = "common_source_type";
@@ -100,10 +107,8 @@ public class VideoSettings {
     public static final String COMMON_SOURCE_VIDEO_ENABLE_PRIVATE_DRM = "common_source_video_enable_private_drm";
     public static final String COMMON_ENABLE_SUPER_RESOLUTION = "common_enable_super_resolution";
     public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
-    public static final String COMMON_ENABLE_SUBTITLE = "common_enable_subtitle";
     public static final String COMMON_ENABLE_SOURCE_403_REFRESH = "common_enable_source_403_refresh";
     public static final String COMMON_RENDER_VIEW_TYPE = "common_render_view_type";
-
 
     private static Options sOptions;
 
@@ -195,6 +200,7 @@ public class VideoSettings {
         createDramaSettings(settings);
         createAdSettings(settings);
         createQualitySettings(settings);
+        createSubtitleSettings(settings);
         createCommonSettings(settings);
         return settings;
     }
@@ -513,6 +519,77 @@ public class VideoSettings {
                 }));
     }
 
+    private static void createSubtitleSettings(List<SettingItem> settings) {
+        settings.add(SettingItem.createCategoryItem(CATEGORY_SUBTITLE));
+        settings.add(SettingItem.createOptionItem(CATEGORY_SUBTITLE,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_SUBTITLE,
+                        SUBTITLE_ENABLE,
+                        "开启字幕",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_SUBTITLE,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_SUBTITLE,
+                        SUBTITLE_SOURCE_TYPE,
+                        "字幕源类型",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        SourceType.SOURCE_TYPE_VID,
+                        Arrays.asList(SourceType.SOURCE_TYPE_VID, SourceType.SOURCE_TYPE_URL)),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        switch ((Integer) value) {
+                            case SourceType.SOURCE_TYPE_VID:
+                                return "Vid + SubtitleAuthToken\n（仅支持 Vid/VideoModel 源类型）";
+                            case SourceType.SOURCE_TYPE_URL:
+                                return "DirectURL";
+                        }
+                        return null;
+                    }
+                }));
+        settings.add(SettingItem.createOptionItem(CATEGORY_SUBTITLE,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_SUBTITLE,
+                        SUBTITLE_ENABLE_PRELOAD_STRATEGY,
+                        "开启字幕预加载策略",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
+        settings.add(SettingItem.createOptionItem(CATEGORY_SUBTITLE,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_SUBTITLE,
+                        SUBTITLE_LANGUAGE_ID_USER_SELECTED,
+                        "用户选择的字幕语言",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Integer.class,
+                        VideoSubtitle.LANGUAGE_ID_CN,
+                        new ArrayList<>(VideoSubtitle.createLanguageIds())),
+                new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        Integer i = (Integer) value;
+                        switch (i) {
+                            case VideoSubtitle.LANGUAGE_ID_CN:
+                                return "中文";
+                            case VideoSubtitle.LANGUAGE_ID_US:
+                                return "英文";
+                            default:
+                                throw new IllegalArgumentException();
+                        }
+                    }
+                }));
+    }
+
     private static void createCommonSettings(List<SettingItem> settings) {
         settings.add(SettingItem.createCategoryItem(CATEGORY_COMMON_VIDEO));
 
@@ -664,16 +741,6 @@ public class VideoSettings {
                         Boolean.FALSE,
                         null)));
 
-        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
-                new Option(
-                        Option.TYPE_RATIO_BUTTON,
-                        CATEGORY_COMMON_VIDEO,
-                        COMMON_ENABLE_SUBTITLE,
-                        "开启字幕",
-                        Option.STRATEGY_IMMEDIATELY,
-                        Boolean.class,
-                        Boolean.FALSE,
-                        null)));
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(

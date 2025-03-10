@@ -100,6 +100,7 @@ public class SubtitleLayer extends AnimateLayer {
     public void show() {
         super.show();
         applyTheme();
+        syncWithProgressBarState();
     }
 
     @Override
@@ -123,7 +124,9 @@ public class SubtitleLayer extends AnimateLayer {
     }
 
     public void applyTheme() {
-        if (playScene() == PlayScene.SCENE_FULLSCREEN) {
+        if (playScene() == PlayScene.SCENE_SHORT) {
+            applyShortVideoTheme();
+        } else if (playScene() == PlayScene.SCENE_FULLSCREEN) {
             applyFullScreenTheme();
         } else {
             applyHalfScreenTheme();
@@ -139,15 +142,53 @@ public class SubtitleLayer extends AnimateLayer {
         if (mSubText == null) return;
 
         mSubText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        ((ViewGroup.MarginLayoutParams) mSubText.getLayoutParams()).bottomMargin = (int) UIUtils.dip2Px(context(), 12);
+        ViewGroup.MarginLayoutParams lp = ((ViewGroup.MarginLayoutParams) mSubText.getLayoutParams());
+        lp.bottomMargin = (int) UIUtils.dip2Px(context(), 16);
+        lp.leftMargin = (int) UIUtils.dip2Px(context(), 88);
+        lp.rightMargin = (int) UIUtils.dip2Px(context(), 88);
         mSubText.requestLayout();
     }
 
     private void applyFullScreenTheme() {
         if (mSubText == null) return;
 
-        mSubText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        ((ViewGroup.MarginLayoutParams) mSubText.getLayoutParams()).bottomMargin = (int) UIUtils.dip2Px(context(), 16);
+        mSubText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        ViewGroup.MarginLayoutParams lp = ((ViewGroup.MarginLayoutParams) mSubText.getLayoutParams());
+        lp.bottomMargin = (int) UIUtils.dip2Px(context(), 48);
+        lp.leftMargin = (int) UIUtils.dip2Px(context(), 88);
+        lp.rightMargin = (int) UIUtils.dip2Px(context(), 88);
         mSubText.requestLayout();
+    }
+
+    private void applyShortVideoTheme() {
+        if (mSubText == null) return;
+
+        mSubText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
+
+        ViewGroup.MarginLayoutParams lp = ((ViewGroup.MarginLayoutParams) mSubText.getLayoutParams());
+        lp.bottomMargin = (int) UIUtils.dip2Px(context(), 240);
+        lp.leftMargin = (int) UIUtils.dip2Px(context(), 48);
+        lp.rightMargin = (int) UIUtils.dip2Px(context(), 48);
+        mSubText.requestLayout();
+    }
+
+    public void syncWithProgressBarState() {
+        final View view = getView();
+        if (view == null) return;
+        final TimeProgressBarLayer progressBarLayer = layerHost() == null ? null : layerHost().findLayer(TimeProgressBarLayer.class);
+        final boolean isTimeProgressBarShowing = progressBarLayer != null && progressBarLayer.isShowing();
+        if (isTimeProgressBarShowing) {
+            if (playScene() == PlayScene.SCENE_FULLSCREEN) {
+                view.setTranslationY(UIUtils.dip2Px(context(), -52));
+            } else {
+                view.setTranslationY(UIUtils.dip2Px(context(), -32));
+            }
+        } else {
+            if (playScene() == PlayScene.SCENE_FULLSCREEN) {
+                view.setTranslationY(UIUtils.dip2Px(context(), 0));
+            } else {
+                view.setTranslationY(UIUtils.dip2Px(context(), 0));
+            }
+        }
     }
 }

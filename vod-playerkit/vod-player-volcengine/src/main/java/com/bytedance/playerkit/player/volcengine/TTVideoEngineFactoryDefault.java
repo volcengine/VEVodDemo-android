@@ -134,6 +134,9 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPEN_SUB_THREAD, 1);
             // 使用字幕单路加载优化
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPT_SUB_LOAD_TIME, 1);
+            // 使用 MDL 加载字幕
+            player.setIntOption(TTVideoEngine.PLAYER_OPTION_SUB_ENABLE_MDL, 1);
+
             EngineParams.get(player).mSubtitleEnabled = true;
         }
 

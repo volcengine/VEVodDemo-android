@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.utils.MD5;
 
@@ -47,6 +48,16 @@ public interface CacheKeyFactory {
         }
 
         @Override
+        public String generateCacheKey(@NonNull MediaSource source, @NonNull Subtitle subtitle) {
+            if (!TextUtils.isEmpty(subtitle.getCacheKey())) {
+                return subtitle.getCacheKey();
+            }
+            String cacheKey = generateCacheKey(subtitle.getUrl());
+            subtitle.setCacheKey(cacheKey);
+            return cacheKey;
+        }
+
+        @Override
         public String generateCacheKey(@NonNull String url) {
             String path;
             try {
@@ -60,6 +71,8 @@ public interface CacheKeyFactory {
     };
 
     String generateCacheKey(@NonNull MediaSource source, @NonNull Track track);
+
+    String generateCacheKey(@NonNull MediaSource source, @NonNull Subtitle subtitle);
 
     String generateCacheKey(@NonNull String url);
 }

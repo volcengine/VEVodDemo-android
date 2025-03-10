@@ -32,8 +32,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class SampleSourceParser {
 
@@ -58,13 +56,13 @@ public class SampleSourceParser {
             videoId = object.optString("video_id");
 
         } else if (object.has("Vid")
-            && object.has("Status")) {
+                && object.has("Status")) {
             videoId = object.optString("Vid");
         } else {
             return null;
         }
         ArrayList<VideoItem> items = new ArrayList<>();
-        items.add(VideoItem.createVideoModelItem(videoId, object.toString(), null, 0, null, null));
+        items.add(VideoItem.createVideoModelItem(videoId, object.toString(), null, null, 0, null, null));
         return items;
     }
 
@@ -85,24 +83,23 @@ public class SampleSourceParser {
         String title = object.optString("title");
         String cover = object.optString("cover");
         long duration = object.optLong("duration");
+        String playAuthToken = object.optString("playAuthToken");
+        String subtitleAuthToken = object.optString("subtitleAuthToken");
+        JSONObject subtitleModel = object.optJSONObject("subtitleModel");
         VideoItem videoItem;
         switch (type) {
             case VideoItem.SOURCE_TYPE_VID: {
-                String playAuthToken = object.optString("playAuthToken");
-                String subtitleAuthToken = object.optString("subtitleAuthToken");
-                videoItem = VideoItem.createVidItem(vid, playAuthToken, subtitleAuthToken, duration, cover, title);
+                videoItem = VideoItem.createVidItem(vid, playAuthToken, subtitleAuthToken, Mapper.subtitleModel2Subtitles(subtitleModel), duration, cover, title);
                 break;
             }
             case VideoItem.SOURCE_TYPE_URL: {
                 String httpUrl = object.optString("httpUrl");
-                JSONObject subtitleModel = object.optJSONObject("subtitleModel");
                 videoItem = VideoItem.createUrlItem(vid, httpUrl, null, Mapper.subtitleModel2Subtitles(subtitleModel), duration, cover, title);
                 break;
             }
             case VideoItem.SOURCE_TYPE_MODEL: {
                 String videoModel = object.optString("videoModel");
-                String subtitleAuthToken = object.optString("subtitleAuthToken");
-                videoItem = VideoItem.createVideoModelItem(vid, videoModel, subtitleAuthToken, duration, cover, title);
+                videoItem = VideoItem.createVideoModelItem(vid, videoModel, subtitleAuthToken, Mapper.subtitleModel2Subtitles(subtitleModel), duration, cover, title);
                 break;
             }
             default:

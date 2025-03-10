@@ -295,5 +295,7 @@ public interface PlayerAdapter {
         void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current);
 
         void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText);
+
+        void onSubtitleCacheHint(@NonNull PlayerAdapter mp, long cacheSize);
     }
 }

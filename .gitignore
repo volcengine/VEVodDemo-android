@@ -14,5 +14,8 @@ build-publish
 .idea/gradle.xml
 .idea/deploymentTargetDropDown.xml
 .idea/migrations.xml
+.idea/MarsCodeWorkspaceAppSettings.xml
+.idea/other.xml
+
 
 .dev
