@@ -74,6 +74,7 @@ public class VolcConfig implements Serializable {
     public VolcSuperResolutionConfig superResolutionConfig = new VolcSuperResolutionConfig();
     public VolcQualityConfig qualityConfig;
     public boolean enableSubtitle = false;
+    public boolean enableSubtitlePreloadStrategy = false;
     public List<Integer> subtitleLanguageIds;
     public boolean enable403SourceRefreshStrategy;
 

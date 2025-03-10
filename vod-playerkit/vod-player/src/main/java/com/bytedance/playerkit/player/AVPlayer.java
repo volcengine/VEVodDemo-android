@@ -50,6 +50,7 @@ import com.bytedance.playerkit.player.event.InfoFrameInfoUpdate;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
+import com.bytedance.playerkit.player.event.InfoSubtitleCacheUpdate;
 import com.bytedance.playerkit.player.event.InfoSubtitleChanged;
 import com.bytedance.playerkit.player.event.InfoSubtitleFileLoadFinish;
 import com.bytedance.playerkit.player.event.InfoSubtitleInfoReady;
@@ -437,6 +438,16 @@ public class AVPlayer extends ExtraObject implements Player {
             L.v(player, "onSubtitleTextUpdate", SubtitleText.dump(subtitleText));
 
             player.mDispatcher.obtain(InfoSubtitleTextUpdate.class, player).init(subtitleText).dispatch();
+        }
+
+        @Override
+        public void onSubtitleCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.v(player, "onSubtitleCacheHint", cacheSize);
+
+            player.mDispatcher.obtain(InfoSubtitleCacheUpdate.class, player).init(cacheSize).dispatch();
         }
 
         @Override

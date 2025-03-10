@@ -27,6 +27,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
+import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleSelector;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
@@ -35,10 +37,12 @@ import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
+import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
+import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.settingskit.SettingItem;
 import com.bytedance.volc.voddemo.impl.BuildConfig;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
@@ -105,6 +109,28 @@ public class VodSDK {
             }
         };
 
+        final SubtitleSelector subtitleSelector = new VolcSubtitleSelector() {
+            @NonNull
+            @Override
+            public Subtitle selectSubtitle(@NonNull MediaSource mediaSource, @NonNull List<Subtitle> subtitles) {
+                // 起播 + 字幕选择全局回调
+
+                // 1. 优先用户上次选择的字幕语言
+                final int languageId = VideoSubtitle.getUserSelectedLanguageId(mediaSource);
+                if (languageId > 0) {
+                    for (Subtitle subtitle : subtitles) {
+                        if (subtitle.getLanguageId() == languageId) {
+                            return subtitle;
+                        }
+                    }
+                }
+
+                // 2. 按照偏好语言优先级返回语言
+                // 3. 若未命中，兜底返回第 0 个
+                return super.selectSubtitle(mediaSource, subtitles);
+            }
+        };
+
         final VolcConfigUpdater configUpdater = new VolcConfigUpdater() {
             @Override
             public void updateVolcConfig(MediaSource mediaSource) {
@@ -144,6 +170,7 @@ public class VodSDK {
                         .setLicenseUri(licenseUri)
                         .build())
                 .setTrackSelector(trackSelector)
+                .setSubtitleSelector(subtitleSelector)
                 .setConfigUpdater(configUpdater)
                 .setUrlRefreshFetcherFactory(urlRefresherFactory)
                 .build()

@@ -29,6 +29,7 @@ import android.view.Surface;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
@@ -138,7 +139,29 @@ public class VolcEngineStrategy {
                 VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
                 return item;
             }
+
+            @Nullable
+            @Override
+            public PreloaderURLItem createSubtitleUrlItem(DirectUrlSource source, long preloadSize) {
+                final MediaSource mediaSource = (MediaSource) source.tag();
+                if (mediaSource == null) return null; // error
+                // VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
+                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
+                if (subtitle != null) {
+                    String cacheKey = VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(mediaSource, subtitle);
+                    return new PreloaderURLItem(cacheKey, source.vid(), preloadSize, new String[]{subtitle.getUrl()});
+                }
+                return PreloadTaskFactory.super.createSubtitleUrlItem(source, preloadSize);
+            }
         });
+    }
+
+    private static Subtitle selectPlaySubtitle(MediaSource mediaSource) {
+        final List<Subtitle> subtitles = mediaSource.getSubtitles();
+        if (subtitles != null && !subtitles.isEmpty()) {
+            return VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, mediaSource.getSubtitles());
+        }
+        return null;
     }
 
     /**

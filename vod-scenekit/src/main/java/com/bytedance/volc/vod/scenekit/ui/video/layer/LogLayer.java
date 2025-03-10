@@ -36,12 +36,15 @@ import androidx.annotation.Nullable;
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.event.InfoCacheUpdate;
+import com.bytedance.playerkit.player.event.InfoSubtitleCacheUpdate;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
+import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
@@ -59,15 +62,29 @@ public class LogLayer extends BaseLayer {
 
     private static class LogInfo {
         private final List<Long> cacheHintBytes = new ArrayList<>();
+        private final List<Long> subtitleCacheHintBytes = new ArrayList<>();
         private MediaSource mediaSource;
         private long startPlaybackFT;
         private long prepareFT;
         private long videoRenderStartFT;
+        private long subtitleLoadEndFT;
 
         private static String cacheHint(LogInfo logInfo) {
             if (logInfo == null) return "";
             String s = "";
             for (Long bytes : logInfo.cacheHintBytes) {
+                if (!TextUtils.isEmpty(s)) {
+                    s += ", ";
+                }
+                s = s + bytes;
+            }
+            return s;
+        }
+
+        private static String subtitleCacheHint(LogInfo logInfo) {
+            if (logInfo == null) return "";
+            String s = "";
+            for (Long bytes : logInfo.subtitleCacheHintBytes) {
                 if (!TextUtils.isEmpty(s)) {
                     s += ", ";
                 }
@@ -86,6 +103,14 @@ public class LogLayer extends BaseLayer {
                 if (logInfo.videoRenderStartFT > logInfo.startPlaybackFT) {
                     return logInfo.videoRenderStartFT - logInfo.startPlaybackFT;
                 }
+            }
+            return -1;
+        }
+
+        public static long subtitleLoadTime(LogInfo logInfo) {
+            if (logInfo == null) return -1;
+            if (logInfo.videoRenderStartFT < logInfo.subtitleLoadEndFT && logInfo.subtitleLoadEndFT > 0) {
+                return logInfo.subtitleLoadEndFT - logInfo.videoRenderStartFT;
             }
             return -1;
         }
@@ -184,6 +209,16 @@ public class LogLayer extends BaseLayer {
             info.append("CacheHint: ")
                     .append(LogInfo.cacheHint(mLogInfo))
                     .append("\n");
+            if (VolcConfig.get(dataSource()).enableSubtitle) {
+                info.append(subtitleState())
+                        .append("\n");
+                info.append("SubtitleCacheHint: ")
+                        .append(LogInfo.subtitleCacheHint(mLogInfo))
+                        .append("\n");
+                info.append("SubtitleLoadTime: ")
+                        .append(LogInfo.subtitleLoadTime(mLogInfo))
+                        .append("\n");
+            }
             info.append("FirstFramePlayer: ")
                     .append(LogInfo.firstFrame(mLogInfo, true))
                     .append("\n");
@@ -214,6 +249,17 @@ public class LogLayer extends BaseLayer {
             }
         }
         return "unknown track";
+    }
+
+    private String subtitleState() {
+        Player player = player();
+        if (player!= null &&!player.isReleased()) {
+            Subtitle subtitle = player.getCurrentSubtitle();
+            if (subtitle!= null) {
+                return Subtitle.dump(subtitle);
+            }
+        }
+        return "unknown subtitle";
     }
 
     private String playbackState() {
@@ -297,6 +343,16 @@ public class LogLayer extends BaseLayer {
                 case PlayerEvent.Info.CACHE_UPDATE:
                     if (mLogInfo != null) {
                         mLogInfo.cacheHintBytes.add(event.cast(InfoCacheUpdate.class).cachedBytes);
+                    }
+                    break;
+                case PlayerEvent.Info.SUBTITLE_FILE_LOAD_FINISH:
+                    if (mLogInfo!= null && mLogInfo.subtitleLoadEndFT <= 0) {
+                        mLogInfo.subtitleLoadEndFT = event.dispatchTime();
+                    }
+                    break;
+                case PlayerEvent.Info.SUBTITLE_CACHE_UPDATE:
+                    if (mLogInfo!= null) {
+                        mLogInfo.subtitleCacheHintBytes.add(event.cast(InfoSubtitleCacheUpdate.class).cachedBytes);
                     }
                     break;
             }

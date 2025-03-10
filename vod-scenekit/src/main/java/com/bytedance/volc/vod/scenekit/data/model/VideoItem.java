@@ -28,6 +28,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.ExtraObject;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.MD5;
@@ -77,13 +78,14 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
             @NonNull String vid,
             @NonNull String playAuthToken,
             @Nullable String cover) {
-        return createVidItem(vid, playAuthToken, null, 0, cover, null);
+        return createVidItem(vid, playAuthToken, null, null, 0, cover, null);
     }
 
     public static VideoItem createVidItem(
             @NonNull String vid,
             @NonNull String playAuthToken,
             @Nullable String subtitleAuthToken,
+            @Nullable List<Subtitle> subtitles,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -92,6 +94,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         videoItem.vid = vid;
         videoItem.playAuthToken = playAuthToken;
         videoItem.subtitleAuthToken = subtitleAuthToken;
+        videoItem.subtitles = subtitles;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;
@@ -129,6 +132,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
     public static VideoItem createMultiStreamUrlItem(
             @NonNull String vid,
             @NonNull MediaSource mediaSource,
+            @Nullable List<Subtitle> subtitles,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -136,6 +140,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         videoItem.sourceType = SOURCE_TYPE_URL;
         videoItem.vid = vid;
         videoItem.mediaSource = mediaSource;
+        videoItem.subtitles = subtitles;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;
@@ -146,6 +151,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
             @NonNull String vid,
             @NonNull String videoModel,
             @Nullable String subtitleAuthToken,
+            @Nullable List<Subtitle> subtitles,
             long duration,
             @Nullable String cover,
             @Nullable String title) {
@@ -154,6 +160,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         videoItem.vid = vid;
         videoItem.videoModel = videoModel;
         videoItem.subtitleAuthToken = subtitleAuthToken;
+        videoItem.subtitles = subtitles;
         videoItem.duration = duration;
         videoItem.cover = cover;
         videoItem.title = title;
@@ -248,22 +255,13 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
             mediaSource = MediaSource.createIdSource(videoItem.vid, "PlayAuthTokenPlaceHolder");
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_VID) {
             mediaSource = MediaSource.createIdSource(videoItem.vid, videoItem.playAuthToken);
-            mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken);
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_URL) {
             mediaSource = MediaSource.createUrlSource(videoItem.vid, videoItem.url, videoItem.urlCacheKey);
-            mediaSource.setSubtitles(videoItem.subtitles);
         } else if (videoItem.sourceType == VideoItem.SOURCE_TYPE_MODEL) {
             mediaSource = MediaSource.createModelSource(videoItem.vid, videoItem.videoModel);
             Mapper.updateVideoModelMediaSource(mediaSource);
-            mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken); // TODO
         } else {
             throw new IllegalArgumentException("unsupported source type! " + videoItem.sourceType);
-        }
-        if (!TextUtils.isEmpty(videoItem.cover)) {
-            mediaSource.setCoverUrl(videoItem.cover);
-        }
-        if (videoItem.duration > 0) {
-            mediaSource.setDuration(videoItem.duration);
         }
         return mediaSource;
     }
@@ -272,12 +270,32 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
     public static MediaSource toMediaSource(VideoItem videoItem) {
         if (videoItem.mediaSource == null) {
             videoItem.mediaSource = createMediaSource(videoItem);
+            VideoItem.set(videoItem.mediaSource, videoItem);
         }
         final MediaSource mediaSource = videoItem.mediaSource;
-        VideoItem.set(mediaSource, videoItem);
         VolcConfig.set(mediaSource, createVolcConfig(videoItem));
         if (videoItem.syncProgress) {
             mediaSource.setSyncProgressId(videoItem.vid); // continues play
+        }
+        if (!TextUtils.isEmpty(videoItem.subtitleAuthToken)
+                && VideoSettings.intValue(VideoSettings.SUBTITLE_SOURCE_TYPE)
+                == VideoSettings.SourceType.SOURCE_TYPE_VID) {
+            mediaSource.setSubtitleAuthToken(videoItem.subtitleAuthToken);
+        } else {
+            mediaSource.setSubtitleAuthToken(null);
+        }
+        if (!CollectionUtils.isEmpty(videoItem.subtitles)
+                && VideoSettings.intValue(VideoSettings.SUBTITLE_SOURCE_TYPE)
+                == VideoSettings.SourceType.SOURCE_TYPE_URL) {
+            mediaSource.setSubtitles(videoItem.subtitles);
+        } else {
+            mediaSource.setSubtitles(null);
+        }
+        if (!TextUtils.isEmpty(videoItem.cover)) {
+            mediaSource.setCoverUrl(videoItem.cover);
+        }
+        if (videoItem.duration > 0) {
+            mediaSource.setDuration(videoItem.duration);
         }
         return mediaSource;
     }
@@ -301,7 +319,8 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         volcConfig.playerDecoderType = VideoSettings.intValue(VideoSettings.COMMON_HARDWARE_DECODE);
         volcConfig.sourceEncodeType = VideoSettings.booleanValue(VideoSettings.COMMON_SOURCE_ENCODE_TYPE_H265) ? Track.ENCODER_TYPE_H265 : Track.ENCODER_TYPE_H264;
         volcConfig.enableECDN = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_ECDN);
-        volcConfig.enableSubtitle = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SUBTITLE);
+        volcConfig.enableSubtitle = VideoSettings.booleanValue(VideoSettings.SUBTITLE_ENABLE);
+        volcConfig.enableSubtitlePreloadStrategy = VideoSettings.booleanValue(VideoSettings.SUBTITLE_ENABLE_PRELOAD_STRATEGY);
         volcConfig.subtitleLanguageIds = VideoSubtitle.createLanguageIds();
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.qualityConfig = VideoQuality.sceneGearConfig(videoItem.playScene);

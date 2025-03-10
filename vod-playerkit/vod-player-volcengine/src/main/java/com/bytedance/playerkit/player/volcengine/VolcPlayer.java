@@ -496,7 +496,7 @@ class VolcPlayer implements PlayerAdapter {
 
         final MediaSource mediaSource = mMediaSource;
         if (mediaSource == null) {
-            Asserts.throwIfDebug(new IllegalStateException("You should invoke VolcPlayer#setDataSource(MediaSource) method first!", new NullPointerException("mMediaSource == null")));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("MediaSource is null"));
             return;
         }
 
@@ -662,6 +662,11 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
+            public void onSubtitleCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
+                listener.onSubtitleCacheHint(player, cacheSize);
+            }
+
+            @Override
             public void onFrameInfoUpdate(@NonNull PlayerAdapter mp, int frameType, long pts, long clockTime) { /**/}
         });
     }
@@ -698,18 +703,13 @@ class VolcPlayer implements PlayerAdapter {
 
         final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource);
         if (vidSource == null) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new NullPointerException("vidSource is null!"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("vidSource is null!"));
             return;
         }
-        mStrategySource = vidSource;
-        mPlayer.setStrategySource(mStrategySource);
 
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-        if (volcConfig.enableSubtitle) {
-            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
-        }
+        setupSource(mediaSource, vidSource);
 
-        if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+        if (VolcQualityStrategy.isEnableStartupABR(VolcConfig.get(mediaSource))) {
             VolcQualityStrategy.init(mPlayer, mediaSource, new VolcQualityStrategy.Listener() {
                 @Override
                 public void onStartupTrackSelected(VolcQualityStrategy.StartupTrackResult result) {
@@ -762,26 +762,19 @@ class VolcPlayer implements PlayerAdapter {
         @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         final List<Track> tracks = mediaSource.getTracks(trackType);
         if (CollectionUtils.isEmpty(tracks)) {
-            // TODO error
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("tracks is null!"));
             return;
         }
 
         final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(mediaSource, VolcPlayerInit.config().cacheKeyFactory);
         if (videoModelSource == null) {
-            // TODO error
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("videoModelSource is null!"));
             return;
         }
 
-        mStrategySource = videoModelSource;
-        mPlayer.setStrategySource(mStrategySource);
+        setupSource(mediaSource, videoModelSource);
 
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-        if (volcConfig.enableSubtitle) {
-            mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
-            setSubtitleIds(videoModelSource.videoModel());
-        }
-
-        if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
+        if (VolcQualityStrategy.isEnableStartupABR(VolcConfig.get(mediaSource))) {
             if (mListener != null) {
                 mListener.onTrackInfoReady(this, trackType, tracks);
             }
@@ -837,6 +830,75 @@ class VolcPlayer implements PlayerAdapter {
         return null;
     }
 
+
+    private void prepareDirectUrl(MediaSource mediaSource, Track track, boolean startWhenPrepared) {
+        if (isInState(Player.STATE_IDLE, Player.STATE_STOPPED)) {
+            setState(Player.STATE_PREPARING);
+        }
+        final DirectUrlSource directUrlSource = Mapper.mediaSource2DirectUrlSource(
+                mediaSource,
+                track,
+                VolcPlayerInit.config().cacheKeyFactory);
+
+        if (directUrlSource == null) {
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("directUrlSource is null!"));
+            return;
+        }
+
+        setupSource(mediaSource, directUrlSource);
+
+        config(mediaSource, track);
+
+        preparePlayer(mPlayer, startWhenPrepared);
+    }
+
+    private void setupSource(@NonNull MediaSource mediaSource, @NonNull StrategySource strategySource) {
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+
+        // 1. setup video source
+        mStrategySource = strategySource;
+        mPlayer.setStrategySource(mStrategySource);
+
+        // 2. setup subtitle source
+        if (volcConfig.enableSubtitle) {
+            SubDesInfoModel subtitleSource = Mapper.subtitles2SubtitleSource(mediaSource,
+                    mediaSource.getSubtitles(),
+                    VolcPlayerInit.config().cacheKeyFactory);
+            if (subtitleSource != null) {
+                // direct url
+                mSubtitleSource = subtitleSource;
+                mPlayer.setSubDesInfoModel(subtitleSource);
+                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
+                if (subtitle != null) {
+                    selectSubtitle(subtitle);
+                }
+            } else if (!TextUtils.isEmpty(mediaSource.getSubtitleAuthToken())) {
+                // vid + subtitleAuthToken
+                mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
+                if (strategySource instanceof VideoModelSource) {
+                    final IVideoModel videoModel = ((VideoModelSource) strategySource).videoModel();
+                    if (videoModel!= null) {
+                        setSubtitleIds(videoModel);
+                    }
+                }
+            }
+        }
+    }
+
+    private void setSubtitleIds(IVideoModel videoModel) {
+        final VolcConfig volcConfig = VolcConfig.get(mMediaSource);
+        if (volcConfig.enableSubtitle &&
+                volcConfig.subtitleLanguageIds != null) {
+            final String subtitleIds = Mapper.subtitleList2SubtitleIds(
+                    Mapper.findSubInfoListWithLanguageIds(
+                            Mapper.findSubInfoList(videoModel),
+                            volcConfig.subtitleLanguageIds));
+            if (!TextUtils.isEmpty(subtitleIds)) {
+                mPlayer.setStringOption(TTVideoEngine.PLAYER_OPTION_SUB_IDS, subtitleIds);
+            }
+        }
+    }
+
     @Nullable
     private Subtitle selectPlaySubtitle(MediaSource mediaSource) {
         final List<Subtitle> subtitles = mediaSource.getSubtitles();
@@ -853,56 +915,6 @@ class VolcPlayer implements PlayerAdapter {
             subtitle = VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, mediaSource.getSubtitles());
         }
         return subtitle;
-    }
-
-    private void prepareDirectUrl(MediaSource mediaSource, Track track, boolean startWhenPrepared) {
-        if (isInState(Player.STATE_IDLE, Player.STATE_STOPPED)) {
-            setState(Player.STATE_PREPARING);
-        }
-
-        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-
-        final DirectUrlSource directUrlSource = Mapper.mediaSource2DirectUrlSource(
-                mediaSource,
-                track,
-                VolcPlayerInit.config().cacheKeyFactory);
-
-        if (directUrlSource == null) {
-            // TODO error
-            return;
-        }
-
-        mStrategySource = directUrlSource;
-        mPlayer.setStrategySource(mStrategySource);
-
-        if (volcConfig.enableSubtitle) {
-            mSubtitleSource = Mapper.subtitles2SubtitleSource(mediaSource.getSubtitles());
-            if (mSubtitleSource != null) {
-                mPlayer.setSubDesInfoModel(mSubtitleSource);
-                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
-                if (subtitle != null) {
-                    selectSubtitle(subtitle);
-                }
-            }
-        }
-
-        config(mediaSource, track);
-
-        preparePlayer(mPlayer, startWhenPrepared);
-    }
-
-    private void setSubtitleIds(IVideoModel videoModel) {
-        final VolcConfig volcConfig = VolcConfig.get(mMediaSource);
-        if (volcConfig.enableSubtitle &&
-                volcConfig.subtitleLanguageIds != null) {
-            final String subtitleIds = Mapper.subtitleList2SubtitleIds(
-                    Mapper.findSubInfoListWithLanguageIds(
-                            Mapper.findSubInfoList(videoModel),
-                            volcConfig.subtitleLanguageIds));
-            if (!TextUtils.isEmpty(subtitleIds)) {
-                mPlayer.setStringOption(TTVideoEngine.PLAYER_OPTION_SUB_IDS, subtitleIds);
-            }
-        }
     }
 
     void preparePlayer(TTVideoEngine player, boolean startWhenPrepared) {
@@ -1671,6 +1683,9 @@ class VolcPlayer implements PlayerAdapter {
                     String taskKey = videoEngineInfos.getUsingMDLPlayTaskKey(); // 使用的 key 信息
                     long hitCacheSize = videoEngineInfos.getUsingMDLHitCacheSize(); // 命中缓存文件 size
                     listener.onCacheHint(player, hitCacheSize);
+                    return;
+                case VideoEngineInfos.USING_MDL_HIT_CACHE_SIZE_SUBTITLE:
+                    listener.onSubtitleCacheHint(player, videoEngineInfos.getUsingMDLHitCacheSize());
                     return;
                 case VideoEngineInfos.USING_MDL_CACHE_END:
                     return;

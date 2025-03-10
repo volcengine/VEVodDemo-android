@@ -36,6 +36,7 @@ import com.bytedance.playerkit.player.event.InfoDataSourceRefreshed;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
+import com.bytedance.playerkit.player.event.InfoSubtitleCacheUpdate;
 import com.bytedance.playerkit.player.event.InfoTrackChanged;
 import com.bytedance.playerkit.player.event.InfoTrackInfoReady;
 import com.bytedance.playerkit.player.event.InfoTrackWillChange;
@@ -232,5 +233,10 @@ public interface PlayerEvent {
         public static final int SUBTITLE_CHANGED = 3022;
 
         public static final int FRAME_INFO_UPDATE = 3023;
+
+        /**
+         * @see InfoSubtitleCacheUpdate
+         */
+        public static final int SUBTITLE_CACHE_UPDATE = 3024;
     }
 }

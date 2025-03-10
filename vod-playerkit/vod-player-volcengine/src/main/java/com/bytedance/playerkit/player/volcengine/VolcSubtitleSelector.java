@@ -28,21 +28,25 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <a href="https://www.volcengine.com/docs/4/70518#%E5%AD%97%E5%B9%95%E8%AF%AD%E8%A8%80">Language IDs</a>
+ * <a href="https://www.volcengine.com/docs/4/1186356">Language IDs</a>
  */
 public class VolcSubtitleSelector implements SubtitleSelector {
-    public static final List<Integer> DEFAULT_LANGUAGE_IDS = Arrays.asList(5, 1, 2);
 
     @NonNull
     @Override
     public Subtitle selectSubtitle(@NonNull MediaSource mediaSource, @NonNull List<Subtitle> subtitles) {
-        for (int languageId : DEFAULT_LANGUAGE_IDS) {
-            for (Subtitle subtitle : subtitles) {
-                if (subtitle.getLanguageId() == languageId) {
-                    return subtitle;
+        // 1. 按照偏好语言优先级返回语言
+        final List<Integer> preferredLanguageIds = VolcConfig.get(mediaSource).subtitleLanguageIds;
+        if (preferredLanguageIds != null && !preferredLanguageIds.isEmpty()) {
+            for (int languageId : preferredLanguageIds) {
+                for (Subtitle subtitle : subtitles) {
+                    if (subtitle.getLanguageId() == languageId) {
+                        return subtitle;
+                    }
                 }
             }
         }
+        // 2. 若未命中，兜底返回第 0 个
         return subtitles.get(0);
     }
 }

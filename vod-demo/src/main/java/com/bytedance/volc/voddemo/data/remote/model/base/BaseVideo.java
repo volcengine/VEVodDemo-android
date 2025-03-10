@@ -23,13 +23,12 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
-import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.model.parser.PlayInfoJson2MediaSourceParser;
-
-import org.json.JSONException;
+import com.bytedance.volc.voddemo.data.remote.model.parser.SubtitleInfoJson2SubtitleListParser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ public class BaseVideo implements Serializable {
     public String videoModel;
     public String playAuthToken;
     public String subtitleAuthToken;
+    public String subtitleModel;
     public String caption;
     public double duration;
     public String coverUrl;
@@ -51,12 +51,18 @@ public class BaseVideo implements Serializable {
     private static VideoItem createVideoItem(BaseVideo video) {
         if (video == null) return null;
 
+        // Demonstrate parse SubtitleInfo JSON to PlayerKit Subtitle Model
+        // You should implement your own Parser with your AppServer data structure.
+        final List<Subtitle> subtitles = TextUtils.isEmpty(video.subtitleModel) ? null :
+                new SubtitleInfoJson2SubtitleListParser(video.subtitleModel).safeParse();
+
         if (!TextUtils.isEmpty(video.playAuthToken)) {
             // vid + playAuthToken
             return VideoItem.createVidItem(
                     video.vid,
                     video.playAuthToken,
                     video.subtitleAuthToken,
+                    subtitles,
                     (long) (video.duration * 1000),
                     video.coverUrl,
                     video.caption);
@@ -68,6 +74,7 @@ public class BaseVideo implements Serializable {
                             video.vid,
                             video.videoModel,
                             video.subtitleAuthToken,
+                            subtitles,
                             (long) (video.duration * 1000),
                             video.coverUrl,
                             video.caption);
@@ -75,18 +82,14 @@ public class BaseVideo implements Serializable {
                     return videoItem;
                 }
                 case VideoSettings.SourceType.SOURCE_TYPE_URL: {
-                    MediaSource source = null;
-                    try {
-                        // Demonstrate parse VideoModel JSON to MediaSource object
-                        // You should implement your own Parser with your AppServer data structure.
-                        source = new PlayInfoJson2MediaSourceParser(video.videoModel).parse();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    // Demonstrate parse VideoModel JSON to PlayerKit MediaSource object
+                    // You should implement your own Parser with your AppServer data structure.
+                    final MediaSource source = new PlayInfoJson2MediaSourceParser(video.videoModel).safeParse();
                     if (source == null) return null;
                     return VideoItem.createMultiStreamUrlItem(
                             video.vid,
                             source,
+                            subtitles,
                             (long) (video.duration * 1000),
                             video.coverUrl,
                             video.caption);
@@ -100,7 +103,7 @@ public class BaseVideo implements Serializable {
                     video.vid,
                     video.coverUrl,
                     null,
-                    null,
+                    subtitles,
                     (long) (video.duration * 1000),
                     video.coverUrl,
                     video.caption);
@@ -139,7 +142,7 @@ public class BaseVideo implements Serializable {
 
     @Nullable
     public static List<Item> toItems(List<? extends BaseVideo> videos) {
-        List<VideoItem> videoItems = videos == null ?  null : BaseVideo.toVideoItems(videos);
+        List<VideoItem> videoItems = videos == null ? null : BaseVideo.toVideoItems(videos);
         return videoItems == null ? null : new ArrayList<>(videoItems);
     }
 

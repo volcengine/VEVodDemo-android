@@ -31,6 +31,7 @@ import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.source.SubtitleSelector;
 import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
@@ -252,24 +253,6 @@ public class Mapper {
         }
     }
 
-    @Nullable
-    public static Track findTrack(MediaSource mediaSource, MediaSource mediaSource1, Track t1) {
-        if (mediaSource == mediaSource1) return t1;
-        if (mediaSource.getTracks() == mediaSource1.getTracks()) return t1;
-
-        CacheKeyFactory cacheKeyFactory = VolcPlayerInit.config().cacheKeyFactory;
-
-        List<Track> tracks = mediaSource.getTracks();
-        for (Track track : tracks) {
-            String cacheKey = cacheKeyFactory.generateCacheKey(mediaSource, track);
-            String cacheKey1 = cacheKeyFactory.generateCacheKey(mediaSource1, t1);
-            if (TextUtils.equals(cacheKey, cacheKey1)) {
-                return track;
-            }
-        }
-        return null;
-    }
-
     public static void updateMediaSource(MediaSource mediaSource, MediaSource mediaSource1) {
         if (mediaSource == mediaSource1) return;
         if (!MediaSource.mediaEquals(mediaSource, mediaSource1)) {
@@ -406,6 +389,7 @@ public class Mapper {
     static final String TTVideoEngineCodecH264 = "H264"; // Source.EncodeType.H264;
     static final String TTVideoEngineCodecH265 = "h265"; // Source.EncodeType.h265;
     static final String TTVideoEngineCodecH266 = "h266"; // Source.EncodeType.h266;
+
     public static int videoModelEncodeType2TrackEncodeType(String encodeType) {
         if (encodeType != null) {
             switch (encodeType) {
@@ -477,7 +461,7 @@ public class Mapper {
 
     static StrategySource mediaSource2StrategySource(MediaSource mediaSource,
                                                      CacheKeyFactory cacheKeyFactory,
-                                                     TrackSelector selector,
+                                                     TrackSelector trackSelector,
                                                      int selectType) throws IOException {
         if (mediaSource == null) {
             throw new IOException(new NullPointerException("mediaSource is null"));
@@ -488,12 +472,8 @@ public class Mapper {
                 if (isDirectUrlSeamlessSwitchEnabled(mediaSource)) {
                     return mediaSource2VideoModelSource(mediaSource, cacheKeyFactory);
                 } else {
-                    List<Track> tracks = mediaSource.getTracks(trackType);
-                    if (selector != null && tracks != null) {
-                        Track result = selector.selectTrack(selectType, trackType, tracks, mediaSource);
-                        return mediaSource2DirectUrlSource(mediaSource, result, cacheKeyFactory);
-                    }
-                    return null;
+                    final Track track = selectTrack(mediaSource, trackSelector, selectType, trackType);
+                    return mediaSource2DirectUrlSource(mediaSource, track, cacheKeyFactory);
                 }
             }
             case MediaSource.SOURCE_TYPE_ID: {
@@ -507,13 +487,33 @@ public class Mapper {
         return null;
     }
 
-    public static List<StrategySource> mediaSources2StrategySources(List<MediaSource> mediaSources, CacheKeyFactory cacheKeyFactory, TrackSelector selector, int selectType) {
+    private static Track selectTrack(MediaSource mediaSource, TrackSelector trackSelector, int selectType, int trackType) {
+        List<Track> tracks = mediaSource.getTracks(trackType);
+        if (trackSelector != null && tracks != null && !tracks.isEmpty()) {
+            return trackSelector.selectTrack(selectType, trackType, tracks, mediaSource);
+        }
+        return null;
+    }
+
+    private static Subtitle selectSubtitle(MediaSource mediaSource, SubtitleSelector subtitleSelector) {
+        List<Subtitle> subtitles = mediaSource.getSubtitles();
+        if (subtitleSelector != null && subtitles != null && !subtitles.isEmpty()) {
+            return subtitleSelector.selectSubtitle(mediaSource, subtitles);
+        }
+        return null;
+    }
+
+    public static List<StrategySource> mediaSources2StrategySources(
+            List<MediaSource> mediaSources,
+            CacheKeyFactory cacheKeyFactory,
+            TrackSelector trackSelector,
+            int selectType) {
         if (mediaSources == null || mediaSources.isEmpty()) return null;
         List<StrategySource> strategySources = new ArrayList<>(mediaSources.size());
         for (MediaSource mediaSource : mediaSources) {
             StrategySource strategySource = null;
             try {
-                strategySource = mediaSource2StrategySource(mediaSource, cacheKeyFactory, selector, selectType);
+                strategySource = mediaSource2StrategySource(mediaSource, cacheKeyFactory, trackSelector, selectType);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -566,6 +566,10 @@ public class Mapper {
                         .build());
         if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
             builder.setCodecStrategy(volcConfig.codecStrategyType);
+        }
+        if (volcConfig.enableSubtitle && volcConfig.enableSubtitlePreloadStrategy) {
+            SubDesInfoModel subDesInfoModel = Mapper.subtitles2SubtitleSource(mediaSource, mediaSource.getSubtitles(), cacheKeyFactory);
+            builder.setSubtitleModel(subDesInfoModel);
         }
         DirectUrlSource strategySource = builder.setTag(mediaSource).build();
         return strategySource;
@@ -636,14 +640,13 @@ public class Mapper {
     }
 
     @Nullable
-    private static JSONObject subtitle2Json(Subtitle subtitle) {
+    private static JSONObject subtitle2Json(MediaSource mediaSource, Subtitle subtitle, CacheKeyFactory cacheKeyFactory) {
         if (subtitle == null) return null;
         JSONObject object = new JSONObject();
         try {
-            String subtitleUrl = subtitle.getUrl();
-            String subtitleCacheKey = VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(subtitleUrl);
-            String subtitleProxyUrl = DataLoaderHelper.getDataLoader().proxyUrl(subtitleCacheKey, subtitleUrl);
-            object.put("url", subtitleProxyUrl);
+            String subtitleCacheKey = cacheKeyFactory.generateCacheKey(mediaSource, subtitle);
+            object.put("url", subtitle.getUrl());
+            object.put("cache_key", subtitleCacheKey);
             object.put("language_id", subtitle.getLanguageId());
             object.put("format", subtitle.getFormat());
             object.put("language", subtitle.getLanguage());
@@ -678,6 +681,17 @@ public class Mapper {
         return resolutionInfo.toString();
     }
 
+    public static List<Subtitle> subtitleModelString2Subtitles(String subtitleModelString) {
+        if (TextUtils.isEmpty(subtitleModelString)) return null;
+        try {
+            JSONObject subtitleModel = new JSONObject(subtitleModelString);
+            return subtitleModel2Subtitles(subtitleModel);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Nullable
     public static List<Subtitle> subtitleModel2Subtitles(@Nullable JSONObject subtitleModel) {
         if (subtitleModel == null) return null;
@@ -695,14 +709,14 @@ public class Mapper {
     }
 
     @Nullable
-    public static JSONObject subtitles2SubtitleModel(@Nullable List<Subtitle> subtitles) {
+    public static JSONObject subtitles2SubtitleModel(MediaSource mediaSource, @Nullable List<Subtitle> subtitles, CacheKeyFactory cacheKeyFactory) {
         if (subtitles == null) return null;
 
         JSONObject jsonObject = new JSONObject();
         try {
             JSONArray jsonArray = new JSONArray();
             for (Subtitle subtitle : subtitles) {
-                JSONObject object = subtitle2Json(subtitle);
+                JSONObject object = subtitle2Json(mediaSource, subtitle, cacheKeyFactory);
                 if (object != null) {
                     jsonArray.put(object);
                 }
@@ -726,8 +740,8 @@ public class Mapper {
     }
 
     @Nullable
-    public static SubDesInfoModel subtitles2SubtitleSource(@Nullable List<Subtitle> subtitles) {
-        return Mapper.subtitleModel2SubtitleSource(Mapper.subtitles2SubtitleModel(subtitles));
+    public static SubDesInfoModel subtitles2SubtitleSource(MediaSource mediaSource, @Nullable List<Subtitle> subtitles, CacheKeyFactory cacheKeyFactory) {
+        return Mapper.subtitleModel2SubtitleSource(Mapper.subtitles2SubtitleModel(mediaSource, subtitles, cacheKeyFactory));
     }
 
     public static List<SubInfo> findSubInfoList(IVideoModel videoModel) {

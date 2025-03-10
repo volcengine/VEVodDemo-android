@@ -41,6 +41,15 @@ public class PlayInfoJson2MediaSourceParser implements Parser<MediaSource> {
         this.mPlayInfoJson = playInfoJson;
     }
 
+    public MediaSource safeParse() {
+        try {
+            return parse();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * @see <a href="https://www.volcengine.com/docs/4/2918#vodplayinfomodel">VodPlayInfoModel</a>
      */
