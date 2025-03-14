@@ -18,11 +18,16 @@
 
 package com.bytedance.volc.voddemo.ui.video.scene.shortvideo;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -56,15 +61,17 @@ import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.ad.api.Ad;
-import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
 import com.bytedance.volc.voddemo.ui.video.data.mock.MockGetFeedStreamMultiItems;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
+import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 
 public class ShortVideoFragment extends BaseFragment {
@@ -72,8 +79,7 @@ public class ShortVideoFragment extends BaseFragment {
     private final Book<Item> mBook = new Book<>(10);
     private ShortVideoSceneView mSceneView;
     private OrientationHelper mOrientationHelper;
-
-    private AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();
+    private boolean mFullScreen;
 
     public ShortVideoFragment() {
         // Required empty public constructor
@@ -101,10 +107,28 @@ public class ShortVideoFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         mRemoteApi = new MockGetFeedStreamMultiItems(VideoSettings.stringValue(VideoSettings.SHORT_VIDEO_SCENE_ACCOUNT_ID));
         mOrientationHelper = new OrientationHelper(requireActivity(), null);
         mOrientationHelper.setOrientationDelta(45);
         mOrientationHelper.enable();
+        mPipSessionKey = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if (VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) {
+            inflater.inflate(R.menu.vevod_menu_short_video, menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.menu_item_pip_action) {
+            enterPip(true);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -130,6 +154,18 @@ public class ShortVideoFragment extends BaseFragment {
 
         refresh();
         registerBroadcast();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        dismissPip();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        enterPip(false);
     }
 
     private class ShortVideoAdViewHolderFactory implements ViewHolder.Factory {
@@ -177,8 +213,7 @@ public class ShortVideoFragment extends BaseFragment {
 
     private void onPlayerStateCompleted(Event event) {
         final Player player = event.owner(Player.class);
-        if (player != null && !player.isLooping() &&
-                VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
+        if (player != null && !player.isLooping() && VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 1 /* 1 播放下一个 */) {
             playNext();
         }
     }
@@ -270,12 +305,14 @@ public class ShortVideoFragment extends BaseFragment {
         VideoActivity.intentInto(requireActivity(),
                 PlayScene.SCENE_FULLSCREEN,
                 FullScreenVideoFragment.createBundle(mediaSource, continuesPlayback, mOrientationHelper.getOrientation()));
+        mFullScreen = true;
     }
 
     /**
      * Sync playback states in FullScreenFragment
      */
     private void onExitFullScreen(MediaSource mediaSource, boolean continuesPlayback) {
+        mFullScreen = false;
         final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
         if (!(viewHolder instanceof ShortVideoItemViewHolder)) {
             return;
@@ -338,5 +375,50 @@ public class ShortVideoFragment extends BaseFragment {
 
         LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
         mBroadcastReceiver = null;
+    }
+
+    private String mPipSessionKey;
+
+    private void enterPip(boolean request) {
+        if (!VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) return;
+
+        final Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        if (mFullScreen) return;
+        if (mSceneView.pageView().isInterceptStartPlaybackOnResume()) {
+            // 用户暂停视频后，不切换小窗
+            return;
+        }
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        if (!(viewHolder instanceof ShortVideoItemViewHolder)) {
+            return;
+        }
+        VideoView videoView = ((ShortVideoItemViewHolder) viewHolder).videoView;
+        if (videoView == null) return;
+        VideoItem videoItem = VideoItem.get(videoView.getDataSource());
+        if (videoItem == null) return;
+        if (request) {
+            PipVideoController.instance().requestMainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        } else {
+            PipVideoController.instance().mainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        }
+    }
+
+    public void dismissPip() {
+        PipVideoController.instance().dismissPip();
+        PipVideoController.MainVideoInfo mainVideoInfo = PipVideoController.instance().getMainVideoInfo();
+        if (mainVideoInfo != null && TextUtils.equals(mainVideoInfo.sessionKey, mPipSessionKey)) {
+            PipVideoController.instance().resetMainVideoInfo();
+        }
     }
 }

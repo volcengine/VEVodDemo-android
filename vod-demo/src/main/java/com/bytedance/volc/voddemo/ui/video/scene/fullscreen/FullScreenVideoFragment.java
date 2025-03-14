@@ -19,10 +19,14 @@
 package com.bytedance.volc.voddemo.ui.video.scene.fullscreen;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -36,12 +40,12 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.DisplayModeHelper;
 import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
-import com.bytedance.playerkit.player.playback.PlayerPool;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.GestureLayer;
@@ -68,6 +72,10 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.impl.R;
+import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
+
+import java.util.Collections;
+import java.util.UUID;
 
 public class FullScreenVideoFragment extends BaseFragment {
 
@@ -174,6 +182,8 @@ public class FullScreenVideoFragment extends BaseFragment {
 
         initFullScreenSystemBar();
         initLandscapeMode(screenOrientationDegree);
+
+        mPipSessionKey = UUID.randomUUID().toString();
     }
 
     @Override
@@ -245,13 +255,22 @@ public class FullScreenVideoFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+        registerReceiver();
         resume();
+        dismissPip();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        unregisterReceiver();
         pause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        enterPip(false);
     }
 
     @Override
@@ -341,6 +360,79 @@ public class FullScreenVideoFragment extends BaseFragment {
             activity.runOnUiThread(() ->
                     activity.setRequestedOrientation(targetOrientation)
             );
+        }
+    }
+
+    private boolean mRegistered;
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action == null) return;
+            switch (action) {
+                case TitleBarLayer.ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE: {
+                    enterPip(true);
+                    break;
+                }
+            }
+        }
+    };
+
+    private void registerReceiver() {
+        if (!mRegistered) {
+            mRegistered = true;
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(TitleBarLayer.ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE);
+            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, intentFilter);
+        }
+    }
+
+    private void unregisterReceiver() {
+        if (mRegistered) {
+            mRegistered = false;
+            LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
+        }
+    }
+
+    private String mPipSessionKey;
+
+    private void enterPip(boolean request) {
+        if (!VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) return;
+
+        final Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+        if (mInterceptStartPlaybackOnResume) {
+            // 用户暂停视频后，不切换小窗
+            return;
+        }
+
+        if (mVideoView == null) return;
+
+        VideoItem videoItem = VideoItem.get(mVideoView.getDataSource());
+        if (videoItem == null) return;
+        if (request) {
+            PipVideoController.instance().requestMainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    mVideoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        } else {
+            PipVideoController.instance().mainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    mVideoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        }
+    }
+
+    public void dismissPip() {
+        PipVideoController.instance().dismissPip();
+        PipVideoController.MainVideoInfo mainVideoInfo = PipVideoController.instance().getMainVideoInfo();
+        if (mainVideoInfo != null && TextUtils.equals(mainVideoInfo.sessionKey, mPipSessionKey)) {
+            PipVideoController.instance().resetMainVideoInfo();
         }
     }
 }

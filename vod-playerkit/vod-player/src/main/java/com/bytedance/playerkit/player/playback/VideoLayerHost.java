@@ -199,6 +199,13 @@ public class VideoLayerHost {
         }
     }
 
+    public final void addLayer(int index, VideoLayer layer) {
+        if (layer != null && !mLayers.contains(layer)) {
+            mLayers.add(index, layer);
+            layer.bindLayerHost(this);
+        }
+    }
+
     /**
      * Find layer by index. Useful when you want to loop the layers in host.
      *

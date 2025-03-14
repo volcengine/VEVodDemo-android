@@ -294,6 +294,14 @@ public class FeedVideoPageView extends FrameLayout {
         }
     }
 
+    public boolean isInterceptStartPlaybackOnResume() {
+        return mInterceptStartPlaybackOnResume;
+    }
+
+    public VideoView getCurrentVideoView() {
+        return mCurrentVideoView;
+    }
+
     public boolean isFullScreen() {
         return mCurrentVideoView != null &&
                 mCurrentVideoView.getPlayScene() == PlayScene.SCENE_FULLSCREEN;

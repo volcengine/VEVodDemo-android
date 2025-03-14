@@ -18,6 +18,7 @@
 
 package com.bytedance.volc.voddemo.ui.minidrama.scene.detail;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MenuItem;

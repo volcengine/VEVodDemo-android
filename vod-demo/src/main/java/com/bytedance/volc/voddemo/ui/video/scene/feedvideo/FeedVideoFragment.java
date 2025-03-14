@@ -20,6 +20,11 @@ package com.bytedance.volc.voddemo.ui.video.scene.feedvideo;
 
 import static com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene.SCENE_DETAIL;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -31,6 +36,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
@@ -41,19 +47,22 @@ import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
 import com.bytedance.volc.vod.scenekit.data.page.Page;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.TitleBarLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.feedvideo.FeedVideoSceneView;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.impl.R;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.detail.DetailVideoFragment;
+import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 
 public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView.DetailPageNavigator {
@@ -61,8 +70,8 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     private GetFeedStreamApi mRemoteApi;
     private final Book<VideoItem> mBook = new Book<>(10);
     private FeedVideoSceneView mSceneView;
-
     private DetailVideoFragment.DetailVideoSceneEventListener mListener;
+
 
     public FeedVideoFragment() {
         // Required empty public constructor
@@ -84,6 +93,7 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mRemoteApi = new GetFeedStream(VideoSettings.stringValue(VideoSettings.FEED_VIDEO_SCENE_ACCOUNT_ID));
+        mPipSessionKey = UUID.randomUUID().toString();
     }
 
     @Override
@@ -110,6 +120,27 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
     public void onDestroy() {
         super.onDestroy();
         mRemoteApi.cancel();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        enterPip(false);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        unregisterReceiver();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver();
+
+        dismissPip();
     }
 
     private void refresh() {
@@ -230,4 +261,77 @@ public class FeedVideoFragment extends BaseFragment implements FeedVideoPageView
             }
         }
     };
+
+    private boolean mRegistered;
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action == null) return;
+            switch (action) {
+                case TitleBarLayer.ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE: {
+                    enterPip(true);
+                    break;
+                }
+            }
+        }
+    };
+
+    private void registerReceiver() {
+        if (!mRegistered) {
+            mRegistered = true;
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(TitleBarLayer.ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE);
+            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, intentFilter);
+        }
+    }
+
+    private void unregisterReceiver() {
+        if (mRegistered) {
+            mRegistered = false;
+            LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
+        }
+    }
+
+    private String mPipSessionKey;
+
+    private void enterPip(boolean request) {
+        if (!VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) return;
+
+        final Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        if (mSceneView.pageView().isInterceptStartPlaybackOnResume()) {
+            // 用户暂停视频后，不切换小窗
+            return;
+        }
+
+        VideoView videoView = mSceneView.pageView().getCurrentVideoView();
+        if (videoView == null) return;
+
+        VideoItem videoItem = VideoItem.get(videoView.getDataSource());
+        if (videoItem == null) return;
+        if (request) {
+            PipVideoController.instance().requestMainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        } else {
+            PipVideoController.instance().mainToPip(new PipVideoController.PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    Collections.singletonList(videoItem),
+                    0));
+        }
+    }
+
+    public void dismissPip() {
+        PipVideoController.instance().dismissPip();
+        PipVideoController.MainVideoInfo mainVideoInfo = PipVideoController.instance().getMainVideoInfo();
+        if (mainVideoInfo != null && TextUtils.equals(mainVideoInfo.sessionKey, mPipSessionKey)) {
+            PipVideoController.instance().resetMainVideoInfo();
+        }
+    }
 }

@@ -80,6 +80,7 @@ public class VideoSettings {
     public static final String DRAMA_DETAIL_ENABLE_AD = "drama_detail_enable_ad";
     public static final String DRAMA_RECOMMEND_ENABLE_AD = "drama_recommend_enable_ad";
 
+
     public static final String AD_VIDEO_ACCOUNT_ID = "ad_video_account_id";
     public static final String AD_VIDEO_SHOW_INTERVAL = "ad_video_show_interval";
     public static final String AD_VIDEO_PREFETCH_MAX_COUNT = "ad_video_prefetch_max_count";
@@ -108,6 +109,7 @@ public class VideoSettings {
     public static final String COMMON_ENABLE_SUPER_RESOLUTION = "common_enable_super_resolution";
     public static final String COMMON_ENABLE_ECDN = "common_enable_ecdn";
     public static final String COMMON_ENABLE_SOURCE_403_REFRESH = "common_enable_source_403_refresh";
+    public static final String COMMON_ENABLE_PIP = "common_enable_pip";
     public static final String COMMON_RENDER_VIEW_TYPE = "common_render_view_type";
 
     private static Options sOptions;
@@ -755,6 +757,19 @@ public class VideoSettings {
 
         settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
                 new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_ENABLE_PIP,
+                        "开启小窗",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null),
+                null,
+                sEventListener));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
                         Option.TYPE_SELECTABLE_ITEMS,
                         CATEGORY_COMMON_VIDEO,
                         COMMON_RENDER_VIEW_TYPE,
@@ -775,6 +790,7 @@ public class VideoSettings {
                         return null;
                     }
                 }));
+
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,
                 "Device ID",

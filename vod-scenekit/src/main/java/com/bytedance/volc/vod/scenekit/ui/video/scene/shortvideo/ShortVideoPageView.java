@@ -325,6 +325,10 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         this.mInterceptStartPlaybackOnResume = interceptStartPlay;
     }
 
+    public boolean isInterceptStartPlaybackOnResume() {
+        return mInterceptStartPlaybackOnResume;
+    }
+
     @Override
     public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
         switch (event) {

@@ -25,13 +25,18 @@ import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeP
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaEpisodeSelectDialogFragment.EXTRA_ITEM;
 import static com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer.ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG;
+import static com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController.PipVideoConfig;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -48,9 +53,11 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.DrawADItem;
 import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
@@ -76,9 +83,11 @@ import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.bottom.SpeedIndicat
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.layer.DramaVideoLayer;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.DramaEpisodeVideoViewHolder;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
+import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DramaDetailVideoFragment extends BaseFragment {
     public static final String TAG = "DramaDetailVideoFragment";
@@ -93,37 +102,6 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private SpeedIndicatorViewHolder mSpeedIndicator;
     private DramaEpisodeSelectDialogFragment mSelectDialogFragment;
     private DramaEpisodePayDialogFragment mPayDialogFragment;
-    private boolean mRegistered;
-
-    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (action == null) return;
-            switch (action) {
-                case ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK: {
-                    final Item item = (Item) intent.getSerializableExtra(EXTRA_ITEM);
-                    if (item != null) {
-                        onSelectDramaEpisodeItemClicked(item);
-                    }
-                    break;
-                }
-                case ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED: {
-                    final EpisodeVideo unlocked = (EpisodeVideo) intent.getSerializableExtra(DramaEpisodePayDialogFragment.EXTRA_EPISODE_VIDEO);
-                    if (unlocked != null) {
-                        onEpisodePayResultUnlocked(unlocked);
-                    }
-                    break;
-                }
-                case ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG:
-                    Item item = mSceneView.pageView().getCurrentItemModel();
-                    if (!(item instanceof VideoItem)) return;
-                    final VideoItem videoItem = (VideoItem) item;
-                    showEpisodePayDialog(EpisodeVideo.get(videoItem));
-                    break;
-            }
-        }
-    };
 
     public DramaDetailVideoFragment() {
         // Required empty public constructor
@@ -133,6 +111,9 @@ public class DramaDetailVideoFragment extends BaseFragment {
     public boolean onBackPressed() {
         if (mSceneView.pageView().onBackPressed()) {
             return true;
+        }
+        if (mDramaItems == null) {
+            return super.onBackPressed();
         }
         final DramaItem currentDramaItem = mDramaItems.get(mCurrentDramaIndex);
         if (currentDramaItem == null) {
@@ -184,6 +165,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         mRemoteApi = new MockGetDramaDetailMultiItems();
 
@@ -198,6 +180,24 @@ public class DramaDetailVideoFragment extends BaseFragment {
         mInitDramaIndex = input.currentDramaIndex;
         mCurrentDramaIndex = input.currentDramaIndex;
         mContinuesPlayback = input.continuesPlayback;
+
+        mPipSessionKey = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        if (VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) {
+            inflater.inflate(R.menu.vevod_menu_short_video, menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.menu_item_pip_action) {
+            enterPip(true);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -259,6 +259,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
             @Override
             public void onPageSelected(int position) {
                 L.d(this, "onPageSelected", position);
+                if (mDramaItems == null) return;
+
                 final Item item = mSceneView.pageView().getItem(position);
                 if (item instanceof DrawADItem) {
                     setActionBarTitle("");
@@ -297,6 +299,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
 
         mEpisodeSelector = new EpisodeSelectorViewHolder(view);
         mEpisodeSelector.mSelectEpisodeView.setOnClickListener(v -> {
+            if (mDramaItems == null) return;
             DramaItem dramaItem = mDramaItems.get(mCurrentDramaIndex);
             showEpisodeSelectDialog(dramaItem);
         });
@@ -367,23 +370,21 @@ public class DramaDetailVideoFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (!mRegistered) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK);
-            filter.addAction(ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED);
-            filter.addAction(ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG);
-            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
-            mRegistered = true;
-        }
+        registerReceiver();
+        restoreFromPip();
     }
+
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mRegistered) {
-            LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
-            mRegistered = false;
-        }
+        unregisterReceiver();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        enterPip(false);
     }
 
     @Nullable
@@ -397,6 +398,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     }
 
     private void initData() {
+        if (mDramaItems == null) return;
         DramaItem initDramaItem = mDramaItems.get(mInitDramaIndex);
         if (initDramaItem == null) return;
 
@@ -432,6 +434,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         VideoItem.tag(unlockedVideoItem, PlayScene.map(PlayScene.SCENE_SHORT), null);
         VideoItem.syncProgress(unlockedVideoItem, true);
 
+        if (mDramaItems == null) return;
         final DramaItem dramaItem = mDramaItems.get(mCurrentDramaIndex);
         if (dramaItem == null) return;
         if (dramaItem.dramaInfo == null) return;
@@ -497,6 +500,14 @@ public class DramaDetailVideoFragment extends BaseFragment {
         }
     }
 
+    private VideoView getCurrentVideoView() {
+        final ViewHolder viewHolder = mSceneView.pageView().getCurrentViewHolder();
+        if (viewHolder instanceof DramaEpisodeVideoViewHolder) {
+            return ((DramaEpisodeVideoViewHolder) viewHolder).videoView;
+        }
+        return null;
+    }
+
     private void setActionBarTitle(String title) {
         if (!(getActivity() instanceof AppCompatActivity)) return;
 
@@ -552,6 +563,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         if (mSceneView.isLoadingMore()) {
             return;
         }
+        if (mDramaItems == null) return;
 
         DramaItem dramaItem = null;
         int index = mCurrentDramaIndex;
@@ -583,6 +595,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
             public void onSuccess(List<Item> items) {
                 L.d(this, "load", "success", DramaItem.dump(dramaItem), ItemHelper.dump(items));
                 if (getActivity() == null) return;
+                if (mDramaItems == null) return;
+
                 mSceneView.dismissLoadingMore();
                 dramaItem.episodeVideoItems = items;
                 dramaItem.episodesAllLoaded = true;
@@ -605,5 +619,119 @@ public class DramaDetailVideoFragment extends BaseFragment {
                 Toast.makeText(getActivity(), String.valueOf(e), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+
+    private boolean mRegistered;
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action == null) return;
+            switch (action) {
+                case ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK: {
+                    final Item item = (Item) intent.getSerializableExtra(EXTRA_ITEM);
+                    if (item != null) {
+                        onSelectDramaEpisodeItemClicked(item);
+                    }
+                    break;
+                }
+                case ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED: {
+                    final EpisodeVideo unlocked = (EpisodeVideo) intent.getSerializableExtra(DramaEpisodePayDialogFragment.EXTRA_EPISODE_VIDEO);
+                    if (unlocked != null) {
+                        onEpisodePayResultUnlocked(unlocked);
+                    }
+                    break;
+                }
+                case ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG:
+                    Item item = mSceneView.pageView().getCurrentItemModel();
+                    if (!(item instanceof VideoItem)) return;
+                    final VideoItem videoItem = (VideoItem) item;
+                    showEpisodePayDialog(EpisodeVideo.get(videoItem));
+                    break;
+            }
+        }
+    };
+
+    private void registerReceiver() {
+        if (!mRegistered) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_DRAMA_EPISODE_SELECT_DIALOG_EPISODE_NUMBER_ITEM_CLICK);
+            filter.addAction(ACTION_DRAMA_EPISODE_PAY_DIALOG_EPISODE_UNLOCKED);
+            filter.addAction(ACTION_DRAMA_VIDEO_LAYER_SHOW_PAY_DIALOG);
+            LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(mBroadcastReceiver, filter);
+            mRegistered = true;
+        }
+    }
+
+    private void unregisterReceiver() {
+        if (mRegistered) {
+            LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(mBroadcastReceiver);
+            mRegistered = false;
+        }
+    }
+
+    private String mPipSessionKey;
+
+    private void enterPip(boolean request) {
+        if (!VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) return;
+
+        final Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) return;
+
+        if (mSceneView.pageView().isInterceptStartPlaybackOnResume()) {
+            // 用户暂停视频后，不切换小窗
+            return;
+        }
+
+        if (mDramaItems == null) return;
+        if (mCurrentDramaIndex < 0 || mCurrentDramaIndex >= mDramaItems.size()) return;
+
+        final DramaItem dramaItem = mDramaItems.get(mCurrentDramaIndex);
+        if (dramaItem == null) return;
+        if (CollectionUtils.isEmpty(dramaItem.episodeVideoItems)) return;
+        if (!(dramaItem.currentItem instanceof VideoItem)) return;
+
+        final VideoView videoView = getCurrentVideoView();
+        final List<VideoItem> videoItems = VideoItem.findVideoItems(dramaItem.episodeVideoItems);
+        if (videoItems == null || videoItems.isEmpty()) return;
+
+        int playIndex = -1;
+        for (int i = 0; i < videoItems.size(); i++) {
+            VideoItem item = videoItems.get(i);
+            if (VideoItem.itemEquals(item, (VideoItem) dramaItem.currentItem)) {
+                playIndex = i;
+            }
+        }
+        if (playIndex < 0) return;
+
+        if (request) {
+            PipVideoController.instance().requestMainToPip(new PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    videoItems,
+                    playIndex));
+        } else {
+            PipVideoController.instance().mainToPip(new PipVideoConfig(mPipSessionKey,
+                    activity,
+                    videoView,
+                    videoItems,
+                    playIndex));
+        }
+    }
+
+    private void restoreFromPip() {
+        PipVideoController.instance().dismissPip();
+        PipVideoController.MainVideoInfo mainVideoInfo = PipVideoController.instance().getMainVideoInfo();
+        if (mainVideoInfo != null && TextUtils.equals(mainVideoInfo.sessionKey, mPipSessionKey)) {
+            PipVideoController.instance().resetMainVideoInfo();
+            VideoItem videoItem = PipVideoController.instance().getCurrentVideoItem();
+            if (videoItem != null) {
+                int position = mSceneView.pageView().findItemPosition(videoItem, ItemHelper.comparator());
+                if (position != mSceneView.pageView().getCurrentItem()) {
+                    mSceneView.pageView().setCurrentItem(position, false);
+                }
+            }
+        }
     }
 }

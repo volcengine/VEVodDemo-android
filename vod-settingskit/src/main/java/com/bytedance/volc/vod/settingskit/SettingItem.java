@@ -50,10 +50,15 @@ public class SettingItem {
     }
 
     public static SettingItem createOptionItem(String category, Option option, ValueMapper mapper) {
+        return createOptionItem(category, option, mapper, null);
+    }
+
+    public static SettingItem createOptionItem(String category, Option option, ValueMapper mapper, OnEventListener listener) {
         SettingItem item = new SettingItem(SettingItem.TYPE_OPTION);
         item.category = category;
         item.option = option;
         item.mapper = mapper != null ? mapper : ValueMapper.DEFAULT;
+        item.listener = listener;
         return item;
     }
 
@@ -119,6 +124,7 @@ public class SettingItem {
 
     public interface OnEventListener {
         int EVENT_TYPE_CLICK = 0;
+        int EVENT_TYPE_RATIO_ITEM_ON_CHECKED_CHANGED = 1;
 
         void onEvent(int eventType, Context context, SettingItem settingItem, RecyclerView.ViewHolder holder);
     }

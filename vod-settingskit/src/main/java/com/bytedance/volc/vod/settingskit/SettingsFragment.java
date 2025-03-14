@@ -297,6 +297,9 @@ public class SettingsFragment extends Fragment {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         item.option.userValues().saveValue(item.option, isChecked);
+                        if (item.listener != null) {
+                            item.listener.onEvent(SettingItem.OnEventListener.EVENT_TYPE_RATIO_ITEM_ON_CHECKED_CHANGED, switchView.getContext(), item, RatioButtonViewHolder.this);
+                        }
                     }
                 });
 

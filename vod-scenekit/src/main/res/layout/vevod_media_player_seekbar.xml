@@ -33,7 +33,7 @@
         android:textSize="12sp"
         android:typeface="monospace" />
 
-    <androidx.appcompat.widget.AppCompatSeekBar
+    <SeekBar
         android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
