@@ -46,6 +46,7 @@ import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.settingskit.SettingItem;
 import com.bytedance.volc.voddemo.impl.BuildConfig;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
+import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 import com.bytedance.volc.voddemo.video.AppUrlRefreshFetcher;
 
 import java.util.List;
@@ -78,6 +79,12 @@ public class VodSDK {
                 if (settingItem.type == SettingItem.TYPE_CLICKABLE_ITEM) {
                     if (TextUtils.equals(settingItem.id, VideoSettings.ClickableItemId.INPUT_SOURCE)) {
                         SampleSourceActivity.intentInto(context);
+                    }
+                } else if (settingItem.type == SettingItem.TYPE_OPTION) {
+                    if (TextUtils.equals(settingItem.option.key, VideoSettings.COMMON_ENABLE_PIP)) {
+                        if (eventType == EVENT_TYPE_RATIO_ITEM_ON_CHECKED_CHANGED && settingItem.option.booleanValue()) {
+                            PipVideoController.instance().requestPermission(context1, settingItem, holder);
+                        }
                     }
                 }
             }

@@ -28,9 +28,6 @@ println("PlayerKit -> rootDir -> " + rootDir)
 include ":vod-playerkit"
 project(":vod-playerkit").projectDir = rootDir
 
-include ":vod-playerkit:vod-player-ui"
-project(":vod-playerkit:vod-player-ui").projectDir = new File(rootDir, "vod-player-ui")
-
 include ":vod-playerkit:vod-player-utils"
 project(":vod-playerkit:vod-player-utils").projectDir = new File(rootDir, "vod-player-utils")
 

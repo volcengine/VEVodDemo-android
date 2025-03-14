@@ -23,7 +23,7 @@
     android:background="@drawable/vevod_mini_drama_episode_select_dialog_bg">
 
     <View
-        android:id="@+id/close"
+        android:id="@+id/actionBarClose"
         android:layout_width="28dp"
         android:layout_height="28dp"
         android:layout_alignParentRight="true"
@@ -39,7 +39,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="12dp"
-        android:layout_toLeftOf="@+id/close"
+        android:layout_toLeftOf="@+id/actionBarClose"
         android:gravity="center_vertical"
         android:textColor="#161823"
         android:textSize="17sp"

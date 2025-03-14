@@ -27,6 +27,7 @@ public class PlayScene {
     public static final int SCENE_DETAIL = 4;
 
     public static final int SCENE_FULLSCREEN = 5;
+    public static final int SCENE_PIP = 6;
 
     public static String map(int scene) {
         switch (scene) {
@@ -40,6 +41,8 @@ public class PlayScene {
                 return "detail";
             case SCENE_FULLSCREEN:
                 return "fullscreen";
+            case SCENE_PIP:
+                return "pip";
             case SCENE_UNKNOWN:
             default:
                 return "unknown";

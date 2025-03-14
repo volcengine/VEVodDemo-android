@@ -64,7 +64,7 @@ dependencies {
     annotationProcessor "com.github.bumptech.glide:compiler:${project.ext.glide}"
 
     api project(":vod-playerkit:vod-player")
-    api project(":vod-playerkit:vod-player-utils")
     api project(":vod-playerkit:vod-player-volcengine")
+    api project(":vod-playerkit:vod-player-utils")
     api project(":vod-settingskit")
 }

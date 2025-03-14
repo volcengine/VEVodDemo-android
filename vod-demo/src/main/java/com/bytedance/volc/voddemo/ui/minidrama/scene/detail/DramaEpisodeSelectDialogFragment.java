@@ -117,7 +117,7 @@ public class DramaEpisodeSelectDialogFragment extends BaseBottomDialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
         view.setMinimumHeight(UIUtils.getScreenHeight(requireActivity()) / 5 * 3);
-        view.findViewById(R.id.close).setOnClickListener(v -> dismiss());
+        view.findViewById(R.id.actionBarClose).setOnClickListener(v -> dismiss());
 
         mTitleView = view.findViewById(R.id.title);
         mDescView = view.findViewById(R.id.desc);

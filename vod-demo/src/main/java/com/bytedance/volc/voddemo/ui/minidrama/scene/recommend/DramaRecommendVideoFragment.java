@@ -33,7 +33,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Lifecycle;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.Player;

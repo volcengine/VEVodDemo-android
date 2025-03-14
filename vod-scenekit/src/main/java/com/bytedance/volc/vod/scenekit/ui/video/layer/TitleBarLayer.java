@@ -18,7 +18,9 @@
 
 package com.bytedance.volc.vod.scenekit.ui.video.layer;
 
+
 import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,11 +29,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.volc.vod.scenekit.R;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.base.AnimateLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.dialog.MoreDialogLayer;
@@ -40,8 +44,12 @@ import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 
 
 public class TitleBarLayer extends AnimateLayer {
+    public static final String ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE = "TITLE_BAR_TOGGLE_PIP_MODE";
+
+    private View mBack;
     private TextView mTitle;
     private View mTitleBar;
+    private ViewGroup mActions;
 
     @Override
     public String tag() {
@@ -52,14 +60,16 @@ public class TitleBarLayer extends AnimateLayer {
     @Override
     protected View createView(@NonNull ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.vevod_title_bar_layer, parent, false);
-        View back = view.findViewById(R.id.back);
+        mBack = view.findViewById(R.id.back);
         View search = view.findViewById(R.id.search);
         View cast = view.findViewById(R.id.cast);
+        View pip = view.findViewById(R.id.pip);
         View more = view.findViewById(R.id.more);
 
+        mActions = view.findViewById(R.id.actions);
         mTitle = view.findViewById(R.id.title);
         mTitleBar = view.findViewById(R.id.titleBar);
-        back.setOnClickListener(new View.OnClickListener() {
+        mBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Activity activity = activity();
@@ -83,6 +93,18 @@ public class TitleBarLayer extends AnimateLayer {
             }
         });
 
+        if (VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) {
+            pip.setVisibility(View.VISIBLE);
+            pip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(ACTION_VIDEO_LAYER_TOGGLE_PIP_MODE);
+                    LocalBroadcastManager.getInstance(v.getContext()).sendBroadcast(intent);
+                }
+            });
+        } else {
+            pip.setVisibility(View.GONE);
+        }
         more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,6 +144,7 @@ public class TitleBarLayer extends AnimateLayer {
 
     private boolean checkShow() {
         switch (playScene()) {
+            case PlayScene.SCENE_FEED:
             case PlayScene.SCENE_FULLSCREEN:
             case PlayScene.SCENE_DETAIL:
             case PlayScene.SCENE_UNKNOWN:
@@ -148,22 +171,64 @@ public class TitleBarLayer extends AnimateLayer {
     public void applyTheme() {
         if (playScene() == PlayScene.SCENE_FULLSCREEN) {
             applyFullScreenTheme();
+        } else if (playScene() == PlayScene.SCENE_FEED) {
+            applyFeedTheme();
         } else {
-            applyHalfScreenTheme();
+            applyDetailTheme();
         }
     }
 
     private void applyFullScreenTheme() {
         setTitleBarLeftRightMargin(44);
-        if (mTitle != null) {
+        if (getView() != null) {
             mTitle.setVisibility(View.VISIBLE);
+            mBack.setVisibility(View.VISIBLE);
+            mTitle.setVisibility(View.VISIBLE);
+            mActions.setVisibility(View.VISIBLE);
+            for (int i = 0; i < mActions.getChildCount(); i++) {
+                View view = mActions.getChildAt(i);
+                if (view.getId() == R.id.pip) {
+                    view.setVisibility(VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP) ? View.VISIBLE : VideoView.GONE);
+                } else {
+                    view.setVisibility(View.VISIBLE);
+                }
+            }
         }
     }
 
-    private void applyHalfScreenTheme() {
+    private void applyDetailTheme() {
         setTitleBarLeftRightMargin(0);
-        if (mTitle != null) {
+        if (getView() != null) {
             mTitle.setVisibility(View.GONE);
+            mBack.setVisibility(View.VISIBLE);
+            mTitle.setVisibility(View.GONE);
+            mActions.setVisibility(View.VISIBLE);
+            for (int i = 0; i < mActions.getChildCount(); i++) {
+                View view = mActions.getChildAt(i);
+                if (view.getId() == R.id.pip) {
+                    view.setVisibility(VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP) ? View.VISIBLE : VideoView.GONE);
+                } else {
+                    view.setVisibility(View.GONE);
+                }
+            }
+        }
+    }
+
+    private void applyFeedTheme() {
+        setTitleBarLeftRightMargin(0);
+        if (getView() != null) {
+            mTitle.setVisibility(View.GONE);
+            mBack.setVisibility(View.GONE);
+            mTitle.setVisibility(View.GONE);
+            mActions.setVisibility(View.VISIBLE);
+            for (int i = 0; i < mActions.getChildCount(); i++) {
+                View view = mActions.getChildAt(i);
+                if (view.getId() == R.id.pip) {
+                    view.setVisibility(VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP) ? View.VISIBLE : VideoView.GONE);
+                } else {
+                    view.setVisibility(View.GONE);
+                }
+            }
         }
     }
 

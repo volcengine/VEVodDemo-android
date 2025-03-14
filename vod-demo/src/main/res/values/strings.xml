@@ -56,5 +56,12 @@
     <string name="vevod_mock_short_video_ad_layer_ad">AD</string>
     <string name="vevod_mock_short_video_ad_layer_content">Professional one-stop solution, build audio and video business at a minimum discount of 10%!</string>
     <string name="vevod_mock_short_video_ad_layer_button_text">Check the details</string>
+    <string name="vevod_actionbar_action_title_picture_in_picture">Picture in Picture</string>
+    <string name="vevod_pip_video_permission_request_not_granted_switching_error">Floating window permission is not granted</string>
+    <string name="vevod_pip_video_rationale_dialog_msg">Not enable floating window permission.</string>
+    <string name="vevod_pip_video_rationale_dialog_positive_button_text">Open Settings</string>
+    <string name="vevod_pip_video_rationable_dialog_negative_button_text">Cancel</string>
+    <string name="vevod_pip_video_permission_request_granted">Floating window permission is granted. Will switch to Pic in pic mode after app in background</string>
+    <string name="vevod_pip_video_permission_request_not_granted">Not enable floating window permission</string>
 
 </resources>

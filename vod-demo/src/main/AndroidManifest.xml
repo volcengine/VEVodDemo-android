@@ -19,6 +19,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bytedance.volc.voddemo.impl">
 
+    <!-- Picture in Picture Mode Permission -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <application>
         <activity
             android:name="com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivity"
@@ -69,6 +72,10 @@
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/VEVodAppTheme" />
-    </application>
 
+        <activity
+            android:name="com.bytedance.volc.voddemo.ui.video.scene.pipvideo.permission.PipVideoPermissionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboard"
+            android:theme="@style/VEVodAppTheme.PermissionBridge" />
+    </application>
 </manifest>
