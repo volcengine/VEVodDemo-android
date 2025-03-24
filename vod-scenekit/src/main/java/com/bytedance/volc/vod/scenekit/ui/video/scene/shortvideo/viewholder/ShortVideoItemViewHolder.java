@@ -105,7 +105,7 @@ public class ShortVideoItemViewHolder extends VideoViewHolder {
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
         layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new SubtitleLayer());
-        layerHost.addLayer(new ShortVideoCoverLayer());
+        layerHost.addLayer(new ShortVideoCoverLayer(false));
         layerHost.addLayer(new ShortVideoBottomShadowLayer());
         layerHost.addLayer(new LoadingLayer());
         layerHost.addLayer(new PauseLayer());

@@ -85,7 +85,7 @@ public class MockShortVideoAdVideoView extends FrameLayout implements LifecycleE
         mVideoView = new VideoView(context);
         VideoLayerHost layerHost = new VideoLayerHost(context);
         layerHost.addLayer(new PlayerConfigLayer());
-        layerHost.addLayer(new ShortVideoCoverLayer());
+        layerHost.addLayer(new ShortVideoCoverLayer(false));
         layerHost.addLayer(new ShortVideoBottomShadowLayer());
         layerHost.addLayer(new MockShortVideoAdVideoLayer());
         layerHost.addLayer(new LoadingLayer());
