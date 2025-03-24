@@ -37,6 +37,15 @@ import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoStrat
 
 public class ShortVideoCoverLayer extends CoverLayer {
 
+    /**
+     * 针对续播场景优化向上翻页封面体验
+     */
+    private final boolean mSyncStartProgress;
+
+    public ShortVideoCoverLayer(boolean syncStartProgress) {
+        this.mSyncStartProgress = syncStartProgress;
+    }
+
     @Override
     public String tag() {
         return "short_video_cover";
@@ -51,12 +60,20 @@ public class ShortVideoCoverLayer extends CoverLayer {
 
     @Override
     protected void onBindPlaybackController(@NonNull PlaybackController controller) {
-        controller.addPlaybackListener(mPlaybackListener);
+        if (mSyncStartProgress) {
+            controller.addPlaybackListener(mPlaybackListener);
+        } else {
+            super.onBindPlaybackController(controller);
+        }
     }
 
     @Override
     protected void onUnbindPlaybackController(@NonNull PlaybackController controller) {
-        controller.removePlaybackListener(mPlaybackListener);
+        if (mSyncStartProgress) {
+            controller.removePlaybackListener(mPlaybackListener);
+        } else {
+            super.onBindPlaybackController(controller);
+        }
     }
 
     private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {

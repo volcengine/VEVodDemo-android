@@ -86,7 +86,7 @@ public class DramaEpisodeVideoViewHolder extends VideoViewHolder {
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
         layerHost.addLayer(new DramaGestureLayer(gestureContract));
         layerHost.addLayer(new SubtitleLayer());
-        layerHost.addLayer(new ShortVideoCoverLayer());
+        layerHost.addLayer(new ShortVideoCoverLayer(true));
         layerHost.addLayer(new ShortVideoBottomShadowLayer());
         layerHost.addLayer(new DramaVideoLayer(type));
         layerHost.addLayer(new LoadingLayer());
