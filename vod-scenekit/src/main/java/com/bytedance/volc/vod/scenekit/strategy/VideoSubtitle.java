@@ -53,7 +53,7 @@ public class VideoSubtitle {
     }
 
     public static int getUserSelectedLanguageId(MediaSource mediaSource) {
-        return VideoSettings.intValue(VideoSettings.QUALITY_VIDEO_QUALITY_USER_SELECTED);
+        return VideoSettings.intValue(VideoSettings.SUBTITLE_LANGUAGE_ID_USER_SELECTED);
     }
 
     public static void setUserSelectedLanguageId(int playScene, int languageId) {
