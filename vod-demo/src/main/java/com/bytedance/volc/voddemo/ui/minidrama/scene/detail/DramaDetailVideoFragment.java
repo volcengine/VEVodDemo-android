@@ -693,7 +693,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
         if (!(dramaItem.currentItem instanceof VideoItem)) return;
 
         final VideoView videoView = getCurrentVideoView();
-        final List<VideoItem> videoItems = VideoItem.findVideoItems(dramaItem.episodeVideoItems);
+        final List<VideoItem> videoItems = VideoItem.findNotEmptyVideoItems(dramaItem.episodeVideoItems);
+
         if (videoItems == null || videoItems.isEmpty()) return;
 
         int playIndex = -1;

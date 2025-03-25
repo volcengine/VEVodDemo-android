@@ -397,6 +397,20 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         return (VideoItem) item;
     }
 
+    public static List<VideoItem> findNotEmptyVideoItems(List<Item> items) {
+        if (items == null) return null;
+        final List<VideoItem> notEmptyVideoItems = new ArrayList<>();
+        for (Item item : items) {
+            if (item.itemType() == ItemType.ITEM_TYPE_VIDEO) {
+                VideoItem videoItem = (VideoItem) item;
+                if (videoItem.getSourceType() != SOURCE_TYPE_EMPTY) {
+                    notEmptyVideoItems.add((VideoItem) item);
+                }
+            }
+        }
+        return notEmptyVideoItems;
+    }
+
     public String dump() {
         return L.obj2String(this) + " " + vid + " " + mapSourceType(sourceType);
     }
