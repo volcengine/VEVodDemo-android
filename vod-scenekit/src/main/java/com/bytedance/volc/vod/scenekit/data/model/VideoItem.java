@@ -270,8 +270,8 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
     public static MediaSource toMediaSource(VideoItem videoItem) {
         if (videoItem.mediaSource == null) {
             videoItem.mediaSource = createMediaSource(videoItem);
-            VideoItem.set(videoItem.mediaSource, videoItem);
         }
+        VideoItem.set(videoItem.mediaSource, videoItem);
         final MediaSource mediaSource = videoItem.mediaSource;
         VolcConfig.set(mediaSource, createVolcConfig(videoItem));
         if (videoItem.syncProgress) {
