@@ -418,7 +418,14 @@ final TrackSelector trackSelector = new TrackSelector() {
     }
 };
 
-VolcPlayerInit.init(context, appInfo, CacheKeyFactory.DEFAULT, trackSelector, new VolcSubtitleSelector());
+
+
+// 初始化传入        
+VolcPlayerInit.config(new VolcPlayerInitConfig.Builder()
+    // ...
+    .setTrackSelector(trackSelector)
+    // ...
+    .build());
 ```
 
 ### 播放中切换清晰度

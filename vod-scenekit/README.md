@@ -92,20 +92,32 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        
+        // 1. 初始化设置模块
+        VideoSettings.init(this); 
+        
+        // 2. 设置 Logcat & Asserts 开关
+        // 开启日志方便排查问题，release 版本一定要关闭
+        L.ENABLE_LOG = BuildConfig.DEBUG;
+        // 开启断言在内部状态出错时会抛 crash，便于及时发现问题。release 版本一定要关闭。
+        Asserts.DEBUG = BuildConfig.DEBUG;
+        
+        // 3. 初始化配置
+        VolcPlayerInit.config(new VolcPlayerInitConfig.Builder()
+                .setContext(context)
+                .setAppInfo(new AppInfo.Builder()
+                        .setAppId("your app id")
+                        .setAppName("your app English name")
+                        .setAppRegion("china")
+                        .setAppChannel("your app channel")
+                        .setAppVersion(BuildConfig.VERSION_NAME)
+                        .setLicenseUri("your license assets path")
+                        .build())
+                .build()
+        );
 
-        L.ENABLE_LOG = true; // 控件层 logcat 开关
-
-        VideoSettings.init(this); // 初始化设置模块
-
-        VolcPlayerInit.AppInfo appInfo = new VolcPlayerInit.AppInfo.Builder()
-                .setAppId("your app id")
-                .setAppName("your app English name")
-                .setAppRegion("china")
-                .setAppChannel("your app channel")
-                .setAppVersion(BuildConfig.VERSION_NAME)
-                .setLicenseUri("your license assets path")
-                .build();
-        VolcPlayerInit.init(this, appInfo); // 初始化播放控件层
+        // 4. 调用初始化方法
+        VolcPlayerInit.initSync();
     }
 }
 ```
