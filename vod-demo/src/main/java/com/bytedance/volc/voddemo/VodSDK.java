@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bytedance.playerkit.player.cache.CacheKeyFactory;
+import com.bytedance.playerkit.player.cache.DefaultCacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
@@ -47,6 +49,7 @@ import com.bytedance.volc.vod.settingskit.SettingItem;
 import com.bytedance.volc.voddemo.impl.BuildConfig;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
+import com.bytedance.volc.voddemo.utils.CacheKeyUtils;
 import com.bytedance.volc.voddemo.video.AppUrlRefreshFetcher;
 
 import java.util.List;
@@ -95,6 +98,19 @@ public class VodSDK {
         // FIXME asserts 开关，上线请关闭
         Asserts.DEBUG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_ASSERTS) && BuildConfig.DEBUG;
 
+        final CacheKeyFactory cacheKeyFactory = new DefaultCacheKeyFactory() {
+
+            @Override
+            public String generateCacheKey(@NonNull String url) {
+                // 1. 兼容 短/中/长中的源使用 Type-C CDN 签名，过期时间在 url path 中，若不是 Type-C 返回 null
+                String cacheKey = CacheKeyUtils.generateVolcCDNUrlTypeCCacheKey(url);
+                if (!TextUtils.isEmpty(cacheKey)) {
+                    return cacheKey;
+                }
+                // 2. 短剧使用 Type-A CDN 签名，使用 PlayerKit 中默认规则即可
+                return super.generateCacheKey(url);
+            }
+        };
 
         final TrackSelector trackSelector = new TrackSelector() {
             @NonNull
@@ -176,6 +192,7 @@ public class VodSDK {
                         .setAppVersion(appVersion)
                         .setLicenseUri(licenseUri)
                         .build())
+                .setCacheKeyFactory(cacheKeyFactory)
                 .setTrackSelector(trackSelector)
                 .setSubtitleSelector(subtitleSelector)
                 .setConfigUpdater(configUpdater)
