@@ -45,14 +45,15 @@ import com.bytedance.playerkit.player.event.InfoBufferingEnd;
 import com.bytedance.playerkit.player.event.InfoBufferingStart;
 import com.bytedance.playerkit.player.event.InfoBufferingUpdate;
 import com.bytedance.playerkit.player.event.InfoCacheUpdate;
-import com.bytedance.playerkit.player.event.InfoDataSourceRefreshed;
 import com.bytedance.playerkit.player.event.InfoFrameInfoUpdate;
+import com.bytedance.playerkit.player.event.InfoGetPlayInfoResult;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
 import com.bytedance.playerkit.player.event.InfoSubtitleCacheUpdate;
 import com.bytedance.playerkit.player.event.InfoSubtitleChanged;
 import com.bytedance.playerkit.player.event.InfoSubtitleFileLoadFinish;
+import com.bytedance.playerkit.player.event.InfoSubtitleInfoFetchError;
 import com.bytedance.playerkit.player.event.InfoSubtitleInfoReady;
 import com.bytedance.playerkit.player.event.InfoSubtitleStateChanged;
 import com.bytedance.playerkit.player.event.InfoSubtitleTextUpdate;
@@ -176,13 +177,13 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onError(@NonNull PlayerAdapter mp, int code, @NonNull String msg) {
+        public void onError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
             if (player.isError()) return;
 
-            L.d(player, "onError", player, code, msg);
-            player.moveToErrorState(new PlayerException(code, msg));
+            L.d(player, "onError", e, player, e.getCode(), e.getMessage());
+            player.moveToErrorState(e);
         }
 
         @Override
@@ -294,47 +295,12 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onCacheHint(PlayerAdapter mp, long cacheSize) {
+        public void onCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
             L.d(player, "onCacheHint", cacheSize);
             player.mDispatcher.obtain(InfoCacheUpdate.class, player).init(cacheSize).dispatch();
-        }
-
-        @Override
-        public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource source) {
-            final AVPlayer player = mPlayerRef.get();
-            if (player == null) return;
-
-            L.d(player, "onMediaSourceUpdateStart", type, source);
-        }
-
-        @Override
-        public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource source) {
-            final AVPlayer player = mPlayerRef.get();
-            if (player == null) return;
-
-            L.d(player, "onMediaSourceUpdated", type, source);
-            int refreshType = 0;
-            if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
-                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_PLAY_INFO_FETCHED;
-            } else if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED) {
-                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_SUBTITLE_INFO_FETCHED;
-            } else if (type == PlayerAdapter.MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_MASK_INFO_FETCHED) {
-                refreshType = InfoDataSourceRefreshed.REFRESHED_TYPE_MASK_INFO_FETCHED;
-            }
-            if (refreshType > 0) {
-                player.mDispatcher.obtain(InfoDataSourceRefreshed.class, player).init(refreshType).dispatch();
-            }
-        }
-
-        @Override
-        public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
-            final AVPlayer player = mPlayerRef.get();
-            if (player == null) return;
-
-            L.d(player, "onMediaSourceUpdateError", e, type);
         }
 
         @Override
@@ -391,6 +357,16 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
+        public void onSubtitleInfoFetchError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.d(player, "onSubtitleInfoFetchError", e);
+
+            player.mDispatcher.obtain(InfoSubtitleInfoFetchError.class, player).init(e).dispatch();
+        }
+
+        @Override
         public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
@@ -411,7 +387,7 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+        public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, @NonNull Subtitle target) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
@@ -421,7 +397,7 @@ public class AVPlayer extends ExtraObject implements Player {
         }
 
         @Override
-        public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+        public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, @NonNull Subtitle current) {
             final AVPlayer player = mPlayerRef.get();
             if (player == null) return;
 
@@ -458,6 +434,16 @@ public class AVPlayer extends ExtraObject implements Player {
             // L.v(player, "onFrameInfoUpdate", frameType, pts, clockTime);
 
             player.mDispatcher.obtain(InfoFrameInfoUpdate.class, player).init(frameType, pts, clockTime).dispatch();
+        }
+
+        @Override
+        public void onGetPlayInfoResult(@NonNull PlayerAdapter mp, @NonNull MediaSource mediaSource, @Nullable Object playInfo, @Nullable PlayerException e) {
+            final AVPlayer player = mPlayerRef.get();
+            if (player == null) return;
+
+            L.v(player, "onGetPlayInfoResult", MediaSource.dump(mediaSource), playInfo, e);
+
+            player.mDispatcher.obtain(InfoGetPlayInfoResult.class, player).init(playInfo, e).dispatch();
         }
     }
 

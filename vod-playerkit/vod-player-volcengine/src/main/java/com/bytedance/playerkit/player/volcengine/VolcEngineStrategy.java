@@ -33,6 +33,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.Getter;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.PreloaderURLItem;
@@ -146,7 +147,7 @@ public class VolcEngineStrategy {
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return null; // error
                 // VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
-                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
+                final Subtitle subtitle = selectPlaySubtitle(mediaSource, mediaSource.getSubtitles());
                 if (subtitle != null) {
                     String cacheKey = VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(mediaSource, subtitle);
                     return new PreloaderURLItem(cacheKey, source.vid(), preloadSize, new String[]{subtitle.getUrl()});
@@ -156,10 +157,9 @@ public class VolcEngineStrategy {
         });
     }
 
-    private static Subtitle selectPlaySubtitle(MediaSource mediaSource) {
-        final List<Subtitle> subtitles = mediaSource.getSubtitles();
-        if (subtitles != null && !subtitles.isEmpty()) {
-            return VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, mediaSource.getSubtitles());
+    private static Subtitle selectPlaySubtitle(MediaSource mediaSource, List<Subtitle> subtitles) {
+        if (!CollectionUtils.isEmpty(subtitles)) {
+            return VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, subtitles);
         }
         return null;
     }

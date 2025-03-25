@@ -100,14 +100,6 @@ public interface PlayerAdapter {
         public static final int MEDIA_INFO_NOT_SEEKABLE = MediaPlayer.MEDIA_INFO_NOT_SEEKABLE;
     }
 
-    class MediaSourceUpdateReason {
-        public static final int MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED = 1;
-
-        public static final int MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED = 2;
-
-        public static final int MEDIA_SOURCE_UPDATE_REASON_MASK_INFO_FETCHED = 3;
-    }
-
     interface Factory {
         PlayerAdapter create(Looper eventLooper);
 
@@ -237,7 +229,7 @@ public interface PlayerAdapter {
 
     String dump();
 
-    interface Listener extends PlayerListener, MediaSourceListener, TrackListener, SubtitleListener, FrameInfoListener {
+    interface Listener extends PlayerListener, TrackListener, SubtitleListener, FrameInfoListener, GetPlayInfoListener {
     }
 
     interface PlayerListener {
@@ -245,7 +237,7 @@ public interface PlayerAdapter {
 
         void onCompletion(@NonNull PlayerAdapter mp);
 
-        void onError(@NonNull PlayerAdapter mp, int code, @NonNull String msg);
+        void onError(@NonNull PlayerAdapter mp, @NonNull PlayerException e);
 
         void onSeekComplete(@NonNull PlayerAdapter mp);
 
@@ -259,23 +251,18 @@ public interface PlayerAdapter {
 
         void onInfo(@NonNull PlayerAdapter mp, int what, @Nullable Object extra);
 
-        void onCacheHint(PlayerAdapter mp, long cacheSize);
+        void onCacheHint(@NonNull PlayerAdapter mp, long cacheSize);
     }
 
     interface FrameInfoListener {
-        void onFrameInfoUpdate(PlayerAdapter mp, @Player.FrameType int frameType, long pts, long clockTime);
+        void onFrameInfoUpdate(@NonNull PlayerAdapter mp, @Player.FrameType int frameType, long pts, long clockTime);
     }
 
-    interface MediaSourceListener {
-        void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource source);
-
-        void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource source);
-
-        void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e);
+    interface GetPlayInfoListener {
+        void onGetPlayInfoResult(@NonNull PlayerAdapter mp, @NonNull MediaSource mediaSource, @Nullable Object playInfo, @Nullable PlayerException e);
     }
 
     interface TrackListener {
-
         void onTrackInfoReady(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull List<Track> tracks);
 
         void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target);
@@ -286,13 +273,15 @@ public interface PlayerAdapter {
     interface SubtitleListener {
         void onSubtitleStateChanged(@NonNull PlayerAdapter mp, boolean enabled);
 
+        void onSubtitleInfoFetchError(@NonNull PlayerAdapter mp, @NonNull PlayerException e);
+
         void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles);
 
         void onSubtitleFileLoadFinish(@NonNull PlayerAdapter mp, int success, String info);
 
-        void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target);
+        void onSubtitleWillChange(@NonNull PlayerAdapter mp, @Nullable Subtitle current, @NonNull Subtitle target);
 
-        void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current);
+        void onSubtitleChanged(@NonNull PlayerAdapter mp, @Nullable Subtitle pre, @NonNull Subtitle current);
 
         void onSubtitleTextUpdate(@NonNull PlayerAdapter mp, @NonNull SubtitleText subtitleText);
 

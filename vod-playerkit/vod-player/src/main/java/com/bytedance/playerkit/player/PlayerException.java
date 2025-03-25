@@ -28,17 +28,25 @@ public class PlayerException extends Exception {
 
     private final int code;
 
+    private final String message;
+
     public PlayerException(int code, String message) {
         super("code:" + code + "; msg:" + message);
+        this.message = message;
         this.code = code;
     }
 
     public PlayerException(int code, String message, Throwable cause) {
         super("code:" + code + "; msg:" + message, cause);
+        this.message = message;
         this.code = code;
     }
 
     public int getCode() {
         return code;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

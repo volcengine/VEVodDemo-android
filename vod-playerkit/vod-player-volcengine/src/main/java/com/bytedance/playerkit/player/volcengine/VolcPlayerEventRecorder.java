@@ -53,10 +53,10 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
-    public void onError(@NonNull PlayerAdapter mp, int code, @NonNull String msg) {
+    public void onError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onError,
-                new Object[]{code, msg},
-                () -> mListener.onError(mp, code, msg)));
+                new Object[]{e},
+                () -> mListener.onError(mp, e)));
     }
 
     @Override
@@ -102,31 +102,17 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
-    public void onCacheHint(PlayerAdapter mp, long cacheSize) {
+    public void onCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onCacheHint,
                 new Object[]{cacheSize},
                 () -> mListener.onCacheHint(mp, cacheSize)));
     }
 
     @Override
-    public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource source) {
-        mEvents.add(new VolcEvent(VolcEvent.EVENT_onMediaSourceUpdateStart,
-                new Object[]{type, source},
-                () -> mListener.onMediaSourceUpdateStart(mp, type, source)));
-    }
-
-    @Override
-    public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource source) {
-        mEvents.add(new VolcEvent(VolcEvent.EVENT_onMediaSourceUpdated,
-                new Object[]{type, source},
-                () -> mListener.onMediaSourceUpdated(mp, type, source)));
-    }
-
-    @Override
-    public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
-        mEvents.add(new VolcEvent(VolcEvent.EVENT_onMediaSourceUpdateError,
-                new Object[]{type, e},
-                () -> mListener.onMediaSourceUpdateError(mp, type, e)));
+    public void onGetPlayInfoResult(@NonNull PlayerAdapter mp, @NonNull MediaSource mediaSource, @Nullable Object playInfo, @Nullable PlayerException e) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onGetPlayInfoResult,
+                new Object[]{mediaSource, playInfo, e},
+                () -> mListener.onGetPlayInfoResult(mp, mediaSource, playInfo, e)));
     }
 
     @Override
@@ -158,6 +144,13 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
+    public void onSubtitleInfoFetchError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) {
+        mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleInfoFetchError,
+                new Object[]{e},
+                () -> mListener.onSubtitleInfoFetchError(mp, e)));
+    }
+
+    @Override
     public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleInfoReady,
                 new Object[]{subtitles},
@@ -172,14 +165,14 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
-    public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+    public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, @NonNull Subtitle target) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleWillChange,
                 new Object[]{current, target},
                 () -> mListener.onSubtitleWillChange(mp, current, target)));
     }
 
     @Override
-    public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+    public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, @NonNull Subtitle current) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onSubtitleChanged,
                 new Object[]{pre, current},
                 () -> mListener.onSubtitleChanged(mp, pre, current)));
@@ -230,9 +223,7 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
         static final int EVENT_onInfo = 9;
         static final int EVENT_onCacheHint = 10;
 
-        static final int EVENT_onMediaSourceUpdateStart = 11;
-        static final int EVENT_onMediaSourceUpdated = 12;
-        static final int EVENT_onMediaSourceUpdateError = 13;
+        static final int EVENT_onGetPlayInfoResult = 11;
 
         static final int EVENT_onTrackInfoReady = 15;
         static final int EVENT_onTrackWillChange = 16;
@@ -245,8 +236,9 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
         static final int EVENT_onSubtitleChanged = 22;
         static final int EVENT_onSubtitleTextUpdate = 23;
         static final int EVENT_onSubtitleCacheHint = 24;
+        static final int EVENT_onSubtitleInfoFetchError = 25;
 
-        static final int EVENT_onFrameInfoUpdate = 25;
+        static final int EVENT_onFrameInfoUpdate = 26;
 
         final int type;
 
