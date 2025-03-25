@@ -18,57 +18,16 @@
 
 package com.bytedance.playerkit.player.cache;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
-import com.bytedance.playerkit.utils.MD5;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 
 public interface CacheKeyFactory {
 
-    CacheKeyFactory DEFAULT = new CacheKeyFactory() {
-        @Override
-        public String generateCacheKey(@NonNull MediaSource source, @NonNull Track track) {
-            if (!TextUtils.isEmpty(track.getFileHash())) {
-                return track.getFileHash();
-            }
-            if (!TextUtils.isEmpty(track.getFileId())) {
-                return track.getFileId();
-            }
-            String fileHash = generateCacheKey(track.getUrl());
-            track.setFileHash(fileHash);
-            return fileHash;
-        }
-
-        @Override
-        public String generateCacheKey(@NonNull MediaSource source, @NonNull Subtitle subtitle) {
-            if (!TextUtils.isEmpty(subtitle.getCacheKey())) {
-                return subtitle.getCacheKey();
-            }
-            String cacheKey = generateCacheKey(subtitle.getUrl());
-            subtitle.setCacheKey(cacheKey);
-            return cacheKey;
-        }
-
-        @Override
-        public String generateCacheKey(@NonNull String url) {
-            String path;
-            try {
-                URL u = new URL(url);
-                path = u.getPath();
-            } catch (MalformedURLException e) {
-                path = url;
-            }
-            return MD5.getMD5(path);
-        }
-    };
+    CacheKeyFactory DEFAULT = new DefaultCacheKeyFactory();
 
     String generateCacheKey(@NonNull MediaSource source, @NonNull Track track);
 
