@@ -51,6 +51,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
+import com.bytedance.playerkit.player.event.ActionSetSpeed;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.CollectionUtils;
@@ -100,6 +101,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private ShortVideoSceneView mSceneView;
     private EpisodeSelectorViewHolder mEpisodeSelector;
     private SpeedIndicatorViewHolder mSpeedIndicator;
+    private MenuItem mPipActionMenuItem;
     private DramaEpisodeSelectDialogFragment mSelectDialogFragment;
     private DramaEpisodePayDialogFragment mPayDialogFragment;
 
@@ -189,6 +191,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
         super.onCreateOptionsMenu(menu, inflater);
         if (VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_PIP)) {
             inflater.inflate(R.menu.vevod_menu_short_video, menu);
+            mPipActionMenuItem = menu.findItem(R.id.menu_item_pip_action);
         }
     }
 
@@ -325,6 +328,11 @@ public class DramaDetailVideoFragment extends BaseFragment {
                             public void onEvent(Event event) {
                                 if (event.code() == PlayerEvent.State.COMPLETED) {
                                     onPlayerStateCompleted(event);
+                                } else if (event.code() == PlayerEvent.Action.SET_SPEED) {
+                                    ActionSetSpeed e = event.cast(ActionSetSpeed.class);
+                                    if (mPipActionMenuItem != null) {
+                                        mPipActionMenuItem.setVisible(e.speed == 1);
+                                    }
                                 }
                             }
                         });
