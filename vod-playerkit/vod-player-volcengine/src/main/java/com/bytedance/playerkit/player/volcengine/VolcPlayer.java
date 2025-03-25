@@ -50,6 +50,7 @@ import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.VideoEngineInfos;
+import com.ss.ttvideoengine.model.IVideoInfo;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoModel;
 import com.ss.ttvideoengine.source.DirectUrlSource;
@@ -61,7 +62,6 @@ import com.ss.ttvideoengine.utils.Error;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +84,7 @@ class VolcPlayer implements PlayerAdapter {
     private final PlaybackParams mPlaybackParams = new PlaybackParams();
 
     private MediaSource mMediaSource;
+    private List<Subtitle> mSubtitles;
     private StrategySource mStrategySource;
     private SubDesInfoModel mSubtitleSource;
 
@@ -128,13 +129,14 @@ class VolcPlayer implements PlayerAdapter {
         private final static WeakHashMap<TTVideoEngine, EngineParams> sPlayerParams = new WeakHashMap<>();
 
         VolcPlayer mPreCreatedPlayerInstance;
+
         boolean mPreRenderPlayer;
         boolean mSuperResolutionInitialized;
         boolean mSubtitleEnabled;
         int mVideoWidth;
         int mVideoHeight;
         float mSampleAspectRatio;
-        Exception mPlayerException;
+        PlayerException mPlayerException;
 
         synchronized static EngineParams get(TTVideoEngine engine) {
             EngineParams params = sPlayerParams.get(engine);
@@ -424,11 +426,9 @@ class VolcPlayer implements PlayerAdapter {
 
     @Override
     public List<Subtitle> getSubtitles() {
-        final MediaSource mediaSource = mMediaSource;
-        if (mediaSource != null) {
-            return mediaSource.getSubtitles();
+        synchronized (this) {
+            return mSubtitles;
         }
-        return null;
     }
 
     @Override
@@ -496,7 +496,7 @@ class VolcPlayer implements PlayerAdapter {
 
         final MediaSource mediaSource = mMediaSource;
         if (mediaSource == null) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("MediaSource is null"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, "MediaSource is null");
             return;
         }
 
@@ -543,7 +543,7 @@ class VolcPlayer implements PlayerAdapter {
             public void onCompletion(@NonNull PlayerAdapter mp) { /**/ }
 
             @Override
-            public void onError(@NonNull PlayerAdapter mp, int code, @NonNull String msg) { /**/ }
+            public void onError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) { /**/ }
 
             @Override
             public void onSeekComplete(@NonNull PlayerAdapter mp) { /**/ }
@@ -577,32 +577,25 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
-            public void onCacheHint(PlayerAdapter mp, long cacheSize) {
+            public void onCacheHint(@NonNull PlayerAdapter mp, long cacheSize) {
                 listener.onCacheHint(player, cacheSize);
             }
 
             @Override
-            public void onMediaSourceUpdateStart(PlayerAdapter mp, int type, MediaSource mediaSource1) {
-                listener.onMediaSourceUpdateStart(player, type, mediaSource);
-            }
-
-            @Override
-            public void onMediaSourceUpdated(PlayerAdapter mp, int type, MediaSource mediaSource1) {
-                if (type == MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED) {
-                    Mapper.updateMediaSource(mMediaSource, mediaSource); // TODO
+            public void onGetPlayInfoResult(@NonNull PlayerAdapter mp, @NonNull MediaSource mediaSource, @Nullable Object playInfo, @Nullable PlayerException e) {
+                if (playInfo != null) {
+                    // set tracks
+                    Mapper.updateMediaSource(mMediaSource, mediaSource);
+                    // set media protocol and other properties
+                    if (playInfo instanceof IVideoInfo) {
+                        Mapper.updateMediaSource(mMediaSource, (IVideoModel) playInfo);
+                    }
                 }
-                listener.onMediaSourceUpdated(player, type, mediaSource);
-            }
-
-            @Override
-            public void onMediaSourceUpdateError(PlayerAdapter mp, int type, PlayerException e) {
-                listener.onMediaSourceUpdated(player, type, mediaSource);
+                listener.onGetPlayInfoResult(mp, mediaSource, playInfo, e);
             }
 
             @Override
             public void onTrackInfoReady(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull List<Track> tracks) {
-                mediaSource.setTracks(tracks);
-
                 listener.onTrackInfoReady(player, trackType, tracks);
             }
 
@@ -629,9 +622,15 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
-            public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
-                mediaSource.setSubtitles(subtitles);
+            public void onSubtitleInfoFetchError(@NonNull PlayerAdapter mp, @NonNull PlayerException e) {
+                listener.onSubtitleInfoFetchError(player, e);
+            }
 
+            @Override
+            public void onSubtitleInfoReady(@NonNull PlayerAdapter mp, List<Subtitle> subtitles) {
+                synchronized (player) {
+                    mSubtitles = subtitles;
+                }
                 listener.onSubtitleInfoReady(player, subtitles);
             }
 
@@ -641,7 +640,7 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
-            public void onSubtitleWillChange(@NonNull PlayerAdapter mp, Subtitle current, Subtitle target) {
+            public void onSubtitleWillChange(@NonNull PlayerAdapter mp, @Nullable Subtitle current, @NonNull Subtitle target) {
                 setSelectedSubtitle(target);
                 setPendingSubtitle(target);
 
@@ -649,7 +648,7 @@ class VolcPlayer implements PlayerAdapter {
             }
 
             @Override
-            public void onSubtitleChanged(@NonNull PlayerAdapter mp, Subtitle pre, Subtitle current) {
+            public void onSubtitleChanged(@NonNull PlayerAdapter mp, @Nullable Subtitle pre, @NonNull Subtitle current) {
                 setPendingSubtitle(null);
                 setCurrentSubtitle(current);
 
@@ -703,7 +702,7 @@ class VolcPlayer implements PlayerAdapter {
 
         final VidPlayAuthTokenSource vidSource = Mapper.mediaSource2VidPlayAuthTokenSource(mediaSource);
         if (vidSource == null) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("vidSource is null!"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, "vidSource is null!");
             return;
         }
 
@@ -748,7 +747,7 @@ class VolcPlayer implements PlayerAdapter {
         if (playTrack != null) {
             prepareDirectUrl(mediaSource, playTrack, isStartWhenPrepared());
         } else {
-            moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception("Select Track return null!"));
+            moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, "Select Track return null!");
         }
     }
 
@@ -762,13 +761,13 @@ class VolcPlayer implements PlayerAdapter {
         @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
         final List<Track> tracks = mediaSource.getTracks(trackType);
         if (CollectionUtils.isEmpty(tracks)) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("tracks is null!"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, "tracks is null!");
             return;
         }
 
         final VideoModelSource videoModelSource = Mapper.mediaSource2VideoModelSource(mediaSource, VolcPlayerInit.config().cacheKeyFactory);
         if (videoModelSource == null) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("videoModelSource is null!"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, "videoModelSource is null!");
             return;
         }
 
@@ -796,7 +795,7 @@ class VolcPlayer implements PlayerAdapter {
         } else {
             final Track playTrack = selectPlayTrack(mediaSource);
             if (playTrack == null) {
-                moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception("Select Track return null!"));
+                moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, "Select Track return null!");
                 return;
             }
             config(mediaSource, playTrack);
@@ -841,7 +840,7 @@ class VolcPlayer implements PlayerAdapter {
                 VolcPlayerInit.config().cacheKeyFactory);
 
         if (directUrlSource == null) {
-            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, new IllegalArgumentException("directUrlSource is null!"));
+            moveToErrorState(PlayerException.CODE_SOURCE_SET_ERROR, "directUrlSource is null!");
             return;
         }
 
@@ -861,14 +860,18 @@ class VolcPlayer implements PlayerAdapter {
 
         // 2. setup subtitle source
         if (volcConfig.enableSubtitle) {
+            final List<Subtitle> subtitles = mediaSource.getSubtitles();
+            synchronized (this) {
+                mSubtitles = subtitles;
+            }
             SubDesInfoModel subtitleSource = Mapper.subtitles2SubtitleSource(mediaSource,
-                    mediaSource.getSubtitles(),
+                    subtitles,
                     VolcPlayerInit.config().cacheKeyFactory);
             if (subtitleSource != null) {
                 // direct url
                 mSubtitleSource = subtitleSource;
                 mPlayer.setSubDesInfoModel(subtitleSource);
-                final Subtitle subtitle = selectPlaySubtitle(mediaSource);
+                final Subtitle subtitle = selectPlaySubtitle(mediaSource, subtitles);
                 if (subtitle != null) {
                     selectSubtitle(subtitle);
                 }
@@ -877,7 +880,7 @@ class VolcPlayer implements PlayerAdapter {
                 mPlayer.setSubAuthToken(mediaSource.getSubtitleAuthToken());
                 if (strategySource instanceof VideoModelSource) {
                     final IVideoModel videoModel = ((VideoModelSource) strategySource).videoModel();
-                    if (videoModel!= null) {
+                    if (videoModel != null) {
                         setSubtitleIds(videoModel);
                     }
                 }
@@ -900,8 +903,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     @Nullable
-    private Subtitle selectPlaySubtitle(MediaSource mediaSource) {
-        final List<Subtitle> subtitles = mediaSource.getSubtitles();
+    private Subtitle selectPlaySubtitle(MediaSource mediaSource, List<Subtitle> subtitles) {
         if (subtitles != null && !subtitles.isEmpty()) {
             if (mListener != null) {
                 mListener.onSubtitleInfoReady(this, subtitles);
@@ -912,7 +914,7 @@ class VolcPlayer implements PlayerAdapter {
         if (subtitle != null) return subtitle;
 
         if (subtitles != null && !subtitles.isEmpty()) {
-            subtitle = VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, mediaSource.getSubtitles());
+            subtitle = VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, subtitles);
         }
         return subtitle;
     }
@@ -1350,13 +1352,14 @@ class VolcPlayer implements PlayerAdapter {
         L.d(this, "setState", Player.mapState(state), Player.mapState(newState));
     }
 
-    private void moveToErrorState(int code, Exception e) {
-        L.e(this, "moveToErrorState", e, code);
+    private void moveToErrorState(int code, String msg) {
+        final PlayerException e = new PlayerException(code, msg);
+        L.e(this, "moveToErrorState", e, code, msg);
         stopCheckBufferingTimeout();
         EngineParams.get(mPlayer).mPlayerException = e;
         setState(Player.STATE_ERROR);
         if (mListener != null) {
-            mListener.onError(this, code, String.valueOf(e));
+            mListener.onError(this, e);
         }
     }
 
@@ -1397,7 +1400,7 @@ class VolcPlayer implements PlayerAdapter {
     private void notifyBufferingTimeout() {
         L.d(this, "notifyBufferingTimeout");
         stop();
-        moveToErrorState(PlayerException.CODE_BUFFERING_TIME_OUT, new IOException("Player buffering timeout!"));
+        moveToErrorState(PlayerException.CODE_BUFFERING_TIME_OUT, "Player buffering timeout!");
     }
 
     private final Runnable mBufferingTimeoutRunnable = new Runnable() {
@@ -1538,7 +1541,7 @@ class VolcPlayer implements PlayerAdapter {
             Listener listener = player.mListener;
             if (listener == null) return;
 
-            player.moveToErrorState(error.code, new Exception(error.toString()));
+            player.moveToErrorState(error.code, error.toString());
         }
 
         @Override
@@ -1634,9 +1637,8 @@ class VolcPlayer implements PlayerAdapter {
             if (mPlayer == null) return false;
 
             Mapper.updateMediaSource(mediaSource, videoModel);
-
             if (listener != null) {
-                listener.onMediaSourceUpdated(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_PLAY_INFO_FETCHED, mediaSource);
+                listener.onGetPlayInfoResult(player, mediaSource, videoModel, null);
             }
 
             // select start play subtitle
@@ -1660,7 +1662,7 @@ class VolcPlayer implements PlayerAdapter {
                 } else {
                     player.mHandler.post(() -> {
                         player.stop();
-                        player.moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, new Exception());
+                        player.moveToErrorState(PlayerException.CODE_TRACK_SELECT_ERROR, "Select Track return null!");
                     });
                     return true;
                 }
@@ -1726,25 +1728,24 @@ class VolcPlayer implements PlayerAdapter {
             L.d(player, "onSubPathInfo", subPathInfo, error);
 
             if (error != null) {
-                listener.onMediaSourceUpdateError(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, new PlayerException(error.code, error.toString()));
+                listener.onSubtitleInfoFetchError(player, new PlayerException(error.code, error.toString()));
                 return;
             }
 
-            // TODO
             if (!TextUtils.isEmpty(subPathInfo)) {
                 JSONObject subtitleModel;
                 try {
                     subtitleModel = new JSONObject(subPathInfo);
                 } catch (JSONException e) {
-                    listener.onMediaSourceUpdateError(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, new PlayerException(PlayerException.CODE_SUBTITLE_PARSE_ERROR, "subtitleModel parse error", e));
+                    listener.onSubtitleInfoFetchError(player, new PlayerException(PlayerException.CODE_SUBTITLE_PARSE_ERROR, "subtitleModel parse error", e));
                     return;
                 }
                 List<Subtitle> subtitles = Mapper.subtitleModel2Subtitles(subtitleModel);
+                synchronized (player) {
+                    player.mSubtitles = subtitles;
+                }
                 if (subtitles != null && !subtitles.isEmpty()) {
-                    mediaSource.setSubtitles(subtitles);
-                    listener.onMediaSourceUpdated(player, MediaSourceUpdateReason.MEDIA_SOURCE_UPDATE_REASON_SUBTITLE_INFO_FETCHED, mediaSource);
-
-                    final Subtitle playSubtitle = player.selectPlaySubtitle(mediaSource);
+                    final Subtitle playSubtitle = player.selectPlaySubtitle(mediaSource, subtitles);
                     if (playSubtitle != null) {
                         player.selectSubtitle(playSubtitle);
                     }

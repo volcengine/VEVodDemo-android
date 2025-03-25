@@ -31,12 +31,11 @@ import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
-import com.bytedance.playerkit.player.source.SubtitleSelector;
 import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.utils.Asserts;
-import com.ss.ttvideoengine.DataLoaderHelper;
+import com.bytedance.playerkit.utils.CollectionUtils;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
@@ -495,14 +494,6 @@ public class Mapper {
         return null;
     }
 
-    private static Subtitle selectSubtitle(MediaSource mediaSource, SubtitleSelector subtitleSelector) {
-        List<Subtitle> subtitles = mediaSource.getSubtitles();
-        if (subtitleSelector != null && subtitles != null && !subtitles.isEmpty()) {
-            return subtitleSelector.selectSubtitle(mediaSource, subtitles);
-        }
-        return null;
-    }
-
     public static List<StrategySource> mediaSources2StrategySources(
             List<MediaSource> mediaSources,
             CacheKeyFactory cacheKeyFactory,
@@ -568,8 +559,10 @@ public class Mapper {
             builder.setCodecStrategy(volcConfig.codecStrategyType);
         }
         if (volcConfig.enableSubtitle && volcConfig.enableSubtitlePreloadStrategy) {
-            SubDesInfoModel subDesInfoModel = Mapper.subtitles2SubtitleSource(mediaSource, mediaSource.getSubtitles(), cacheKeyFactory);
-            builder.setSubtitleModel(subDesInfoModel);
+            if (!CollectionUtils.isEmpty(mediaSource.getSubtitles())) {
+                SubDesInfoModel subDesInfoModel = Mapper.subtitles2SubtitleSource(mediaSource, mediaSource.getSubtitles(), cacheKeyFactory);
+                builder.setSubtitleModel(subDesInfoModel);
+            }
         }
         DirectUrlSource strategySource = builder.setTag(mediaSource).build();
         return strategySource;
@@ -630,6 +623,7 @@ public class Mapper {
         if (object == null) return null;
         Subtitle subtitle = new Subtitle();
         subtitle.setUrl(object.optString("url"));
+        subtitle.setCacheKey(object.optString("cache_key"));
         subtitle.setLanguageId(object.optInt("language_id"));
         subtitle.setFormat(object.optString("format"));
         subtitle.setLanguage(object.optString("language"));

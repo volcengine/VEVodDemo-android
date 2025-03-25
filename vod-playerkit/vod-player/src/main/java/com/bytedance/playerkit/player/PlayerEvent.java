@@ -32,7 +32,7 @@ import com.bytedance.playerkit.player.event.InfoBufferingEnd;
 import com.bytedance.playerkit.player.event.InfoBufferingStart;
 import com.bytedance.playerkit.player.event.InfoBufferingUpdate;
 import com.bytedance.playerkit.player.event.InfoCacheUpdate;
-import com.bytedance.playerkit.player.event.InfoDataSourceRefreshed;
+import com.bytedance.playerkit.player.event.InfoGetPlayInfoResult;
 import com.bytedance.playerkit.player.event.InfoProgressUpdate;
 import com.bytedance.playerkit.player.event.InfoSeekComplete;
 import com.bytedance.playerkit.player.event.InfoSeekingStart;
@@ -154,9 +154,9 @@ public interface PlayerEvent {
      */
     class Info {
         /**
-         * @see InfoDataSourceRefreshed
+         * @see InfoGetPlayInfoResult
          */
-        public static final int DATA_SOURCE_REFRESHED = 3001;
+        public static final int GET_PLAY_INFO_RESULT = 3001;
         /**
          * @see InfoVideoSizeChanged
          */
@@ -238,5 +238,7 @@ public interface PlayerEvent {
          * @see InfoSubtitleCacheUpdate
          */
         public static final int SUBTITLE_CACHE_UPDATE = 3024;
+
+        public static final int SUBTITLE_LIST_INFO_FETCH_ERROR = 3025;
     }
 }

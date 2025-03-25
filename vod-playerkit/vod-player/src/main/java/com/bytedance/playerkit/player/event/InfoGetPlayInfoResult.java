@@ -19,29 +19,29 @@
 package com.bytedance.playerkit.player.event;
 
 import com.bytedance.playerkit.player.PlayerEvent;
+import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.utils.event.Event;
 
 
-public class InfoDataSourceRefreshed extends Event {
+public class InfoGetPlayInfoResult extends Event {
 
-    public static final int REFRESHED_TYPE_PLAY_INFO_FETCHED = 1;
-    public static final int REFRESHED_TYPE_SUBTITLE_INFO_FETCHED = 2;
-    public static final int REFRESHED_TYPE_MASK_INFO_FETCHED = 3;
+    public Object playInfo;
+    public PlayerException e;
 
-    public int mRefreshedType;
-
-    public InfoDataSourceRefreshed() {
-        super(PlayerEvent.Info.DATA_SOURCE_REFRESHED);
+    public InfoGetPlayInfoResult() {
+        super(PlayerEvent.Info.GET_PLAY_INFO_RESULT);
     }
 
-    public InfoDataSourceRefreshed init(int refreshedType) {
-        this.mRefreshedType = refreshedType;
+    public InfoGetPlayInfoResult init(Object playInfo, PlayerException e) {
+        this.playInfo = playInfo;
+        this.e = e;
         return this;
     }
 
     @Override
     public void recycle() {
         super.recycle();
-        mRefreshedType = 0;
+        playInfo = null;
+        e = null;
     }
 }
