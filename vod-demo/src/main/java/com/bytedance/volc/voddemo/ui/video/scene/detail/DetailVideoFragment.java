@@ -94,6 +94,8 @@ public class DetailVideoFragment extends BaseFragment {
     private View mTransitionView;
     private boolean mInterceptStartPlaybackOnResume;
 
+    private boolean mUserExiting;
+
     public interface DetailVideoSceneEventListener {
         void onEnterDetail();
 
@@ -143,6 +145,7 @@ public class DetailVideoFragment extends BaseFragment {
         }
         if (mFeedVideoViewHolder != null) {
             mVideoView = null;
+            mUserExiting = true;
             return animateExit();
         }
         if (mContinuesPlayback) {
@@ -154,6 +157,7 @@ public class DetailVideoFragment extends BaseFragment {
                 mVideoView = null;
             }
         }
+        mUserExiting = true;
         return super.onBackPressed();
     }
 
@@ -169,7 +173,7 @@ public class DetailVideoFragment extends BaseFragment {
             return true;
         } else {
             giveBackSharedVideoView();
-            return false;
+            return super.onBackPressed();
         }
     }
 
@@ -182,6 +186,7 @@ public class DetailVideoFragment extends BaseFragment {
             mContinuesPlayback = bundle.getBoolean(EXTRA_CONTINUES_PLAYBACK);
         }
         mPipSessionKey = UUID.randomUUID().toString();
+        mUserExiting = false;
     }
 
     @Override
@@ -392,6 +397,11 @@ public class DetailVideoFragment extends BaseFragment {
 
         final Activity activity = getActivity();
         if (activity == null || activity.isFinishing()) {
+            return;
+        }
+
+        if (mUserExiting) {
+            // 用户退出页面时，不切换小窗
             return;
         }
 
