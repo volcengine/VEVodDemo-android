@@ -22,6 +22,7 @@ import android.text.TextUtils;
 
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.Subtitle;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.utils.Parser;
 
 import org.json.JSONArray;
@@ -61,7 +62,7 @@ public class SubtitleInfoJson2SubtitleListParser implements Parser<List<Subtitle
 
             String format = jsonObject.optString("Format");
             String url = jsonObject.optString("SubtitleUrl");
-            String cacheKey = CacheKeyFactory.DEFAULT.generateCacheKey(url);
+            String cacheKey = VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(url);
             String language = jsonObject.optString("Language");
             int languageId = jsonObject.optInt("LanguageId");
             int subtitleId = jsonObject.optInt("SubtitleId");
