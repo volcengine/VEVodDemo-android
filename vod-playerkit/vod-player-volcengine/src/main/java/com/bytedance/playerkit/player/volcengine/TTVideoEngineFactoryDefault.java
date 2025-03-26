@@ -32,6 +32,7 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
+import com.ss.ttvideoengine.MDLCacheKeyGenerator;
 import com.ss.ttvideoengine.TTVideoEngine;
 
 import java.util.HashMap;
@@ -136,7 +137,8 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_ENABLE_OPT_SUB_LOAD_TIME, 1);
             // 使用 MDL 加载字幕
             player.setIntOption(TTVideoEngine.PLAYER_OPTION_SUB_ENABLE_MDL, 1);
-
+            // vid 字幕 cacheKey 生成
+            player.setMDLCacheKeyGeneratorForSubModel(s -> VolcPlayerInit.config().cacheKeyFactory.generateCacheKey(s));
             EngineParams.get(player).mSubtitleEnabled = true;
         }
 
