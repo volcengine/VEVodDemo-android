@@ -93,21 +93,27 @@ public class PipVideoPermission {
                             Uri.parse("package:" + mContext.getPackageName()));
                     activity.startActivityForResult(intent, 100);
                 } else {
-                    mCallback.onResult(false);
+                    if (mCallback != null) {
+                        mCallback.onResult(false);
+                    }
                 }
             }
 
             @Override
             public void denied() {
                 activity.finish();
-                mCallback.onResult(false);
+                if (mCallback != null) {
+                    mCallback.onResult(false);
+                }
             }
         });
     }
 
     void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100) {
-            mCallback.onResult(isPermissionGranted());
+            if (mCallback != null) {
+                mCallback.onResult(isPermissionGranted());
+            }
         }
     }
 }
