@@ -87,6 +87,8 @@ public class EpisodeVideo extends BaseVideo {
     }
 
     public static int episodeNumber2VideoItemIndex(List<Item> items, int episodeNumber) {
+        if (episodeNumber <= 0) return -1;
+
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             if (item instanceof VideoItem) {

@@ -28,15 +28,12 @@ import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
-import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.MultiTypeAdapter;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 
 public abstract class VideoViewHolder extends ViewHolder {
-
-    public final int RETRY_MAX_COUNT = 2;
 
     public VideoViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -125,39 +122,10 @@ public abstract class VideoViewHolder extends ViewHolder {
     }
 
     private void actionPlay() {
-        actionPlay(RETRY_MAX_COUNT);
-    }
-
-    private Runnable mPlayRetryRunnable;
-
-    private void actionPlay(final int retryCount) {
         final VideoView videoView = videoView();
         if (videoView == null) return;
-        final int adapterPosition = getBindingAdapterPosition();
-        final Item bindingItem = getBindingItem();
-        final Item adapterItem = getAdapterItem(adapterPosition);
-        if (bindingItem != adapterItem) {
-            videoView.removeCallbacks(mPlayRetryRunnable);
-            if (retryCount > 0) {
-                L.d(this, "actionPlay", adapterPosition, "retry post and waiting",
-                        "retryCount:" + retryCount, "newest data not bind yet! Wait adapter onBindViewHolder invoke!",
-                        videoView, "bindingItem", ItemHelper.dump(bindingItem), "adapterItem", ItemHelper.dump(adapterItem));
-                mPlayRetryRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        actionPlay(retryCount - 1);
-                    }
-                };
-                videoView.postOnAnimation(mPlayRetryRunnable);
-            } else {
-                L.d(this, "actionPlay", adapterPosition, "retry end",
-                        "retryCount:" + retryCount, "newest data not bind yet!",
-                        videoView, "bindingItem", ItemHelper.dump(bindingItem), "adapterItem", ItemHelper.dump(adapterItem));
-            }
-        } else {
-            L.d(this, "actionPlay", adapterPosition);
-            videoView.startPlayback();
-        }
+
+        videoView.startPlayback();
     }
 
     private void actionPause() {

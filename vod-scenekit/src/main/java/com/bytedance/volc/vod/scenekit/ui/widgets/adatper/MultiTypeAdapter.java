@@ -19,6 +19,7 @@
 package com.bytedance.volc.vod.scenekit.ui.widgets.adatper;
 
 import android.annotation.SuppressLint;
+import android.content.IntentFilter;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,11 @@ public class MultiTypeAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public void setItems(List<Item> items, Comparator<Item> comparator) {
+        if (items == null) {
+            mItems.clear();
+            notifyDataSetChanged();
+            return;
+        }
         final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {

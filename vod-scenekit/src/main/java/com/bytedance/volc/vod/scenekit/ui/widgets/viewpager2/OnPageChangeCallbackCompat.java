@@ -65,9 +65,12 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
         if (view == null && retryCountAtPos < RETRY_COUNT) {
             mPageSelectedTryInvokeCounts.put(position, ++retryCountAtPos);
             L.i(this, "onPageSelected", viewPager, position, "retry", retryCountAtPos);
-            viewPager.postDelayed(() -> {
-                onPageSelected(position);
-            }, 10);
+            // Quick retry once, then retry with vsync
+            if (retryCountAtPos == 1) {
+                viewPager.post(() -> onPageSelected(position));
+            } else {
+                viewPager.postOnAnimation(() -> onPageSelected(position));
+            }
             return;
         }
         mPageSelectedTryInvokeCounts.put(position, 0);

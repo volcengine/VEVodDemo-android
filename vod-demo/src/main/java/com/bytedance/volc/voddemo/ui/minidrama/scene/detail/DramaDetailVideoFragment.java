@@ -417,17 +417,17 @@ public class DramaDetailVideoFragment extends BaseFragment {
         } else {
             final List<Item> items = new ArrayList<>();
             items.add(initDramaItem.currentItem);
-            setItems(items);
+            setItems(items, false);
             onDramaEpisodeChanged(initDramaItem);
             load(initDramaItem);
         }
     }
 
-    private void setItems(List<Item> items) {
+    private void setItems(List<Item> items, boolean isPlay) {
         List<VideoItem> videoItems = VideoItem.findVideoItems(items);
         VideoItem.tag(videoItems, PlayScene.map(PlayScene.SCENE_SHORT), null);
         VideoItem.syncProgress(videoItems, true);
-        mSceneView.pageView().setItems(items);
+        mSceneView.pageView().setItems(items, isPlay);
     }
 
     private void appendItems(List<Item> items) {
@@ -560,11 +560,8 @@ public class DramaDetailVideoFragment extends BaseFragment {
     }
 
     private void setCurrentItemByEpisodeNumber(int episodeNumber) {
-        List<Item> items = mSceneView.pageView().getItems();
-        int position = EpisodeVideo.episodeNumber2VideoItemIndex(items, episodeNumber);
-        if (0 <= position && position < items.size()) {
-            mSceneView.pageView().setCurrentItem(position, false);
-        }
+        final int position = EpisodeVideo.episodeNumber2VideoItemIndex(mSceneView.pageView().getItems(), episodeNumber);
+        mSceneView.pageView().setCurrentItem(position, false);
     }
 
     private void load() {
@@ -610,8 +607,12 @@ public class DramaDetailVideoFragment extends BaseFragment {
                 dramaItem.episodesAllLoaded = true;
                 final DramaItem initDrama = mDramaItems.get(mInitDramaIndex);
                 if (dramaItem == initDrama) {
-                    setItems(items);
+                    // isPlay set "false" at update list, startPlayback will be triggered in onPageSelected adapter update complete
+                    setItems(items, false);
                     if (dramaItem.currentEpisodeNumber >= 1) {
+                        // currentEpisodeNumber >= 1 in blew scene:
+                        // 1. DramaTheaterFragment -> DramaDetailVideoFragment
+                        // 2. DramaRecommendVideoFragment(play complete auto jump into) -> DramaDetailVideoFragment
                         setCurrentItemByEpisodeNumber(dramaItem.currentEpisodeNumber);
                     }
                 } else {
