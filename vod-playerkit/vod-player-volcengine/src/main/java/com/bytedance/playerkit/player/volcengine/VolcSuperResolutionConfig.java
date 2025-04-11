@@ -21,11 +21,7 @@ package com.bytedance.playerkit.player.volcengine;
 import java.io.Serializable;
 
 public class VolcSuperResolutionConfig implements Serializable {
-    public static final String sSuperResolutionBinPath = VolcConfigGlobal.FilesDir.PLAYER_BMF_SR_BIN_DIR;
     public boolean enableSuperResolutionAbility = true;
     public boolean enableSuperResolutionOnStartup = false;
     public boolean enableAsyncInitSuperResolution = false;
-    public boolean enableSuperResolutionMaliGPUOpt = true;
-    public int maxTextureWidth = 720;
-    public int maxTextureHeight = 1280;
 }
