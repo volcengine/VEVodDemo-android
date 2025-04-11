@@ -19,15 +19,16 @@
 package com.bytedance.volc.vod.scenekit.ui.video.scene;
 
 
-public class PlayScene {
-    public static final int SCENE_UNKNOWN = 0;
-    public static final int SCENE_SHORT = 1;
-    public static final int SCENE_FEED = 2;
-    public static final int SCENE_LONG = 3;
-    public static final int SCENE_DETAIL = 4;
+import com.bytedance.playerkit.player.volcengine.VolcScene;
 
-    public static final int SCENE_FULLSCREEN = 5;
-    public static final int SCENE_PIP = 6;
+public class PlayScene {
+    public static final int SCENE_UNKNOWN = VolcScene.SCENE_UNKNOWN;
+    public static final int SCENE_SHORT = VolcScene.SCENE_SHORT_VIDEO;
+    public static final int SCENE_FEED = VolcScene.SCENE_FEED_VIDEO;
+    public static final int SCENE_LONG = VolcScene.SCENE_LONG_VIDEO;
+    public static final int SCENE_DETAIL = VolcScene.SCENE_DETAIL_VIDEO;
+    public static final int SCENE_FULLSCREEN = VolcScene.SCENE_FULLSCREEN;
+    public static final int SCENE_PIP = VolcScene.SCENE_PIP;
 
     public static String map(int scene) {
         switch (scene) {

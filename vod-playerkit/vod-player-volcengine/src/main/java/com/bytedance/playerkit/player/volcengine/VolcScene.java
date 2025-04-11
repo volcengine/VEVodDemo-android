@@ -25,20 +25,26 @@ public class VolcScene {
     public static final int SCENE_LONG_VIDEO = 3;
     public static final int SCENE_DETAIL_VIDEO = 4;
     public static final int SCENE_FULLSCREEN = 5;
+    public static final int SCENE_PIP = 6;
 
     public static String mapScene(int volcScene) {
         switch (volcScene) {
+            case SCENE_UNKNOWN:
+                return "unknown";
             case SCENE_SHORT_VIDEO:
                 return "short";
             case SCENE_FEED_VIDEO:
                 return "feed";
+            case SCENE_LONG_VIDEO:
+                return "long";
             case SCENE_DETAIL_VIDEO:
                 return "detail";
+            case SCENE_FULLSCREEN:
+                return "fullscreen";
+            case SCENE_PIP:
+                return "pip";
             default:
-            case SCENE_UNKNOWN:
-                return "unknown";
+                throw new IllegalArgumentException("illegal scene " + volcScene);
         }
     }
-
-
 }
