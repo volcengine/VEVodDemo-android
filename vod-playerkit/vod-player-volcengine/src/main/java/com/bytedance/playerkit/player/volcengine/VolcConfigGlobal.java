@@ -36,6 +36,6 @@ public class VolcConfigGlobal {
 
     public static class FilesDir {
         public static final String ROOT_DIR = "bytedance/playerkit/volcplayer";
-        public static final String PLAYER_BMF_SR_BIN_DIR = ROOT_DIR + "/bmf";
+        public static final String PLAYER_BMF_SR_DIR = ROOT_DIR + "/bmf";
     }
 }
