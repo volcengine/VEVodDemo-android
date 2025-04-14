@@ -404,8 +404,7 @@ public class TimeProgressBarLayer extends AnimateLayer {
                     }
                     break;
                 }
-                case PlayerEvent.State.STARTED:
-                case PlayerEvent.Info.SEEKING_START: {
+                case PlayerEvent.State.STARTED: {
                     syncProgress();
                     break;
                 }
