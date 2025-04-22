@@ -228,7 +228,7 @@ class VolcPlayer implements PlayerAdapter {
     }
 
     private void refreshSurface() {
-        if (VolcConfig.get(mMediaSource).enableTextureRender) {
+        if (mPlayer.getTextureSurface() != null) {
             if (isInPlaybackState() && !isPlaying()) {
                 L.d(this, "refreshSurface", "forceDraw");
                 mPlayer.forceDraw();

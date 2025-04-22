@@ -111,6 +111,7 @@ public class VideoSettings {
     public static final String COMMON_ENABLE_SOURCE_403_REFRESH = "common_enable_source_403_refresh";
     public static final String COMMON_ENABLE_PIP = "common_enable_pip";
     public static final String COMMON_RENDER_VIEW_TYPE = "common_render_view_type";
+    public static final String COMMON_ENABLE_TEXTURE_RENDER = "common_enable_texture_render";
 
     private static Options sOptions;
 
@@ -790,6 +791,17 @@ public class VideoSettings {
                         return null;
                     }
                 }));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_COMMON_VIDEO,
+                new Option(
+                        Option.TYPE_RATIO_BUTTON,
+                        CATEGORY_COMMON_VIDEO,
+                        COMMON_ENABLE_TEXTURE_RENDER,
+                        "开启离屏渲染",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Boolean.class,
+                        Boolean.FALSE,
+                        null)));
 
 
         settings.add(SettingItem.createCopyableTextItem(CATEGORY_COMMON_VIDEO,

@@ -28,6 +28,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.volcengine.Mapper;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
+import com.bytedance.playerkit.player.volcengine.VolcEditions;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.ExtraObject;
 import com.bytedance.playerkit.utils.L;
@@ -325,6 +326,7 @@ public class VideoItem extends ExtraObject implements Item, Serializable {
         volcConfig.superResolutionConfig = VideoSR.createConfig(videoItem.playScene);
         volcConfig.qualityConfig = VideoQuality.sceneGearConfig(videoItem.playScene);
         volcConfig.enable403SourceRefreshStrategy = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_SOURCE_403_REFRESH);
+        volcConfig.enableTextureRender = VideoSettings.booleanValue(VideoSettings.COMMON_ENABLE_TEXTURE_RENDER);
 
         volcConfig.tag = videoItem.tag;
         volcConfig.subTag = videoItem.subTag;
