@@ -45,7 +45,6 @@ public class VolcSuperResolutionStrategy {
         return isIntegrate(PLAYER_EXTENSION_SUPER_RESOLUTION) &&
                 VolcEditions.isSupportSuperResolution() &&
                 volcConfig != null &&
-                volcConfig.enableTextureRender &&
                 volcConfig.superResolutionConfig != null &&
                 volcConfig.superResolutionConfig.enableSuperResolutionAbility;
     }
