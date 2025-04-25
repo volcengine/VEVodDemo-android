@@ -97,7 +97,7 @@ public class ReflectUtils {
     public static <T> T newInstance(String className) {
         try {
             Class<?> clazz = Class.forName(className);
-            Constructor<?> constructor = clazz.getDeclaredConstructor(null);
+            Constructor<?> constructor = clazz.getDeclaredConstructor();
             constructor.setAccessible(true); // 允许访问私有构造函数
             return (T) constructor.newInstance();
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException |
