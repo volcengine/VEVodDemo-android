@@ -28,10 +28,12 @@ import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOA
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.Surface;
 
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.cache.CacheKeyFactory;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
@@ -42,12 +44,16 @@ import com.bytedance.playerkit.utils.Getter;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.PreloaderURLItem;
 import com.ss.ttvideoengine.PreloaderVidItem;
+import com.ss.ttvideoengine.PreloaderVidSubtitleItem;
+import com.ss.ttvideoengine.PreloaderVidSubtitleItemFetchListener;
 import com.ss.ttvideoengine.PreloaderVideoModelItem;
 import com.ss.ttvideoengine.Resolution;
+import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.abr.TTVideoABRConfig;
 import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.IVideoModel;
+import com.ss.ttvideoengine.model.VideoModel;
 import com.ss.ttvideoengine.selector.strategy.GearStrategy;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
@@ -57,7 +63,9 @@ import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.StrategySettings;
 import com.ss.ttvideoengine.strategy.preload.PreloadTaskFactory;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
+import com.ss.ttvideoengine.utils.Error;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -141,6 +149,61 @@ public class VolcEngineStrategy {
                     return new PreloaderURLItem(cacheKey, source.vid(), preloadSize, new String[]{subtitle.getUrl()});
                 }
                 return PreloadTaskFactory.super.createSubtitleUrlItem(source, preloadSize);
+            }
+
+            @Override
+            public PreloaderVidSubtitleItem createSubtitleVidItem(VidPlayAuthTokenSource source, long preloadSize) {
+                final PreloaderVidSubtitleItem item = PreloadTaskFactory.super.createSubtitleVidItem(source, preloadSize);
+                // vid subtitle cacheKey generate
+                item.setMDLCacheKeyGeneratorForSubModel(CacheKeyFactory.DEFAULT::generateCacheKey);
+                final MediaSource mediaSource = (MediaSource) source.tag();
+                if (mediaSource == null) return item; // error
+                VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
+                item.setFetchEndListener(new PreloaderVidSubtitleItemFetchListener() {
+
+                    @Override
+                    public void onGetPlayInfoResult(VideoModel videoModel, Error error) {
+                        if (videoModel == null) return;
+
+                        Mapper.updateMediaSource(mediaSource, videoModel);
+                        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+                        final Track playTrack = selectTrack(mediaSource, videoModel);
+                        final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
+                        if (resolution != null) {
+                            item.setResolution(resolution);
+                        }
+                        if (volcConfig.enableSubtitle &&
+                                volcConfig.subtitleLanguageIds != null) {
+                            final String subtitleIds = Mapper.subtitleList2SubtitleIds(
+                                    Mapper.findSubInfoListWithLanguageIds(
+                                            Mapper.findSubInfoList(videoModel),
+                                            volcConfig.subtitleLanguageIds));
+                            if (!TextUtils.isEmpty(subtitleIds)) {
+                                item.setSubtitleIds(subtitleIds);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onGetSubtitleInfoResult(SubDesInfoModel subDesInfoModel, Error error) {
+                        if (subDesInfoModel == null) return;
+
+                        String subtitleJson = subDesInfoModel.toString();
+                        if (TextUtils.isEmpty(subtitleJson)) return;
+                        List<Subtitle> subtitles = null;
+                        try {
+                            subtitles = Mapper.subtitleModel2Subtitles(new JSONObject(subtitleJson));
+                        } catch (JSONException e) {
+                            L.e(this, "onGetSubtitleInfoResult", e);
+                        }
+                        if (CollectionUtils.isEmpty(subtitles)) return;
+                        final Subtitle subtitle = selectPlaySubtitle(mediaSource, mediaSource.getSubtitles());
+                        if (subtitle != null) {
+                            item.setSubtitleId(subtitle.getSubtitleId());
+                        }
+                    }
+                });
+                return item;
             }
         });
     }

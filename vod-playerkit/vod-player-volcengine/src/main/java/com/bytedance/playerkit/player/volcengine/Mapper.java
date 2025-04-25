@@ -585,13 +585,15 @@ public class Mapper {
         VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .setPlayAuthToken(mediaSource.getPlayAuthToken());
-
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
             builder.setCodecStrategy(volcConfig.codecStrategyType);
         } else {
             final String encodeType = trackEncodeType2VideoModelEncodeType(volcConfig.sourceEncodeType);
             builder.setEncodeType(encodeType);
+        }
+        if (volcConfig.enableSubtitle && volcConfig.enableSubtitlePreloadStrategy) {
+            builder.setSubtitleAuthToken(mediaSource.getSubtitleAuthToken());
         }
         VidPlayAuthTokenSource strategySource = builder.setTag(mediaSource).build();
         return strategySource;
