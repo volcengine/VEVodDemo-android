@@ -23,4 +23,5 @@ public class ViewHolderAction {
     public static final int ACTION_STOP = 1;
     public static final int ACTION_PAUSE = 2;
     public static final int ACTION_VIEW_PAGER_ON_PAGE_PEEK_START = 4;
+    public static final int ACTION_VIEW_PAGER_ON_PAGE_INVISIBLE = 5;
 }

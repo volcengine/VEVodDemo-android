@@ -25,6 +25,7 @@ import static com.bytedance.volc.vod.scenekit.VideoSettings.booleanValue;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerEvent;
@@ -40,6 +41,7 @@ import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.CoverLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.Layers;
 
 public class ShortVideoCoverLayer extends CoverLayer {
     /**
@@ -51,7 +53,7 @@ public class ShortVideoCoverLayer extends CoverLayer {
 
     public ShortVideoCoverLayer(boolean syncStartProgress) {
         this.mSyncStartProgress = syncStartProgress;
-        this. mPreRenderSurfaceHolder = new VolcPreRenderSurfaceHolder();
+        this.mPreRenderSurfaceHolder = new VolcPreRenderSurfaceHolder();
     }
 
     @Override
@@ -67,7 +69,7 @@ public class ShortVideoCoverLayer extends CoverLayer {
 
     @Override
     public void onSurfaceAvailable(Surface surface, int width, int height) {
-        L.d(this, "onSurfaceAvailable", MediaSource.dump(dataSource()), surface, width, height);
+        L.d(this, "onSurfaceAvailable", MediaSource.dump(dataSource()), surface, width, height, width / (float) height);
         mPreRenderSurfaceHolder.onSurfaceAvailable(surface, width, height);
     }
 
@@ -91,6 +93,17 @@ public class ShortVideoCoverLayer extends CoverLayer {
     }
 
     @Override
+    protected void handleEvent(int code, @Nullable Object obj) {
+        super.handleEvent(code, obj);
+        if (code == Layers.Event.VIEW_PAGER_ON_PAGE_INVISIBLE.ordinal()) {
+            L.d(this, "handleEvent", "onPageInvisible", MediaSource.dump(dataSource()));
+            if (!mSyncStartProgress) {
+                show();
+            }
+        }
+    }
+
+    @Override
     protected void load() {
         if (!booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_IMAGE_COVER)) return;
 
@@ -99,20 +112,12 @@ public class ShortVideoCoverLayer extends CoverLayer {
 
     @Override
     protected void onBindPlaybackController(@NonNull PlaybackController controller) {
-        if (mSyncStartProgress) {
-            controller.addPlaybackListener(mPlaybackListener);
-        } else {
-            super.onBindPlaybackController(controller);
-        }
+        controller.addPlaybackListener(mPlaybackListener);
     }
 
     @Override
     protected void onUnbindPlaybackController(@NonNull PlaybackController controller) {
-        if (mSyncStartProgress) {
-            controller.removePlaybackListener(mPlaybackListener);
-        } else {
-            super.onBindPlaybackController(controller);
-        }
+        controller.removePlaybackListener(mPlaybackListener);
     }
 
     private final Dispatcher.EventListener mPlaybackListener = new Dispatcher.EventListener() {
@@ -141,17 +146,21 @@ public class ShortVideoCoverLayer extends CoverLayer {
         public void onPreRenderVideoSizeChanged(MediaSource mediaSource, int videoWidth, int videoHeight) {
             final VideoView videoView = videoView();
             if (videoView == null) return;
-            videoView.setDisplayAspectRatio(calDisplayAspectRatio(videoWidth, videoHeight, 0));
+            final float ratio = calDisplayAspectRatio(videoWidth, videoHeight, 0);
+
+            L.d(ShortVideoCoverLayer.this, "onPreRenderVideoSizeChanged", MediaSource.dump(mediaSource), videoWidth, videoHeight, ratio);
+
+            videoView.setDisplayAspectRatio(ratio);
         }
 
         @Override
         public void onPreRenderFirstFrame(MediaSource mediaSource, int videoWidth, int videoHeight) {
             final VideoView videoView = videoView();
             if (videoView == null) return;
+            final float ratio = calDisplayAspectRatio(videoWidth, videoHeight, 0);
+            L.d(ShortVideoCoverLayer.this, "onPreRenderFirstFrame", MediaSource.dump(mediaSource), videoWidth, videoHeight, ratio);
 
-            L.d(ShortVideoCoverLayer.this, "onPreRenderFirstFrame", MediaSource.dump(mediaSource), videoWidth, videoHeight);
-
-            videoView.setDisplayAspectRatio(calDisplayAspectRatio(videoWidth, videoHeight, 0));
+            videoView.setDisplayAspectRatio(ratio);
 
             if (videoView.getDisplayViewType() == DisplayView.DISPLAY_VIEW_TYPE_TEXTURE_VIEW) {
                 dismiss();

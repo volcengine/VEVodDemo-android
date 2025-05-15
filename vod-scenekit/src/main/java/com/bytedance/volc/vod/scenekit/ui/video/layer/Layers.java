@@ -38,6 +38,7 @@ public class Layers {
     }
 
     public enum Event {
-        VIEW_PAGER_ON_PAGE_PEEK_START
+        VIEW_PAGER_ON_PAGE_PEEK_START,
+        VIEW_PAGER_ON_PAGE_INVISIBLE
     }
 }

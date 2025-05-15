@@ -43,6 +43,7 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
     private boolean mPeekStart;
     private int mPeekPosition;
     private int mLastPosition = -1;
+    private int mInvisiblePosition = -1;
 
     public OnPageChangeCallbackCompat(ViewPager2 viewPager) {
         this.mViewPagerRef = new WeakReference<>(viewPager);
@@ -88,9 +89,18 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
 
         onPageScrollStateChanged(viewPager, state);
 
-        if (state == ViewPager2.SCROLL_STATE_IDLE && mPeekStart) {
-            mPeekStart = false;
-            onPagePeekEnd(viewPager, viewPager.getCurrentItem(), mPeekPosition);
+        if (state == ViewPager2.SCROLL_STATE_IDLE) {
+            final int position = viewPager.getCurrentItem();
+            if (mPeekStart) {
+                mPeekStart = false;
+                onPagePeekEnd(viewPager, position, mPeekPosition);
+            }
+            if (mInvisiblePosition != position) {
+                if (mInvisiblePosition != -1) {
+                    onPageInvisible(viewPager, position, mInvisiblePosition);
+                }
+                mInvisiblePosition = position;
+            }
         }
     }
 
@@ -128,5 +138,9 @@ public abstract class OnPageChangeCallbackCompat extends ViewPager2.OnPageChange
 
     public void onPagePeekEnd(ViewPager2 pager, int position, int peekPosition) {
         L.d(this, "onPagePeekEnd", pager, "position=" + position, "peekPosition=" + peekPosition);
+    }
+
+    public void onPageInvisible(ViewPager2 pager, int position, int invisiblePosition) {
+        L.d(this, "onPageInvisible", pager, "position=" + position, "invisiblePosition=" + invisiblePosition);
     }
 }

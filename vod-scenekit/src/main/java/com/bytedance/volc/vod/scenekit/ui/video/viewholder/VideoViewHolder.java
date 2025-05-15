@@ -72,7 +72,10 @@ public abstract class VideoViewHolder extends ViewHolder {
                 actionPause();
                 break;
             case ViewHolderAction.ACTION_VIEW_PAGER_ON_PAGE_PEEK_START:
-                actionOnPagerPeekStart();
+                actionOnPagePeekStart(o);
+                break;
+            case ViewHolderAction.ACTION_VIEW_PAGER_ON_PAGE_INVISIBLE:
+                actionOnPageInvisible(o);
                 break;
         }
     }
@@ -111,13 +114,23 @@ public abstract class VideoViewHolder extends ViewHolder {
         }
     }
 
-    private void actionOnPagerPeekStart() {
+    private void actionOnPagePeekStart(Object o) {
         final VideoView videoView = videoView();
         if (videoView == null) return;
 
         VideoLayerHost host = videoView.layerHost();
         if (host != null) {
-            host.notifyEvent(Layers.Event.VIEW_PAGER_ON_PAGE_PEEK_START.ordinal(), null);
+            host.notifyEvent(Layers.Event.VIEW_PAGER_ON_PAGE_PEEK_START.ordinal(), o);
+        }
+    }
+
+    private void actionOnPageInvisible(Object o) {
+        final VideoView videoView = videoView();
+        if (videoView == null) return;
+
+        VideoLayerHost host = videoView.layerHost();
+        if (host != null) {
+            host.notifyEvent(Layers.Event.VIEW_PAGER_ON_PAGE_INVISIBLE.ordinal(), o);
         }
     }
 

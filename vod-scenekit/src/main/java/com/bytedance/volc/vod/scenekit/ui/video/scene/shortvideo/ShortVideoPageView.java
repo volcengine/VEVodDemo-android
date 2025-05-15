@@ -95,6 +95,14 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
                 super.onPageSelected(pager, position);
                 togglePlayback(position, ADAPTER_BINDING_DATA_DELAY_RETRY_MAX_COUNT);
             }
+
+            @Override
+            public void onPageInvisible(ViewPager2 pager, int position, int invisiblePosition) {
+                super.onPageInvisible(pager, position, invisiblePosition);
+                final ViewHolder holder = findItemViewHolderByPosition(pager, invisiblePosition);
+                if (holder == null) return;
+                holder.executeAction(ViewHolderAction.ACTION_VIEW_PAGER_ON_PAGE_INVISIBLE);
+            }
         });
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
