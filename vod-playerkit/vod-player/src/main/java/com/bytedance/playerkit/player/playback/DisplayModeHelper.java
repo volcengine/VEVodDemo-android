@@ -187,7 +187,7 @@ public class DisplayModeHelper {
             displayLP.gravity = displayGravity;
             displayLP.width = displayWidth;
             displayLP.height = displayHeight;
-            L.i(this, "applyDisplayMode", displayLP.gravity, displayLP.width, displayLP.height);
+            L.i(this, "applyDisplayMode", displayLP.gravity, displayLP.width, displayLP.height, displayLP.width/(float)displayLP.height);
             displayView.requestLayout();
         }
     }

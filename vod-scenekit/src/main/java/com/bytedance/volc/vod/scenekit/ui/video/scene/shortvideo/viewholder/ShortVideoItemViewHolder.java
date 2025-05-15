@@ -32,8 +32,10 @@ import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PauseLayer;
@@ -73,6 +75,7 @@ public class ShortVideoItemViewHolder extends VideoViewHolder {
 
         final Item item = items.get(position);
         this.videoItem = (VideoItem) item;
+        L.d(this, "bind", position, ItemHelper.dump(item));
         MediaSource mediaSource = videoView.getDataSource();
         if (mediaSource == null) {
             mediaSource = VideoItem.toMediaSource(videoItem);
