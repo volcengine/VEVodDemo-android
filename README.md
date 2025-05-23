@@ -15,13 +15,14 @@ Demo 中实现了常见的三种播放场景：
 # 目录结构
 
 ```text
-|--VEVodDemo-android
-|--|--app               // 主 app （壳工程）
-|--|--vod-demo-api      // vod-demo 模块与壳工程交互接口（组件化）
-|--|--vod-demo          // 业务 demo 层
-|--|--vod-scenekit      // 场景控件层
-|--|--vod-playerkit     // 播放控件层
-|--|--vod-settingskit   // 播放设置模块
+VEVodDemo-android
+|--app                       // 主 app （壳工程）
+|--app-player-api-example    // 播放器 api example app（可独立运行，不依赖其他模块）
+|--vod-demo-api              // vod-demo 模块与壳工程交互接口（组件化）
+|--vod-demo                  // 业务 demo 层
+|--vod-scenekit              // 场景控件层
+|--vod-playerkit             // 播放控件层
+|--od-settingskit            // 播放设置模块
 ```
 
 # 编译运行

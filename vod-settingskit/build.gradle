@@ -25,6 +25,7 @@ if (publishFile.exists()) {
 }
 
 android {
+    namespace "com.bytedance.volc.vod.settingskit"
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
 

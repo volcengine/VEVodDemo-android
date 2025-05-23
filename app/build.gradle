@@ -22,6 +22,7 @@ plugins {
 apply from: rootProject.file("gradle-config/constants.gradle")
 
 android {
+    namespace "com.bytedance.volc.voddemo"
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
 

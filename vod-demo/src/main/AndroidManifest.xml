@@ -16,8 +16,7 @@
   ~ Create Date : 2022/9/13
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.bytedance.volc.voddemo.impl">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Picture in Picture Mode Permission -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

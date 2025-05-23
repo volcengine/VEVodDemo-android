@@ -78,7 +78,7 @@ public class DramaBottomProgressBarLayer extends BaseLayer {
             }
         });
 
-        SeekBar seekBar = mMediaSeekBar.findViewById(R.id.seekBar);
+        SeekBar seekBar = mMediaSeekBar.seekBar;
         final int _12dp = (int) UIUtils.dip2Px(seekBar.getContext(), 12);
         seekBar.setPadding(_12dp, 0, _12dp, 0);
 

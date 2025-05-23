@@ -34,9 +34,9 @@ import com.bytedance.volc.vod.scenekit.R;
 
 public class MediaSeekBar extends RelativeLayout {
 
-    private final TextView text1;
-    private final SeekBar seekBar;
-    private final TextView text2;
+    public final TextView text1;
+    public final SeekBar seekBar;
+    public final TextView text2;
 
     private boolean mTouchSeeking;
     private long mDuration;

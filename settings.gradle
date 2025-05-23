@@ -17,17 +17,21 @@
  */
 
 rootProject.name = "VEVodDemo-android"
-include ':app'
-
 println("rootDir -> " + getRootDir())
 
+// scene Demo
+include ':app'
+include ':vod-demo'
+include ':vod-demo-api'
 apply from: file("gradle-config/vod_playerkit_library_settings.gradle")
 apply from: file("gradle-config/vod_scenekit_library_settings.gradle")
 
-include ':vod-demo'
-include ':vod-demo-api'
+// api example demo
+include ':app-player-api-example'
 
+// debug settings
 def sourceSettings = file(".dev/.source_settings.gradle")
 if (sourceSettings.exists()) {
     apply from: sourceSettings
 }
+

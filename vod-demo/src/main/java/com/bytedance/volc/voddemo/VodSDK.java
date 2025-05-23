@@ -46,7 +46,6 @@ import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.strategy.VideoSubtitle;
 import com.bytedance.volc.vod.settingskit.SettingItem;
-import com.bytedance.volc.voddemo.impl.BuildConfig;
 import com.bytedance.volc.voddemo.ui.sample.SampleSourceActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 import com.bytedance.volc.voddemo.utils.CacheKeyUtils;
@@ -94,9 +93,9 @@ public class VodSDK {
         });
 
         // FIXME logcat 开关，上线请关闭
-        L.ENABLE_LOG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_LOGCAT) && BuildConfig.DEBUG;
+        L.ENABLE_LOG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_LOGCAT);
         // FIXME asserts 开关，上线请关闭
-        Asserts.DEBUG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_ASSERTS) && BuildConfig.DEBUG;
+        Asserts.DEBUG = VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_ASSERTS);
 
         final CacheKeyFactory cacheKeyFactory = new DefaultCacheKeyFactory() {
 
