@@ -68,9 +68,8 @@ public class PipVideoActonLayer extends AnimateLayer {
         });
         mSeekBar = view.findViewById(R.id.mediaSeekbar);
         mSeekBar.setTextVisibility(false);
-        SeekBar seek = ((SeekBar) mSeekBar.findViewById(R.id.seekBar));
-        seek.setThumb(null);
-        seek.setOnTouchListener((View v, MotionEvent event) -> true);
+        mSeekBar.seekBar.setThumb(null);
+        mSeekBar.seekBar.setOnTouchListener((View v, MotionEvent event) -> true);
         mSeekBar.setOnSeekListener(new MediaSeekBar.OnUserSeekListener() {
             @Override
             public void onUserSeekStart(long startPosition) {

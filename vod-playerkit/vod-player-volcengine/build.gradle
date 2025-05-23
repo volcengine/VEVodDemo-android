@@ -24,6 +24,7 @@ if (publishFile.exists()) {
 }
 
 android {
+    namespace "com.bytedance.playerkit.player.volcengine"
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
 
@@ -51,6 +52,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    android.buildFeatures.buildConfig true
 }
 
 dependencies {
@@ -75,7 +78,7 @@ dependencies {
             implementation "com.bytedanceapi:ttsdk-ttpcdn:${project.ext.bytedance.ttsdkVersion}"
         }
     }
-    implementation "com.bytedanceapi:ttvideoengine-debugtool:0.3.0.1"
+    implementation "com.bytedanceapi:ttvideoengine-debugtool:${project.ext.bytedance.debugToolVersion}"
     implementation "com.squareup.okhttp3:okhttp:${project.ext.okhttp}"
 
     implementation "com.google.code.gson:gson:${project.ext.gson}"

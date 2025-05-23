@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2025 bytedance
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  ~ Create Date : 2025/5/23
+  -->
+
+<resources>
+    <string name="app_name">播放器 API 示例</string>
+
+    <string name="vevod_api_example_app_title">点播播放器 API 示例</string>
+
+    <string name="vevod_api_example_quick_start">快速开始</string>
+    <string name="vevod_api_example_vid_source">Vid 源示例</string>
+    <string name="vevod_api_example_directurl_source">Direct URL 源示例</string>
+    <string name="vevod_api_example_basic_features">基本功能</string>
+    <string name="vevod_api_example_basic_playback">基础播放示例</string>
+    <string name="vevod_api_example_short_video_best_practice">抖音同款短视频最佳实践示例</string>
+    <string name="vevod_api_example_feed_video_best_practice">西瓜视频同款中视频最佳实践示例</string>
+    <string name="vevod_api_example_best_practice">最佳实践</string>
+    <string name="vevod_api_example_advanced_features">进阶功能</string>
+    <string name="vevod_api_example_displaymode">显示模式示例</string>
+    <string name="vevod_api_example_set_volume">设置音量示例</string>
+    <string name="vevod_api_example_clear_video_cache">清除视频缓存示例</string>
+    <string name="vevod_api_example_displaymode_title_select_displaymodes">选择显示模式</string>
+    <string name="vevod_api_example_displaymode_title_select_videoview_ratios">选择 VideoView 比例</string>
+    <string name="vevod_api_example_set_volume_title">设置音量</string>
+    <string name="vevod_api_example_basic_playback_set_speed_title">设置倍速</string>
+    <string name="vevod_api_example_basic_playback_set_loop_title">循环播放</string>
+    <string name="vevod_api_example_basic_playback_set_mute_title">设置静音</string>
+    <string name="vevod_api_example_basic_playback_replay">重播</string>
+    <string name="vevod_api_example_directurl_subtitle">Direct URL 字幕示例</string>
+    <string name="vevod_api_example_vid_subtitle">Vid 字幕示例</string>
+    <string name="vevod_api_example_subtitle_select_language_title">选择字幕语言</string>
+    <string name="vevod_api_example_subtitle_language_cn">中文</string>
+    <string name="vevod_api_example_subtitle_language_en">英文</string>
+    <string name="vevod_api_example_subtitle_close">关闭字幕</string>
+    <string name="vevod_api_example_debugtool">Debug 工具示例</string>
+    <string name="vevod_api_example_basic_playback_set_resolution">设置清晰度</string>
+</resources>

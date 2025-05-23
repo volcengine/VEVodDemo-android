@@ -23,6 +23,7 @@ if (publishFile.exists()) {
 }
 
 android {
+    namespace "com.bytedance.playerkit.utils"
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
 

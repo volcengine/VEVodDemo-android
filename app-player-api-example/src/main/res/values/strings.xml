@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Player API Example</string>
+
+    <string name="vevod_api_example_app_title">VolcEngine Vod Player API Example</string>
+
+    <string name="vevod_api_example_quick_start">Quick Start</string>
+    <string name="vevod_api_example_vid_source">Vid Source Example</string>
+    <string name="vevod_api_example_directurl_source">Direct URL Source Example</string>
+    <string name="vevod_api_example_basic_features">Basic Features</string>
+    <string name="vevod_api_example_basic_playback">Basic Playback</string>
+    <string name="vevod_api_example_displaymode">DisplayMode Example</string>
+    <string name="vevod_api_example_short_video_best_practice">Short Video Best Practice Example</string>
+    <string name="vevod_api_example_feed_video_best_practice">Feed Video Best Practice Example</string>
+    <string name="vevod_api_example_best_practice">Best Practice</string>
+    <string name="vevod_api_example_advanced_features">Advanced Features</string>
+    <string name="vevod_api_example_set_volume">Set Volume Example</string>
+    <string name="vevod_api_example_clear_video_cache">Clear Video Cache Example</string>
+    <string name="vevod_api_example_displaymode_title_select_videoview_ratios">Select VideoView Ratios</string>
+    <string name="vevod_api_example_displaymode_title_select_displaymodes">Select DisplayModes</string>
+    <string name="vevod_api_example_set_volume_title">Set Volume</string>
+    <string name="vevod_api_example_basic_playback_set_speed_title">Set Speed</string>
+    <string name="vevod_api_example_basic_playback_set_loop_title">Set Looping</string>
+    <string name="vevod_api_example_basic_playback_set_mute_title">Set Mute</string>
+    <string name="vevod_api_example_basic_playback_replay">Replay</string>
+    <string name="vevod_api_example_directurl_subtitle">Direct URL Subtitle Example</string>
+    <string name="vevod_api_example_vid_subtitle">Vid Subtitle Example</string>
+    <string name="vevod_api_example_subtitle_select_language_title">Select Subtitle Language</string>
+    <string name="vevod_api_example_subtitle_close">Close Subtitle</string>
+    <string name="vevod_api_example_subtitle_language_cn">Chinese</string>
+    <string name="vevod_api_example_subtitle_language_en">English</string>
+    <string name="vevod_api_example_debugtool">Debug Example</string>
+    <string name="vevod_api_example_basic_playback_set_resolution">Set Resoltuion</string>
+</resources>

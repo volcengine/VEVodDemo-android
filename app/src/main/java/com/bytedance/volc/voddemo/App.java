@@ -18,10 +18,12 @@
 
 package com.bytedance.volc.voddemo;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 
 public class App extends Application {
@@ -30,10 +32,6 @@ public class App extends Application {
     private static final String LICENSE_URI = "";
     private static final String APP_NAME = "VOLCVodDemo";
     private static final String APP_CHANNEL = "VOLCVodDemoAndroid";
-    private static final String APP_VERSION = BuildConfig.VERSION_NAME;
-
-    @SuppressLint("StaticFieldLeak")
-    private static Context sContext;
 
     @Override
     public void onCreate() {
@@ -47,7 +45,7 @@ public class App extends Application {
                 APP_ID,
                 APP_NAME,
                 APP_CHANNEL,
-                APP_VERSION,
+                getAppVersionName(this),
                 LICENSE_URI
         );
 
@@ -57,7 +55,14 @@ public class App extends Application {
         VodDemoApi.initMockADSDK(this);
     }
 
-    public Context context() {
-        return sContext;
+    private static String getAppVersionName(Context context) {
+        PackageInfo packageInfo;
+        try {
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.d("App", "get versionName failed", e);
+            return "";
+        }
     }
 }
