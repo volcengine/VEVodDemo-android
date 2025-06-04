@@ -22,7 +22,7 @@ VEVodDemo-android
 |--vod-demo                  // 业务 demo 层
 |--vod-scenekit              // 场景控件层
 |--vod-playerkit             // 播放控件层
-|--od-settingskit            // 播放设置模块
+|--vod-settingskit           // 播放设置模块
 ```
 
 # 编译运行
