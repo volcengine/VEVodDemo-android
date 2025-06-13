@@ -194,7 +194,9 @@ public class LogLayer extends BaseLayer {
             Track track = player.getCurrentTrack(Track.TRACK_TYPE_VIDEO);
             Quality quality = track != null ? track.getQuality() : null;
             info.append("Quality: ")
+                    .append(player.isABRAutoMode() ? "AUTO[" : "")
                     .append(quality == null ? null : quality.getQualityDesc())
+                    .append(player.isABRAutoMode() ? "]" : "")
                     .append("(")
                     .append(player.getVideoWidth())
                     .append("x")
@@ -253,9 +255,9 @@ public class LogLayer extends BaseLayer {
 
     private String subtitleState() {
         Player player = player();
-        if (player!= null &&!player.isReleased()) {
+        if (player != null && !player.isReleased()) {
             Subtitle subtitle = player.getCurrentSubtitle();
-            if (subtitle!= null) {
+            if (subtitle != null) {
                 return Subtitle.dump(subtitle);
             }
         }
@@ -346,12 +348,12 @@ public class LogLayer extends BaseLayer {
                     }
                     break;
                 case PlayerEvent.Info.SUBTITLE_FILE_LOAD_FINISH:
-                    if (mLogInfo!= null && mLogInfo.subtitleLoadEndFT <= 0) {
+                    if (mLogInfo != null && mLogInfo.subtitleLoadEndFT <= 0) {
                         mLogInfo.subtitleLoadEndFT = event.dispatchTime();
                     }
                     break;
                 case PlayerEvent.Info.SUBTITLE_CACHE_UPDATE:
-                    if (mLogInfo!= null) {
+                    if (mLogInfo != null) {
                         mLogInfo.subtitleCacheHintBytes.add(event.cast(InfoSubtitleCacheUpdate.class).cachedBytes);
                     }
                     break;

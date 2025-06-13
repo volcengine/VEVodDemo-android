@@ -183,7 +183,7 @@ public class SubtitleSelectDialogLayer extends DialogListLayer<Subtitle> {
                 }
             }
         }
-        adapter().setList(items);
+        adapter().setItems(items);
     }
 
     private void select(Subtitle subtitle) {

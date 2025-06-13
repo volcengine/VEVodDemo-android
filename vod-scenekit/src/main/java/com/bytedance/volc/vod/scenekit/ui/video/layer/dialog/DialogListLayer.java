@@ -90,7 +90,7 @@ public abstract class DialogListLayer<T> extends DialogLayer {
 
     public static class Item<T> {
         public final T obj;
-        public final String text;
+        public String text;
 
         public Item(T obj, String text) {
             this.obj = obj;
@@ -109,7 +109,7 @@ public abstract class DialogListLayer<T> extends DialogLayer {
             this.mListener = listener;
         }
 
-        public void setList(List<Item<T>> items) {
+        public void setItems(List<Item<T>> items) {
             mItems.clear();
             mItems.addAll(items);
             notifyDataSetChanged();

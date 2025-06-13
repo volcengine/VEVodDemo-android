@@ -20,16 +20,19 @@ package com.bytedance.playerkit.player.volcengine;
 
 import static com.bytedance.playerkit.player.volcengine.VolcSuperResolutionStrategy.isInitSuperResolution;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
+import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Track;
-import com.bytedance.playerkit.player.volcengine.VolcQualityConfig.VolcDisplaySizeConfig;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.Numbers;
-import com.bytedance.vodsetting.SettingsListener;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.abr.TTVideoABRConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.IVideoInfo;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoRef;
@@ -40,29 +43,26 @@ import com.ss.ttvideoengine.setting.SettingsHelper;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.superresolution.SRStrategyConfig;
 
+import java.util.List;
 import java.util.Map;
 
 public class VolcQualityStrategy {
 
     interface Listener {
-        void onStartupTrackSelected(StartupTrackResult startupTrackResult);
+        default void onStartupTrackSelected(StartupTrackResult startupTrackResult) { /**/ }
     }
 
     static void init() {
-        if (!VolcConfigGlobal.ENABLE_STARTUP_ABR_INIT) return;
-
-        VolcNetSpeedStrategy.init();
-
-        SettingsHelper.helper().addListener(new SettingsListener() {
-            @Override
-            public void onNotify(String s, int i) {
-                initGlobalConfig();
-            }
-        });
-        initGlobalConfig();
+        if (VolcConfigGlobal.ENABLE_STARTUP_ABR_INIT) {
+            VolcNetSpeedStrategy.init();
+            SettingsHelper.helper().addListener((s, i) -> initGlobalConfig());
+            initGlobalConfig();
+        } else if (VolcConfigGlobal.ENABLE_ABR_INIT) {
+            TTVideoABRStrategy.init();
+        }
     }
 
-    static void init(TTVideoEngine player, MediaSource mediaSource, Listener listener) {
+    static void initStartupABR(TTVideoEngine player, MediaSource mediaSource, Listener listener) {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         final VolcQualityConfig qualityConfig = volcConfig.qualityConfig;
         if (qualityConfig == null) return; // assert not possible
@@ -76,7 +76,7 @@ public class VolcQualityStrategy {
 
         // 配置起播选档参数
         final GearStrategyConfig gearConfig = player.getGearStrategyEngineConfig();
-        initConfig(gearConfig, volcConfig);
+        initStartupABRConfig(gearConfig, volcConfig);
         gearConfig.setGearStrategyListener(new IGearStrategyListener() {
 
             @Override
@@ -100,8 +100,16 @@ public class VolcQualityStrategy {
         // 超分降档
         if (isInitSuperResolution(volcConfig) &&
                 qualityConfig.enableSupperResolutionDowngrade) {
-            player.initSRStrategyConfig(createSRConfig(volcConfig));
+            player.initSRStrategyConfig(createStartupABRSRConfig(volcConfig));
         }
+    }
+
+    public static boolean isEnableABR(VolcConfig volcConfig) {
+        return VolcConfigGlobal.ENABLE_ABR_INIT &&
+                VolcEditions.isSupportABR() &&
+                VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_ABR) &&
+                volcConfig.qualityConfig != null &&
+                volcConfig.qualityConfig.qualityMode == VolcQualityConfig.QUALITY_MODE_ABR;
     }
 
     public static boolean isEnableStartupABR(VolcConfig volcConfig) {
@@ -109,7 +117,7 @@ public class VolcQualityStrategy {
                 VolcEditions.isSupportStartUpABR() &&
                 VolcExtensions.isIntegrate(VolcExtensions.PLAYER_EXTENSION_ABR) &&
                 volcConfig.qualityConfig != null &&
-                volcConfig.qualityConfig.enableStartupABR;
+                volcConfig.qualityConfig.qualityMode == VolcQualityConfig.QUALITY_MODE_STARTUP_ABR;
     }
 
     static boolean isEnableStartupABRSuperResolutionDowngrade(VolcConfig volcConfig) {
@@ -123,28 +131,28 @@ public class VolcQualityStrategy {
         //final GearStrategyConfig globalConfig = GearStrategy.getGlobalConfig();
         //globalConfig.setIntValue(GearStrategy.KEY_ABR_STARTUP_USE_CACHE, 2);
         //GearStrategy.setGlobalConfig(globalConfig);
+        TTVideoABRStrategy.init();
     }
 
-    private static void initConfig(GearStrategyConfig gearConfig, VolcConfig volcConfig) {
-        if (volcConfig == null) return;
-        final VolcQualityConfig startupGearConfig = volcConfig.qualityConfig;
-        if (startupGearConfig == null) return;
-        final VolcDisplaySizeConfig displaySizeConfig = startupGearConfig.displaySizeConfig;
-        if (displaySizeConfig == null) return;
-
+    private static void initStartupABRConfig(@NonNull GearStrategyConfig gearConfig, @NonNull VolcConfig volcConfig) {
         initGlobalConfig();
 
         gearConfig.setIntValue(GearStrategy.KEY_ABR_WITH_SR, isInitSuperResolution(volcConfig) ? 1 : 0);
-        gearConfig.setIntValue(GearStrategy.KEY_SCREEN_WIDTH, displaySizeConfig.screenWidth);
-        gearConfig.setIntValue(GearStrategy.KEY_SCREEN_HEIGHT, displaySizeConfig.screenHeight);
-        gearConfig.setIntValue(GearStrategy.KEY_DISPLAY_WIDTH, displaySizeConfig.displayWidth);
-        gearConfig.setIntValue(GearStrategy.KEY_DISPLAY_HEIGHT, displaySizeConfig.displayHeight);
         gearConfig.setIntValue(GearStrategy.KEY_QUICK_GET_FILE_CACHE, 1);
 
-        Resolution mobile4GMaxResolution = VolcQuality.quality2Resolution(startupGearConfig.mobileMaxQuality);
-        Resolution wifiDefaultResolution = VolcQuality.quality2Resolution(startupGearConfig.defaultQuality);
-        Resolution wifiMaxResolution = VolcQuality.quality2Resolution(startupGearConfig.wifiMaxQuality);
-        Resolution userSelectedResolution = VolcQuality.quality2Resolution(startupGearConfig.userSelectedQuality);
+        VolcQualityConfig qualityConfig = volcConfig.qualityConfig;
+        if (qualityConfig == null) return;
+
+        ABRQualityConfig abrQualityConfig = volcConfig.qualityConfig.abrQualityConfig;
+        gearConfig.setIntValue(GearStrategy.KEY_SCREEN_WIDTH, abrQualityConfig.screenWidth);
+        gearConfig.setIntValue(GearStrategy.KEY_SCREEN_HEIGHT, abrQualityConfig.screenHeight);
+        gearConfig.setIntValue(GearStrategy.KEY_DISPLAY_WIDTH, abrQualityConfig.displayWidth);
+        gearConfig.setIntValue(GearStrategy.KEY_DISPLAY_HEIGHT, abrQualityConfig.displayHeight);
+
+        Resolution mobile4GMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.mobileMaxQuality);
+        Resolution wifiDefaultResolution = VolcQuality.quality2Resolution(abrQualityConfig.defaultQuality);
+        Resolution wifiMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.wifiMaxQuality);
+        Resolution userSelectedResolution = VolcQuality.quality2Resolution(qualityConfig.userSelectedQuality);
 
         if (mobile4GMaxResolution != null) {
             gearConfig.setIntValue(GearStrategy.KEY_4G_MAX_RESOLUTION, mobile4GMaxResolution.getIndex());
@@ -160,12 +168,12 @@ public class VolcQualityStrategy {
         }
     }
 
-    static StartupTrackResult select(int selectType, MediaSource mediaSource,  IVideoModel videoModel) {
+    static StartupTrackResult selectStartupABR(int selectType, MediaSource mediaSource, IVideoModel videoModel) {
         VolcConfig volcConfig = VolcConfig.get(mediaSource);
         final GearStrategyConfig gearConfig = new GearStrategyConfig();
-        initConfig(gearConfig, volcConfig);
+        initStartupABRConfig(gearConfig, volcConfig);
         if (isInitSuperResolution(volcConfig)) {
-            gearConfig.setObjectValue(GearStrategy.KEY_SR_STRATEGY_CONFIG, createSRConfig(volcConfig));
+            gearConfig.setObjectValue(GearStrategy.KEY_SR_STRATEGY_CONFIG, createStartupABRSRConfig(volcConfig));
         }
         final Map<String, String> result = GearStrategy.select(videoModel, GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD, gearConfig);
         final StartupTrackResult gearResult = new StartupTrackResult(mediaSource, result, videoModel);
@@ -173,7 +181,7 @@ public class VolcQualityStrategy {
         return gearResult;
     }
 
-    private static SRStrategyConfig createSRConfig(VolcConfig volcConfig) {
+    private static SRStrategyConfig createStartupABRSRConfig(VolcConfig volcConfig) {
         // 开启超分降档，默认仅支持 720 降档 480
         return new SRStrategyConfig()
                 .enableSR(isEnableStartupABRSuperResolutionDowngrade(volcConfig));

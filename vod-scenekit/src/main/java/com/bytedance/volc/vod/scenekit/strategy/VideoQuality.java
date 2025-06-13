@@ -20,6 +20,7 @@ package com.bytedance.volc.vod.scenekit.strategy;
 
 import androidx.annotation.NonNull;
 
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
@@ -91,65 +92,75 @@ public class VideoQuality {
     }
 
     @NonNull
-    public static VolcQualityConfig sceneGearConfig(int volcScene) {
+    public static VolcQualityConfig sceneQualityConfig(int volcScene) {
         final VolcQualityConfig config = new VolcQualityConfig();
-        config.enableStartupABR = VideoSettings.intValue(VideoSettings.QUALITY_ENABLE_STARTUP_ABR) >= 1;
-        config.enableSupperResolutionDowngrade = VideoSettings.intValue(VideoSettings.QUALITY_ENABLE_STARTUP_ABR) == 2;
+        final int abrType = VideoSettings.intValue(VideoSettings.QUALITY_ENABLE_ABR);
+        if (abrType == VideoSettings.ABRType.ABR_TYPE_ABR) {
+            config.qualityMode = VolcQualityConfig.QUALITY_MODE_ABR;
+        } else if (abrType == VideoSettings.ABRType.ABR_TYPE_STARTUP_ABR) {
+            config.qualityMode = VolcQualityConfig.QUALITY_MODE_STARTUP_ABR;
+        } else if (abrType == VideoSettings.ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE) {
+            config.qualityMode = VolcQualityConfig.QUALITY_MODE_STARTUP_ABR;
+            config.enableSupperResolutionDowngrade = true;
+        }
+        config.abrQualityConfig = sceneABRQualityConfig(volcScene);
+        return config;
+    }
+
+    @NonNull
+    public static ABRQualityConfig sceneABRQualityConfig(int volcScene) {
         switch (volcScene) {
             case VolcScene.SCENE_SHORT_VIDEO: {
-                config.defaultQuality = VolcQuality.QUALITY_720P;
-                config.wifiMaxQuality = VolcQuality.QUALITY_720P;
-                config.mobileMaxQuality = VolcQuality.QUALITY_480P;
-
-                final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
-                config.displaySizeConfig = displaySizeConfig;
+                ABRQualityConfig abrQualityConfig = new ABRQualityConfig();
+                abrQualityConfig.defaultQuality = VolcQuality.QUALITY_480P;
+                abrQualityConfig.wifiMaxQuality = VolcQuality.QUALITY_1080P;
+                abrQualityConfig.mobileMaxQuality = VolcQuality.QUALITY_1080P;
 
                 final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
                 final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
-                displaySizeConfig.screenWidth = screenWidth;
-                displaySizeConfig.screenHeight = screenHeight;
-                displaySizeConfig.displayWidth = (int) (screenHeight / 16f * 9);
-                displaySizeConfig.displayHeight = screenHeight;
-                return config;
+                abrQualityConfig.screenWidth = Math.min(screenWidth, screenHeight);
+                abrQualityConfig.screenHeight = Math.max(screenWidth, screenHeight);
+
+                abrQualityConfig.displayWidth = Math.min(screenWidth, screenHeight);
+                abrQualityConfig.displayHeight = (int) (abrQualityConfig.displayWidth * 16f / 9);
+                return abrQualityConfig;
             }
             case VolcScene.SCENE_FULLSCREEN: {
-                config.defaultQuality = VolcQuality.QUALITY_480P;
-                config.wifiMaxQuality = VolcQuality.QUALITY_1080P;
-                config.mobileMaxQuality = VolcQuality.QUALITY_720P;
-
-                final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
-                config.displaySizeConfig = displaySizeConfig;
+                ABRQualityConfig abrQualityConfig = new ABRQualityConfig();
+                abrQualityConfig.defaultQuality = VolcQuality.QUALITY_480P;
+                abrQualityConfig.wifiMaxQuality = VolcQuality.QUALITY_1080P;
+                abrQualityConfig.mobileMaxQuality = VolcQuality.QUALITY_1080P;
 
                 final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
                 final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
-                displaySizeConfig.screenWidth = screenWidth;
-                displaySizeConfig.screenHeight = screenHeight;
-                displaySizeConfig.displayWidth = Math.max(screenWidth, screenHeight);
-                displaySizeConfig.displayHeight = (int) (Math.max(screenWidth, screenHeight) / 16f * 9);
-                return config;
+                abrQualityConfig.screenWidth = Math.max(screenWidth, screenHeight);
+                abrQualityConfig.screenHeight = Math.min(screenWidth, screenHeight);
+
+                abrQualityConfig.displayHeight = Math.min(screenWidth, screenHeight);
+                abrQualityConfig.displayWidth = (int) (abrQualityConfig.displayHeight * 16f / 9);
+                return abrQualityConfig;
             }
             case VolcScene.SCENE_UNKNOWN:
             case VolcScene.SCENE_LONG_VIDEO:
             case VolcScene.SCENE_DETAIL_VIDEO:
             case VolcScene.SCENE_FEED_VIDEO:
             default: {
-                config.defaultQuality = VolcQuality.QUALITY_480P;
-                config.wifiMaxQuality = VolcQuality.QUALITY_540P;
-                config.mobileMaxQuality = VolcQuality.QUALITY_360P;
-
-                final VolcQualityConfig.VolcDisplaySizeConfig displaySizeConfig = new VolcQualityConfig.VolcDisplaySizeConfig();
-                config.displaySizeConfig = displaySizeConfig;
+                ABRQualityConfig abrQualityConfig = new ABRQualityConfig();
+                abrQualityConfig.defaultQuality = VolcQuality.QUALITY_480P;
+                abrQualityConfig.wifiMaxQuality = VolcQuality.QUALITY_540P;
+                abrQualityConfig.mobileMaxQuality = VolcQuality.QUALITY_540P;
 
                 final int screenWidth = UIUtils.getScreenWidth(VolcPlayerInit.config().context);
                 final int screenHeight = UIUtils.getScreenHeight(VolcPlayerInit.config().context);
 
-                displaySizeConfig.screenWidth = screenWidth;
-                displaySizeConfig.screenHeight = screenHeight;
-                displaySizeConfig.displayWidth = Math.min(screenWidth, screenHeight);
-                displaySizeConfig.displayHeight = (int) (Math.min(screenWidth, screenHeight) / 16f * 9);
-                return config;
+                abrQualityConfig.screenWidth = Math.min(screenWidth, screenHeight);
+                abrQualityConfig.screenHeight = Math.max(screenWidth, screenHeight);
+
+                abrQualityConfig.displayWidth = Math.min(screenWidth, screenHeight);
+                abrQualityConfig.displayHeight = (int) (abrQualityConfig.displayWidth / 16f * 9);
+                return abrQualityConfig;
             }
         }
     }

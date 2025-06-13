@@ -91,7 +91,7 @@ public class SpeedSelectDialogLayer extends DialogListLayer<Float> {
     @Override
     protected View createDialogView(@NonNull ViewGroup parent) {
         setTitle(parent.getResources().getString(R.string.vevod_speed_select_dialog_title));
-        adapter().setList(createItems(parent.getContext()));
+        adapter().setItems(createItems(parent.getContext()));
         return super.createDialogView(parent);
     }
 

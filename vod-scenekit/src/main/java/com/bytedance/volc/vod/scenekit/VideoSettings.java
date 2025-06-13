@@ -93,7 +93,8 @@ public class VideoSettings {
     public static final String INIT_ENABLE_ASSERTS = "init_enable_asserts";
     public static final String INIT_ENABLE_VOD_SDK_ASYNC_INIT = "init_vod_sdk_async_init";
 
-    public static final String QUALITY_ENABLE_STARTUP_ABR = "quality_enable_startup_abr";
+    public static final String QUALITY_ENABLE_ABR = "quality_enable_abr";
+
     public static final String QUALITY_VIDEO_QUALITY_USER_SELECTED = "quality_video_quality_user_selected";
 
     public static final String SUBTITLE_ENABLE = "subtitle_enable";
@@ -148,6 +149,13 @@ public class VideoSettings {
         public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
         public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
         public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
+    }
+
+    public static class ABRType {
+        public static final int ABR_TYPE_DISABLED = 0;
+        public static final int ABR_TYPE_STARTUP_ABR = 1;
+        public static final int ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE = 2;
+        public static final int ABR_TYPE_ABR = 3;
     }
 
     public static void init(Context context, @Nullable SettingItem.OnEventListener eventListener) {
@@ -512,21 +520,26 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_SELECTABLE_ITEMS,
                         CATEGORY_QUALITY,
-                        QUALITY_ENABLE_STARTUP_ABR,
-                        "开启 ABR 起播选档",
+                        QUALITY_ENABLE_ABR,
+                        "开启 ABR",
                         Option.STRATEGY_IMMEDIATELY,
                         Integer.class,
                         0,
-                        Arrays.asList(0, 1, 2)), new SettingItem.ValueMapper() {
+                        Arrays.asList(ABRType.ABR_TYPE_DISABLED,
+                                ABRType.ABR_TYPE_STARTUP_ABR,
+                                ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE,
+                                ABRType.ABR_TYPE_ABR)), new SettingItem.ValueMapper() {
                     @Override
                     public String toString(Object value) {
                         final int type = (int) value;
                         switch (type) {
-                            case 1:
+                            case ABRType.ABR_TYPE_STARTUP_ABR:
                                 return "ABR 起播选档";
-                            case 2:
+                            case ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE:
                                 return "ABR 起播选档 + 超分降档";
-                            case 0:
+                            case ABRType.ABR_TYPE_ABR:
+                                return "ABR";
+                            case ABRType.ABR_TYPE_DISABLED:
                             default:
                                 return "关闭";
                         }

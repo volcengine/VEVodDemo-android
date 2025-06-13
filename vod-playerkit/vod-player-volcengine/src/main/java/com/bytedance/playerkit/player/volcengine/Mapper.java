@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
@@ -39,6 +40,8 @@ import com.bytedance.playerkit.utils.CollectionUtils;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
+import com.ss.ttvideoengine.abr.TTVideoABRConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.BareVideoInfo;
 import com.ss.ttvideoengine.model.BareVideoModel;
 import com.ss.ttvideoengine.model.IVideoInfo;
@@ -62,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class Mapper {
@@ -670,18 +674,23 @@ public class Mapper {
         Arrays.sort(resolutions);
         for (Resolution r : resolutions) {
             VideoInfo info = videoModel.getVideoInfo(r);
-            resolutionInfo.append(r).append("[")
-                    .append(info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE))
-                    .append("bps")
-                    .append(" ")
-                    .append(TTVideoEngine.getCacheFileSize(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH)))
-                    .append("/")
-                    .append(info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE))
-                    .append("B")
-                    .append("]")
+            resolutionInfo.append(dumpResolutionLog(info))
                     .append(",");
         }
         return resolutionInfo.toString();
+    }
+
+    @NonNull
+    private static String dumpResolutionLog(VideoInfo info) {
+        return info.getResolution() + "[" +
+                info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE) +
+                "bps" +
+                " " +
+                TTVideoEngine.getCacheFileSize(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH)) +
+                "/" +
+                info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE) +
+                "B" +
+                "]";
     }
 
     public static List<Subtitle> subtitleModelString2Subtitles(String subtitleModelString) {
@@ -813,5 +822,58 @@ public class Mapper {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static boolean isSupportSmoothTrackSwitching(MediaSource source, IVideoModel videoModel) {
+        final int contentType = source.getMediaProtocol();
+        if (videoModel != null) {
+            switch (contentType) {
+                case MediaSource.MEDIA_PROTOCOL_DASH:
+                    if (videoModel.isSupportBash()) {
+                        return VolcConfig.get(source).enableDash;
+                    }
+                    break;
+                case MediaSource.MEDIA_PROTOCOL_HLS:
+                    if (videoModel.isSupportHLSSeamlessSwitch()) {
+                        return VolcConfig.get(source).enableHlsSeamlessSwitch;
+                    }
+                    break;
+                case MediaSource.MEDIA_PROTOCOL_DEFAULT:
+                    if (videoModel.isSupportBash()) {
+                        return VolcConfig.get(source).enableMP4SeamlessSwitch;
+                    }
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    public static TTVideoABRConfig mapABRQualityConfig2TTVideoABRConfig(@Nullable ABRQualityConfig abrQualityConfig) {
+        if (abrQualityConfig == null) return null;
+        TTVideoABRConfig abrConfig = new TTVideoABRConfig();
+        abrConfig.screenWidth =  abrQualityConfig.screenWidth;
+        abrConfig.screenHeight = abrQualityConfig.screenHeight;
+        abrConfig.displayWidth = abrQualityConfig.displayWidth;
+        abrConfig.displayHeight = abrQualityConfig.displayHeight;
+        abrConfig.defaultResolution = VolcQuality.quality2Resolution(abrQualityConfig.defaultQuality);
+        abrConfig.mobileMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.mobileMaxQuality);
+        abrConfig.wifiMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.wifiMaxQuality);
+        return abrConfig;
+    }
+
+    @Nullable
+    public static Track findTrackWithQuality(@NonNull final MediaSource mediaSource, @Nullable Quality quality) {
+        if (quality == null) return null;
+        List<Track> tracks  = mediaSource.getTracks();
+        if (tracks == null) {
+            return null;
+        }
+        for (Track track : tracks) {
+            if (Objects.equals(track.getQuality(), quality)) {
+                return track;
+            }
+        }
+        return null;
     }
 }

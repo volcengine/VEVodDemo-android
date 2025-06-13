@@ -32,7 +32,6 @@ import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.L;
-import com.ss.ttvideoengine.MDLCacheKeyGenerator;
 import com.ss.ttvideoengine.TTVideoEngine;
 
 import java.util.HashMap;

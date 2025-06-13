@@ -23,6 +23,7 @@ import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerException;
 import com.bytedance.playerkit.player.adapter.PlayerAdapter;
 import com.bytedance.playerkit.player.source.MediaSource;
@@ -130,7 +131,7 @@ class VolcPlayerEventRecorder implements PlayerAdapter.Listener {
     }
 
     @Override
-    public void onTrackChanged(@NonNull PlayerAdapter mp, int trackType, @NonNull Track pre, @NonNull Track current) {
+    public void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @NonNull Track pre, @NonNull Track current) {
         mEvents.add(new VolcEvent(VolcEvent.EVENT_onTrackChanged,
                 new Object[]{trackType, pre, current},
                 () -> mListener.onTrackChanged(mp, trackType, pre, current)));

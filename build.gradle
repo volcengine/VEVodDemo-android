@@ -44,6 +44,13 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
+apply from: (new File(rootProject.rootDir, "gradle-config/constants.gradle"))
+
+def sourceBuild = new File(rootProject.rootDir, ".dev/.source_build.gradle")
+if (sourceBuild.exists()) {
+    println("localBuild:" + sourceBuild)
+    apply from: sourceBuild
+}
 def innerRepo = new File(rootProject.rootDir, ".dev/.inner_repo.gradle")
 if (innerRepo.exists()) {
     apply from: innerRepo
@@ -52,3 +59,5 @@ def localRepo = new File(rootProject.rootDir, ".dev/.local_repo.gradle")
 if (localRepo.exists()) {
     apply from: localRepo
 }
+
+

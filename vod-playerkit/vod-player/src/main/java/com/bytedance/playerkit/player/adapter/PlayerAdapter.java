@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.PlayerException;
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.SubtitleText;
@@ -150,6 +151,12 @@ public interface PlayerAdapter {
     Subtitle getPendingSubtitle();
 
     Subtitle getCurrentSubtitle();
+
+    void setABRQualityConfig(@NonNull ABRQualityConfig abrQualityConfig);
+    @Nullable
+    ABRQualityConfig getABRQualityConfig();
+
+    boolean isABRAutoMode();
 
     void setStartTime(long startTime);
 

@@ -32,6 +32,7 @@ import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
+import com.bytedance.volc.vod.scenekit.strategy.VideoQuality;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 
 public class PlayerConfigLayer extends VideoLayer {
@@ -94,6 +95,9 @@ public class PlayerConfigLayer extends VideoLayer {
                     player.setSpeed(speed);
                 }
             }
+        }
+        if (VideoSettings.intValue(VideoSettings.QUALITY_ENABLE_ABR) == VideoSettings.ABRType.ABR_TYPE_ABR) {
+            player.setABRQualityConfig(VideoQuality.sceneABRQualityConfig(scene));
         }
     }
 }
