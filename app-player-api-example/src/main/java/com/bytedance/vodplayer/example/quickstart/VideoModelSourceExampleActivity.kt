@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2025/5/22
+ * Create Date : 2025/6/23
  */
 
 package com.bytedance.vodplayer.example.quickstart
@@ -39,33 +39,40 @@ import com.bytedance.vodplayer.example.view.RatioFrameLayout
 import com.ss.ttvideoengine.Resolution
 import com.ss.ttvideoengine.TTVideoEngine
 import com.ss.ttvideoengine.VideoEngineCallback
-import com.ss.ttvideoengine.VideoInfoListener
 import com.ss.ttvideoengine.model.VideoModel
 import com.ss.ttvideoengine.model.VideoRef
-import com.ss.ttvideoengine.source.VidPlayAuthTokenSource
+import com.ss.ttvideoengine.selector.BestResolution
+import com.ss.ttvideoengine.source.VideoModelSource
 import com.ss.ttvideoengine.utils.Error
+import org.json.JSONException
+import org.json.JSONObject
 
-open class VidSourceExampleActivity : BaseActivity() {
+open class VideoModelSourceExampleActivity : BaseActivity() {
 
     companion object {
         const val TAG = "[VidSource]";
 
         val START_PLAY_RESOLUTION = Resolution.SuperHigh // 720P
 
-        fun createVidSource(videoItem: VideoItem, resolution: Resolution): VidPlayAuthTokenSource {
-            return VidPlayAuthTokenSource.Builder()
+        fun createVideoModelSource(videoItem: VideoItem): VideoModelSource {
+            val videoModel  = VideoModel()
+            try {
+                videoModel.extractFields(JSONObject(videoItem.videoModel))
+            } catch (e: JSONException) {
+                e.printStackTrace()
+            }
+            return VideoModelSource.Builder()
                 .setVid(videoItem.vid)
-                .setPlayAuthToken(videoItem.playAuthToken)
+                .setVideoModel(videoModel)
                 // 设置起播清晰度
-                .setResolution(resolution)
+                .setResolution(START_PLAY_RESOLUTION)
                 .setTag(videoItem)
                 .build();
         }
 
-        fun createVideoEngine(vidSource: VidPlayAuthTokenSource): TTVideoEngine {
+        fun createVideoEngine(videoModelSource: VideoModelSource): TTVideoEngine {
             val videoEngine = TTVideoEngine(App.sContext)
-            videoEngine.setIntOption(TTVideoEngine.PLAYER_OPTION_USE_VIDEOMODEL_CACHE, 1)
-            videoEngine.strategySource = vidSource
+            videoEngine.strategySource = videoModelSource
             return videoEngine
         }
     }
@@ -79,7 +86,7 @@ open class VidSourceExampleActivity : BaseActivity() {
     var mResolutionActionLayout : LinearLayout? = null
 
     override fun getLayoutId(): Int {
-        return R.layout.vevod_api_example_vid_source
+        return R.layout.activity_video_model_source_example
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,27 +114,22 @@ open class VidSourceExampleActivity : BaseActivity() {
     }
 
     open fun initVideoEngine() {
-        val vidSource = createVidSource(DataRepository.videoItems[0], START_PLAY_RESOLUTION)
-
-        mVideoEngine = createVideoEngine(vidSource)
+        val videoModelSource = createVideoModelSource(DataRepository.videoItems[0])
+        mVideoEngine = createVideoEngine(videoModelSource)
         mVideoEngine.setDisplayMode(textureView, TTVideoEngine.IMAGE_LAYOUT_ASPECT_FIT)
-        mVideoEngine.setVideoInfoListener(object : VideoInfoListener {
 
-            override fun onFetchedVideoInfo(videoModel: VideoModel): Boolean {
-                onFetchedVideoInfo(vidSource, videoModel)
-                return false
-            }
-        })
         mVideoEngine.addVideoEngineCallback(object : VideoEngineCallback {
 
             override fun onError(error: Error?) {
                 // 播放失败，清晰度切换失败回调
-                Log.d(TAG, "vid=${vidSource.vid()} " + error)
+                Log.d(TAG, "vid=${videoModelSource.vid()} " + error)
             }
         })
+
+        initResolution(videoModelSource)
     }
 
-    open fun onFetchedVideoInfo(vidSource: VidPlayAuthTokenSource, videoModel: VideoModel) {
+    open fun initResolution(videoModelSource: VideoModelSource) {
         // 获取清晰度列表，可用来展示供用户切换清晰度
         mVideoEngine.supportedResolutionTypes()?.let {
             mResolutions.clear()
@@ -136,10 +138,10 @@ open class VidSourceExampleActivity : BaseActivity() {
         // 默认清晰度 720P
         val defaultResolution = START_PLAY_RESOLUTION
         // 播放源中可能不包含 defaultResolution，调用 findDefaultResolution 找出与 defaultResolution 最接近的清晰度。
-        mResolution = TTVideoEngine.findDefaultResolution(videoModel, defaultResolution)
+        mResolution = BestResolution.findDefaultResolution(videoModelSource.videoModel(), defaultResolution)
         // 设置最终的起播清晰度
         mVideoEngine.configResolution(mResolution)
-        Log.d(TAG, "vid=${vidSource.vid()} " + "startResolution=${vidSource.resolution()} " + "resolutions=${mResolutions}")
+        Log.d(TAG, "vid=${videoModelSource.vid()} " + "startResolution=${videoModelSource.resolution()} " + "resolutions=${mResolutions}")
         initResolutionActions()
     }
 

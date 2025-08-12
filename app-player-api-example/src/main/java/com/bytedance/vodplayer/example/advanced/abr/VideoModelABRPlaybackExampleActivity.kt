@@ -13,20 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2025/5/22
+ * Create Date : 2025/6/23
  */
 
-package com.bytedance.vodplayer.example
+package com.bytedance.vodplayer.example.advanced.abr
 
-import kotlinx.serialization.Serializable
+import com.bytedance.vodplayer.example.quickstart.VideoModelSourceExampleActivity
 
-@Serializable
-data class VideoItem(
-    val vid: String,
-    val playAuthToken: String,
-    val subtitleAuthToken: String,
-    var videoUrl: String,
-    val subtitleModel: String,
-    val videoModel: String? = null,
-    val coverUrl: String
-)
+class VideoModelABRPlaybackExampleActivity : VideoModelSourceExampleActivity() {
+
+
+}

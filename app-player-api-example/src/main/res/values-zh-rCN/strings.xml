@@ -48,4 +48,6 @@
     <string name="vevod_api_example_subtitle_close">关闭字幕</string>
     <string name="vevod_api_example_debugtool">Debug 工具示例</string>
     <string name="vevod_api_example_basic_playback_set_resolution">设置清晰度</string>
+    <string name="vevod_api_example_abr">ABR 播放示例</string>
+    <string name="vevod_api_example_vid_abr_playback_abr_config">根据场景设置 ABR 配置</string>
 </resources>

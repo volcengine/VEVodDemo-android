@@ -32,6 +32,7 @@ import com.pandora.common.env.config.Config
 import com.pandora.common.env.config.VodConfig
 import com.pandora.vod.VodSDK
 import com.ss.ttvideoengine.TTVideoEngine
+import com.ss.ttvideoengine.abr.TTVideoABRStrategy
 import java.io.File
 
 
@@ -71,6 +72,8 @@ object InitSDKExample {
                 .setVodConfig(vodBuilder.build())
                 .build()
         )
+
+        TTVideoABRStrategy.init()
     }
 
     private fun initUserUniqueId() {

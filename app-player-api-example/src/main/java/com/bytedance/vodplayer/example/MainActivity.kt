@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.bytedance.vodplayer.example.MainActivity.Item.Companion.ITEM_TYPE_BUTTON_ITEM
 import com.bytedance.vodplayer.example.MainActivity.Item.Companion.ITEM_TYPE_GROUP_TITLE
+import com.bytedance.vodplayer.example.advanced.abr.VidABRPlaybackExampleActivity
 import com.bytedance.vodplayer.example.advanced.DebugToolExampleActivity
 import com.bytedance.vodplayer.example.advanced.subtitle.DirectUrlSubtitleExampleActivity
 import com.bytedance.vodplayer.example.advanced.subtitle.VidSubtitleExampleActivity
@@ -137,6 +138,14 @@ class MainActivity : BaseActivity() {
             getString(R.string.vevod_api_example_vid_subtitle)
         ) {
             val intent = Intent(this@MainActivity, VidSubtitleExampleActivity::class.java)
+            startActivity(intent)
+        }
+
+        items += Item(
+            ITEM_TYPE_BUTTON_ITEM,
+            getString(R.string.vevod_api_example_abr)
+        ) {
+            val intent = Intent(this@MainActivity, VidABRPlaybackExampleActivity::class.java)
             startActivity(intent)
         }
 
