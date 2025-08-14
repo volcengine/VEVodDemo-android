@@ -34,6 +34,7 @@ import android.view.Surface;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
@@ -216,6 +217,7 @@ public class VolcEngineStrategy {
             Track userSelectedTrack = Mapper.findTrackWithQuality(mediaSource, volcConfig.qualityConfig.userSelectedQuality);
             if (userSelectedTrack != null) {
                 playTrack = userSelectedTrack;
+                L.d(VolcEngineStrategy.class, "selectTrack", "abr[user]", Track.dump(playTrack));
             } else {
                 Resolution resolution = null;
                 TTVideoABRConfig abrConfig = Mapper.mapABRQualityConfig2TTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig);
@@ -226,15 +228,15 @@ public class VolcEngineStrategy {
                     List<Track> tracks = mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource));
                     playTrack = Mapper.findTrackWithResolution(tracks, resolution);
                 }
+                L.d(VolcEngineStrategy.class, "selectTrack", "abr[auto]", Track.dump(playTrack), ABRQualityConfig.dump(volcConfig.qualityConfig.abrQualityConfig));
             }
-            L.d(VolcEngineStrategy.class, "selectTrack", "abr[" + (userSelectedTrack == null ? "auto]" : "user]"), playTrack);
         } else if (isEnableStartupABR(volcConfig)) {
             StartupTrackResult result = selectStartupABR(
                     GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
                     mediaSource,
                     videoModel);
             playTrack = result.track;
-            L.d(VolcEngineStrategy.class, "selectTrack", "abr[startup]", playTrack);
+            L.d(VolcEngineStrategy.class, "selectTrack", "abr[startup]", Track.dump(playTrack));
         }
         if (playTrack == null) {
             @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
@@ -242,7 +244,7 @@ public class VolcEngineStrategy {
             if (tracks != null) {
                 playTrack = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PRELOAD, trackType, tracks, mediaSource);
             }
-            L.d(VolcEngineStrategy.class, "selectTrack", "default", playTrack);
+            L.d(VolcEngineStrategy.class, "selectTrack", "default", Track.dump(playTrack));
         }
         return playTrack;
     }

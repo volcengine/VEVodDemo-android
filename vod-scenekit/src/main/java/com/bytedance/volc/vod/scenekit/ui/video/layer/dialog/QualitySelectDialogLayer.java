@@ -64,7 +64,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                 Player player = player();
                 if (player != null) {
                     if (item.obj == null) {
-                        player.selectTrack(MediaSource.mediaType2TrackType(mediaSource), null);
+                        player.selectTrackAuto();
                         select(null);
                         VideoQuality.setUserSelectedQualityRes(playScene(), Quality.QUALITY_RES_DEFAULT);
                         TipsLayer tipsLayer = layerHost().findLayer(TipsLayer.class);
@@ -160,7 +160,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                     if (e.trackType != Track.TRACK_TYPE_VIDEO) return;
 
                     final List<Track> tracks = e.tracks;
-                    bindData(tracks);
+                    bindData(e.owner(Player.class), e.trackType, tracks);
                     break;
                 }
                 case PlayerEvent.Info.TRACK_CHANGED: {
@@ -178,7 +178,6 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
                             adapter().notifyDataSetChanged();
                         }
                     } else {
-                        adapter().setSelected(adapter().findItem(e.current));
                         select(e.current);
 
                         if (e.pre == null) return;
@@ -212,7 +211,7 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
         final List<Track> tracks = player.getTracks(trackType);
         if (tracks == null) return;
 
-        bindData(tracks);
+        bindData(player, trackType, tracks);
         syncSelect();
     }
 
@@ -237,9 +236,9 @@ public class QualitySelectDialogLayer extends DialogListLayer<Track> {
         adapter().setSelected(adapter().findItem(track));
     }
 
-    private void bindData(List<Track> tracks) {
+    private void bindData(Player player, @Track.TrackType int trackType, List<Track> tracks) {
         final List<Item<Track>> items = new ArrayList<>();
-        if (VolcQualityStrategy.isEnableABR(VolcConfig.get(dataSource()))) {
+        if (VolcQualityStrategy.isEnableABR(VolcConfig.get(dataSource())) && player.isSupportSmoothTrackSwitching(trackType)) {
             final String autoQualityDesc = createAutoQualityDesc(getAutoModeCurrentQuality(player()));
             items.add(new Item<>(null, autoQualityDesc));
         }
