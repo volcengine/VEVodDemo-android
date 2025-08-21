@@ -475,17 +475,7 @@ public interface Player {
     Track getCurrentTrack(@TrackType int trackType);
 
     /**
-     * Get current selected but not playing track. Once the track is playing return null.
-     *
-     * @param trackType Track type. One of {@link TrackType}
-     * @return pending to play track
-     */
-    @Nullable
-    Track getPendingTrack(@TrackType int trackType);
-
-    /**
-     * Get selected track. Return {@link #getPendingTrack(int)} if not null.
-     * Otherwise, return {@link #getCurrentTrack(int)}
+     * Get selected track
      *
      * @param trackType Track type. One of {@link TrackType}
      * @return selected track
@@ -521,9 +511,6 @@ public interface Player {
 
     @Nullable
     Subtitle getSelectedSubtitle();
-
-    @Nullable
-    Subtitle getPendingSubtitle();
 
     @Nullable
     Subtitle getCurrentSubtitle();

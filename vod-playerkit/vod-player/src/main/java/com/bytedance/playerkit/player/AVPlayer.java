@@ -621,15 +621,6 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Nullable
     @Override
-    public Track getPendingTrack(@TrackType int trackType) {
-        if (checkIsRelease("getPendingTrack")) return null;
-
-        Asserts.checkOneOf(trackType, TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO);
-        return mPlayer.getPendingTrack(trackType);
-    }
-
-    @Nullable
-    @Override
     public Track getSelectedTrack(@TrackType int trackType) {
         if (checkIsRelease("getSelectedTrack")) return null;
 
@@ -686,12 +677,6 @@ public class AVPlayer extends ExtraObject implements Player {
     @Override
     public Subtitle getSelectedSubtitle() {
         return mPlayer.getSelectedSubtitle();
-    }
-
-    @Nullable
-    @Override
-    public Subtitle getPendingSubtitle() {
-        return mPlayer.getPendingSubtitle();
     }
 
     @Nullable

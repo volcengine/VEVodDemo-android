@@ -105,11 +105,9 @@ class VolcPlayer implements PlayerAdapter {
     private boolean mCheckBuffering;
 
     private final SparseArray<Track> mSelectedTrack = new SparseArray<>();
-    private final SparseArray<Track> mPendingTrack = new SparseArray<>();
     private final SparseArray<Track> mCurrentTrack = new SparseArray<>();
 
     private Subtitle mSelectedSubtitle;
-    private Subtitle mPendingSubtitle;
     private Subtitle mCurrentSubtitle;
 
 
@@ -337,8 +335,6 @@ class VolcPlayer implements PlayerAdapter {
 
             if (isInState(Player.STATE_IDLE, Player.STATE_STOPPED)) return;
 
-            setPendingTrack(trackType, track);
-
             if (selected == null) {
                 selected = getCurrentTrack(trackType);
             }
@@ -381,20 +377,6 @@ class VolcPlayer implements PlayerAdapter {
                 player.setStartTime(mPlaybackTimeWhenChangeAVTrack > 0 ? (int) mPlaybackTimeWhenChangeAVTrack : 0);
                 prepareDirectUrl(mediaSource, track, !mPausedWhenChangeAVTrack);
             }
-        }
-    }
-
-    @Override
-    public Track getPendingTrack(@Track.TrackType int trackType) throws IllegalStateException {
-        synchronized (this) {
-            return mPendingTrack.get(trackType);
-        }
-    }
-
-    private void setPendingTrack(@Track.TrackType int trackType, Track track) {
-        L.d(this, "setPendingTrack", Track.dump(track));
-        synchronized (this) {
-            mPendingTrack.put(trackType, track);
         }
     }
 
@@ -449,7 +431,6 @@ class VolcPlayer implements PlayerAdapter {
         final Subtitle current = getCurrentSubtitle();
         if (selected != subtitle) {
             setSelectedSubtitle(subtitle);
-            setPendingSubtitle(subtitle);
             if (mListener != null) {
                 mListener.onSubtitleWillChange(this, current, subtitle);
             }
@@ -468,22 +449,6 @@ class VolcPlayer implements PlayerAdapter {
     public Subtitle getSelectedSubtitle() {
         synchronized (this) {
             return mSelectedSubtitle;
-        }
-    }
-
-
-    public void setPendingSubtitle(Subtitle subtitle) {
-        L.d(this, "setPendingSubtitle", Subtitle.dump(subtitle));
-        synchronized (this) {
-            mPendingSubtitle = subtitle;
-        }
-    }
-
-
-    @Override
-    public Subtitle getPendingSubtitle() {
-        synchronized (this) {
-            return mPendingSubtitle;
         }
     }
 
@@ -645,14 +610,12 @@ class VolcPlayer implements PlayerAdapter {
             @Override
             public void onTrackWillChange(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track current, @NonNull Track target) {
                 setSelectedTrack(trackType, target);
-                setPendingTrack(trackType, target);
 
                 listener.onTrackWillChange(player, trackType, current, target);
             }
 
             @Override
             public void onTrackChanged(@NonNull PlayerAdapter mp, @Track.TrackType int trackType, @Nullable Track pre, @NonNull Track current) {
-                setPendingTrack(trackType, null);
                 setCurrentTrack(trackType, current);
 
                 listener.onTrackChanged(player, trackType, pre, current);
@@ -685,14 +648,11 @@ class VolcPlayer implements PlayerAdapter {
             @Override
             public void onSubtitleWillChange(@NonNull PlayerAdapter mp, @Nullable Subtitle current, @NonNull Subtitle target) {
                 setSelectedSubtitle(target);
-                setPendingSubtitle(target);
-
                 listener.onSubtitleWillChange(player, current, target);
             }
 
             @Override
             public void onSubtitleChanged(@NonNull PlayerAdapter mp, @Nullable Subtitle pre, @NonNull Subtitle current) {
-                setPendingSubtitle(null);
                 setCurrentSubtitle(current);
 
                 listener.onSubtitleChanged(player, pre, current);
@@ -771,7 +731,6 @@ class VolcPlayer implements PlayerAdapter {
                     }
                     VolcPlayer.this.config(mediaSource, selected);
                     VolcPlayer.this.setSelectedTrack(trackType, selected);
-                    VolcPlayer.this.setPendingTrack(trackType, selected);
                     if (mListener != null) {
                         mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
                     }
@@ -834,7 +793,6 @@ class VolcPlayer implements PlayerAdapter {
                     userSelected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                 }
                 setSelectedTrack(trackType, userSelected);
-                setPendingTrack(trackType, userSelected);
                 if (mListener != null) {
                     mListener.onTrackWillChange(VolcPlayer.this, trackType, null, userSelected);
                 }
@@ -854,7 +812,6 @@ class VolcPlayer implements PlayerAdapter {
                         selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                     }
                     VolcPlayer.this.setSelectedTrack(trackType, selected);
-                    VolcPlayer.this.setPendingTrack(trackType, selected);
                     if (mListener != null) {
                         mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
                     }
@@ -893,12 +850,9 @@ class VolcPlayer implements PlayerAdapter {
             if (selected == null) {
                 selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                 setSelectedTrack(trackType, selected);
-                setPendingTrack(trackType, selected);
                 if (mListener != null) {
                     mListener.onTrackWillChange(this, trackType, null, selected);
                 }
-            } else {
-                setPendingTrack(trackType, selected);
             }
             return selected;
         }
@@ -1128,7 +1082,6 @@ class VolcPlayer implements PlayerAdapter {
         mSubtitleSource = null;
         synchronized (this) {
             mCurrentTrack.clear();
-            mPendingTrack.clear();
             mSelectedTrack.clear();
         }
         mPreRenderPlayer = false;
@@ -1524,20 +1477,29 @@ class VolcPlayer implements PlayerAdapter {
 
             @Track.TrackType final int trackType = mediaType2TrackType(mediaSource);
             final Track current = player.getCurrentTrack(trackType);
-            final Track pending = player.getPendingTrack(trackType);
-            if (pending == null) {
+            final Track selected = player.getSelectedTrack(trackType);
+            if (selected == null) {
                 if (isEnableABR(volcConfig) && player.isSupportSmoothTrackSwitching(trackType)) {
                     listener.onPrepared(player);
                 } else {
-                    player.moveToErrorState(PlayerException.CODE_ON_PREPARED_ERROR, "not abr and pending == null");
+                    player.moveToErrorState(PlayerException.CODE_ON_PREPARED_ERROR, "not abr and selected == null");
                 }
             } else {
-                player.setPendingTrack(trackType, null);
-                player.setCurrentTrack(trackType, pending);
-                listener.onTrackChanged(player, trackType, current, pending);
                 if (player.isSupportSmoothTrackSwitching(trackType)) {
                     listener.onPrepared(player);
                 } else {
+                    final TTVideoEngine videoEngine = player.mPlayer;
+                    final IVideoModel videoModel = videoEngine == null ? null : videoEngine.getIVideoModel();
+                    final IVideoInfo videoInfo = videoModel == null ? null : videoModel.getVideoInfo(engine.getCurrentResolution(), false);
+                    if (videoInfo != null) {
+                        final Track track = Mapper.findTrackWithVideoInfo(player.getTracks(trackType), videoInfo);
+                        if (!Objects.equals(selected, track)) {
+                            Asserts.checkState(true, String.format("onPrepared track error! selected=%s, real=%s", Track.dump(selected), Track.dump(track)));
+                            return;
+                        }
+                    }
+                    player.setCurrentTrack(trackType, selected);
+                    listener.onTrackChanged(player, trackType, current, selected);
                     if (current == null) {
                         // 首次启播 prepare 完成
                         listener.onPrepared(player);
@@ -1696,7 +1658,7 @@ class VolcPlayer implements PlayerAdapter {
                     nextTrack = Mapper.findTrackWithResolution(mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource)), videoInfo.getResolution());
                 }
             }
-            L.d(player, "onABRPredictBitrate", player.isABRAutoMode() ? "AUTO" : "User", Track.dump(nextTrack));
+            L.d(player, "onABRPredictBitrate", player.isABRAutoMode() ? "[AUTO]" : "[USER]", Track.dump(nextTrack));
         }
 
         @Override
@@ -1708,21 +1670,20 @@ class VolcPlayer implements PlayerAdapter {
             MediaSource mediaSource = player.mMediaSource;
             if (mediaSource == null) return;
 
-            if (!player.isInPlaybackState()) return;
-
             final Quality quality = Mapper.resolution2Quality(resolution);
 
             @Track.TrackType final int trackType = mediaType2TrackType(mediaSource);
             final Track pre = player.getCurrentTrack(trackType);
-            final Track track;
-            if (player.isABRAutoMode()) {
-                track = Mapper.findTrackWithResolution(mediaSource.getTracks(trackType), resolution);
-            } else {
-                track = player.getPendingTrack(trackType);
+            final Track track = Mapper.findTrackWithResolution(mediaSource.getTracks(trackType), resolution);
+            if (!player.isABRAutoMode()) {
+                final Track selected = player.getSelectedTrack(trackType);
+                if (!Objects.equals(selected, track)) {
+                    Asserts.checkState(true, String.format("onVideoStreamBitrateChanged track error! selected=%s, real=%s", Track.dump(selected), Track.dump(track)));
+                    return;
+                }
             }
-            L.d(player, "onVideoStreamBitrateChanged", player.isABRAutoMode() ? "AUTO" : "User", Track.dump(pre), Track.dump(track));
+            L.d(player, "onVideoStreamBitrateChanged", player.isABRAutoMode() ? "[AUTO]" : "[USER]", Track.dump(pre), Track.dump(track));
             if (track != null && Objects.equals(track.getQuality(), quality)) {
-                player.setPendingTrack(Track.TRACK_TYPE_VIDEO, null);
                 player.setCurrentTrack(Track.TRACK_TYPE_VIDEO, track);
                 listener.onTrackChanged(player, Track.TRACK_TYPE_VIDEO, pre, track);
             }
@@ -1777,7 +1738,6 @@ class VolcPlayer implements PlayerAdapter {
                         playTrack = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
                     }
                     player.setSelectedTrack(trackType, playTrack);
-                    player.setPendingTrack(trackType, playTrack);
                     if (listener != null) {
                         listener.onTrackWillChange(player, trackType, null, playTrack);
                     }
@@ -1916,13 +1876,9 @@ class VolcPlayer implements PlayerAdapter {
             L.d(player, "onSubSwitchCompleted", success, subId);
 
             final Subtitle subtitle = mediaSource.getSubtitle(subId);
-            final Subtitle pending = player.getPendingSubtitle();
             final Subtitle current = player.getCurrentSubtitle();
-            if (pending == subtitle) {
-                player.setPendingSubtitle(null);
-                player.setCurrentSubtitle(subtitle);
-                listener.onSubtitleChanged(player, current, subtitle);
-            }
+            player.setCurrentSubtitle(subtitle);
+            listener.onSubtitleChanged(player, current, subtitle);
         }
 
         @Override
@@ -1937,7 +1893,6 @@ class VolcPlayer implements PlayerAdapter {
             final Subtitle selected = player.getSelectedSubtitle();
             final Subtitle current = player.getCurrentSubtitle();
             if (current == null) {
-                player.setPendingSubtitle(null);
                 player.setCurrentSubtitle(selected);
                 listener.onSubtitleChanged(player, null, selected);
             }

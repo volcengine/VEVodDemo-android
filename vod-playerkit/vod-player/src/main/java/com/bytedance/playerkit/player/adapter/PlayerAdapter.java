@@ -136,8 +136,6 @@ public interface PlayerAdapter {
 
     Track getSelectedTrack(@Track.TrackType int trackType) throws IllegalStateException;
 
-    Track getPendingTrack(@Track.TrackType int trackType) throws IllegalStateException;
-
     Track getCurrentTrack(@Track.TrackType int trackType) throws IllegalStateException;
 
     List<Track> getTracks(@Track.TrackType int trackType) throws IllegalStateException;
@@ -147,8 +145,6 @@ public interface PlayerAdapter {
     void selectSubtitle(@Nullable Subtitle subtitle);
 
     Subtitle getSelectedSubtitle();
-
-    Subtitle getPendingSubtitle();
 
     Subtitle getCurrentSubtitle();
 
