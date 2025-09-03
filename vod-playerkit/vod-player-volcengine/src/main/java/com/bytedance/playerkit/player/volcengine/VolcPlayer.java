@@ -19,9 +19,11 @@
 package com.bytedance.playerkit.player.volcengine;
 
 import static com.bytedance.playerkit.player.source.MediaSource.mediaType2TrackType;
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.initStartupABR;
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.createTTVideoABRConfig;
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.createTTVideoABRStartupConfig;
 import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableABR;
 import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableStartupABR;
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableStartupABRSuperResolutionDowngrade;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -45,7 +47,6 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.SubtitleText;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
-import com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.StartupTrackResult;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineListenerAdapter;
 import com.bytedance.playerkit.player.volcengine.utils.TTVideoEngineSubtitleCallbackAdapter;
 import com.bytedance.playerkit.utils.Asserts;
@@ -57,6 +58,8 @@ import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.VideoEngineInfos;
+import com.ss.ttvideoengine.abr.TTVideoABRStartupConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStartupConfig.TTVideoABRStartupResolutionListener;
 import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.IVideoInfo;
 import com.ss.ttvideoengine.model.IVideoModel;
@@ -470,7 +473,7 @@ class VolcPlayer implements PlayerAdapter {
     public void setABRQualityConfig(@NonNull ABRQualityConfig abrQualityConfig) {
         L.d(this, "setABRQualityConfig", ABRQualityConfig.dump(abrQualityConfig));
         EngineParams.get(mPlayer).mABRQualityConfig = abrQualityConfig;
-        TTVideoABRStrategy.setABRConfig(mPlayer, Mapper.mapABRQualityConfig2TTVideoABRConfig(abrQualityConfig));
+        TTVideoABRStrategy.setABRConfig(mPlayer, createTTVideoABRConfig(abrQualityConfig));
     }
 
     @Nullable
@@ -714,15 +717,21 @@ class VolcPlayer implements PlayerAdapter {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         if (isEnableABR(volcConfig)) {
-            final VolcQualityConfig qualityConfig = Asserts.checkNotNull(volcConfig.qualityConfig);
-            TTVideoABRStrategy.initEngine(mPlayer, Mapper.mapABRQualityConfig2TTVideoABRConfig(qualityConfig.abrQualityConfig));
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            TTVideoABRStrategy.initEngine(mPlayer, createTTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig));
         } else if (isEnableStartupABR(volcConfig)) {
-            initStartupABR(mPlayer, mediaSource, new VolcQualityStrategy.Listener() {
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            final TTVideoABRStartupConfig startupConfig = createTTVideoABRStartupConfig(volcConfig);
+            startupConfig.enableSuperResolutionDowngrade = isEnableStartupABRSuperResolutionDowngrade(volcConfig);
+            startupConfig.mListener = new TTVideoABRStartupResolutionListener() {
                 @Override
-                public void onStartupTrackSelected(StartupTrackResult result) {
+                public void onResolutionSelected(IVideoModel videoModel, Resolution resolution) {
+                    final IVideoInfo videoInfo = videoModel.getVideoInfo(resolution);
+                    Track selected = Mapper.findTrackWithVideoInfo(mediaSource, videoInfo);
                     @Track.TrackType final int trackType = mediaType2TrackType(mediaSource);
                     final List<Track> tracks = VolcPlayer.this.getTracks(trackType);
-                    Track selected = result.track;
                     if (selected == null) {
                         selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY,
                                 trackType,
@@ -735,7 +744,8 @@ class VolcPlayer implements PlayerAdapter {
                         mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
                     }
                 }
-            });
+            };
+            TTVideoABRStrategy.initEngine(mPlayer, startupConfig);
         }
         /**
          * config in {@link  #prepareVid(MediaSource, Track)} which invoked in
@@ -783,8 +793,9 @@ class VolcPlayer implements PlayerAdapter {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         if (isEnableABR(volcConfig)
                 && Mapper.isSupportSmoothTrackSwitching(mediaSource, videoModelSource.videoModel())) {
-            final VolcQualityConfig qualityConfig = Asserts.checkNotNull(volcConfig.qualityConfig);
-            TTVideoABRStrategy.initEngine(mPlayer, Mapper.mapABRQualityConfig2TTVideoABRConfig(qualityConfig.abrQualityConfig));
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            TTVideoABRStrategy.initEngine(mPlayer, createTTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig));
             if (volcConfig.qualityConfig.userSelectedQuality != null) {
                 setABRAutoMode(false);
                 notifyTrackInfoReady(mediaSource);
@@ -804,20 +815,29 @@ class VolcPlayer implements PlayerAdapter {
             }
         } else if (isEnableStartupABR(volcConfig)) {
             notifyTrackInfoReady(mediaSource);
-            initStartupABR(mPlayer, mediaSource, new VolcQualityStrategy.Listener() {
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            final TTVideoABRStartupConfig startupConfig = createTTVideoABRStartupConfig(volcConfig);
+            startupConfig.enableSuperResolutionDowngrade = isEnableStartupABRSuperResolutionDowngrade(volcConfig);
+            startupConfig.mListener = new TTVideoABRStartupResolutionListener() {
                 @Override
-                public void onStartupTrackSelected(StartupTrackResult result) {
-                    Track selected = result.track;
+                public void onResolutionSelected(IVideoModel videoModel, Resolution resolution) {
+                    final IVideoInfo videoInfo = videoModel.getVideoInfo(resolution);
+                    Track selected = Mapper.findTrackWithVideoInfo(mediaSource, videoInfo);
                     if (selected == null) {
-                        selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY, trackType, tracks, mediaSource);
+                        selected = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PLAY,
+                                trackType,
+                                tracks,
+                                mediaSource);
                     }
+                    VolcPlayer.this.config(mediaSource, selected);
                     VolcPlayer.this.setSelectedTrack(trackType, selected);
                     if (mListener != null) {
                         mListener.onTrackWillChange(VolcPlayer.this, trackType, null, selected);
                     }
-                    VolcPlayer.this.config(mediaSource, selected);
                 }
-            });
+            };
+            TTVideoABRStrategy.initEngine(mPlayer, startupConfig);
         } else {
             notifyTrackInfoReady(mediaSource);
             final Track playTrack = selectPlayTrack(mediaSource);

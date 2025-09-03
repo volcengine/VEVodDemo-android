@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
 import com.bytedance.playerkit.player.cache.CacheKeyFactory;
-import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Quality;
 import com.bytedance.playerkit.player.source.Subtitle;
@@ -40,8 +39,6 @@ import com.bytedance.playerkit.utils.CollectionUtils;
 import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.abr.TTVideoABRConfig;
-import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.BareVideoInfo;
 import com.ss.ttvideoengine.model.BareVideoModel;
 import com.ss.ttvideoengine.model.IVideoInfo;
@@ -848,20 +845,6 @@ public class Mapper {
             }
         }
         return false;
-    }
-
-    @Nullable
-    public static TTVideoABRConfig mapABRQualityConfig2TTVideoABRConfig(@Nullable ABRQualityConfig abrQualityConfig) {
-        if (abrQualityConfig == null) return null;
-        TTVideoABRConfig abrConfig = new TTVideoABRConfig();
-        abrConfig.screenWidth =  abrQualityConfig.screenWidth;
-        abrConfig.screenHeight = abrQualityConfig.screenHeight;
-        abrConfig.displayWidth = abrQualityConfig.displayWidth;
-        abrConfig.displayHeight = abrQualityConfig.displayHeight;
-        abrConfig.defaultResolution = VolcQuality.quality2Resolution(abrQualityConfig.defaultQuality);
-        abrConfig.mobileMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.mobileMaxQuality);
-        abrConfig.wifiMaxResolution = VolcQuality.quality2Resolution(abrQualityConfig.wifiMaxQuality);
-        return abrConfig;
     }
 
     @Nullable

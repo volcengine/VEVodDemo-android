@@ -324,7 +324,7 @@ public class VideoSettings {
                         "短视频播放完成行为",
                         Option.STRATEGY_IMMEDIATELY,
                         Integer.class,
-                        0,
+                        1,
                         Arrays.asList(0, 1)), new SettingItem.ValueMapper() {
                     @Override
                     public String toString(Object value) {

@@ -18,10 +18,10 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.StartupTrackResult;
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.*;
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.createTTVideoABRConfig;
 import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableABR;
 import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableStartupABR;
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.selectStartupABR;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
@@ -40,6 +40,7 @@ import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
+import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.Getter;
 import com.bytedance.playerkit.utils.L;
@@ -52,10 +53,10 @@ import com.ss.ttvideoengine.Resolution;
 import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.abr.TTVideoABRConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStartupConfig;
 import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
 import com.ss.ttvideoengine.model.IVideoModel;
 import com.ss.ttvideoengine.model.VideoModel;
-import com.ss.ttvideoengine.selector.strategy.GearStrategy;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
 import com.ss.ttvideoengine.source.VideoModelSource;
@@ -214,16 +215,15 @@ public class VolcEngineStrategy {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         Track playTrack = null;
         if (isEnableABR(volcConfig) && Mapper.isSupportSmoothTrackSwitching(mediaSource, videoModel)) {
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
             Track userSelectedTrack = Mapper.findTrackWithQuality(mediaSource, volcConfig.qualityConfig.userSelectedQuality);
             if (userSelectedTrack != null) {
                 playTrack = userSelectedTrack;
                 L.d(VolcEngineStrategy.class, "selectTrack", "abr[user]", Track.dump(playTrack));
             } else {
-                Resolution resolution = null;
-                TTVideoABRConfig abrConfig = Mapper.mapABRQualityConfig2TTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig);
-                if (abrConfig != null) {
-                    resolution = TTVideoABRStrategy.preloadSelect(videoModel, abrConfig);
-                }
+                TTVideoABRConfig abrConfig = createTTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig);
+                Resolution resolution = TTVideoABRStrategy.preloadSelect(videoModel, abrConfig);
                 if (resolution != null) {
                     List<Track> tracks = mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource));
                     playTrack = Mapper.findTrackWithResolution(tracks, resolution);
@@ -231,11 +231,14 @@ public class VolcEngineStrategy {
                 L.d(VolcEngineStrategy.class, "selectTrack", "abr[auto]", Track.dump(playTrack), ABRQualityConfig.dump(volcConfig.qualityConfig.abrQualityConfig));
             }
         } else if (isEnableStartupABR(volcConfig)) {
-            StartupTrackResult result = selectStartupABR(
-                    GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
-                    mediaSource,
-                    videoModel);
-            playTrack = result.track;
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            final TTVideoABRStartupConfig startupConfig = createTTVideoABRStartupConfig(volcConfig);
+            Resolution resolution = TTVideoABRStrategy.preloadSelect(videoModel, startupConfig);
+            if (resolution != null) {
+                List<Track> tracks = mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource));
+                playTrack = Mapper.findTrackWithResolution(tracks, resolution);
+            }
             L.d(VolcEngineStrategy.class, "selectTrack", "abr[startup]", Track.dump(playTrack));
         }
         if (playTrack == null) {

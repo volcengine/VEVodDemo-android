@@ -63,7 +63,10 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
 
-    implementation "com.bytedanceapi:ttsdk-player_${project.ext.bytedance.ttsdkPlayerEdition}:${project.ext.bytedance.ttsdkVersion}"
+    implementation ("com.bytedanceapi:ttsdk-player_${project.ext.bytedance.ttsdkPlayerEdition}:${project.ext.bytedance.ttsdkVersion}-pom", {
+        exclude group: 'com.ss.ttm', module: 'ttvideoengine' // 移除engine 依赖
+    })
+    implementation(project(":ttvideoengine"))
     if (project.ext.bytedance.ttsdkPlayerEdition == "premium") {
         if (project.ext.bytedance.ttsdkPlayerExtensions.contains("super_resolution")) {
             // + super resolution sdk
