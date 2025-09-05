@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/10/11
+ * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.video.data.mock;
+package com.bytedance.volc.voddemo.mock.ad;
 
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
@@ -27,7 +27,7 @@ import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 
 import java.util.List;
-
+@Deprecated
 public class MockGetFeedStreamMultiItems implements GetFeedStreamApi {
     private final GetFeedStream mGetFeedStream;
     private final AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();

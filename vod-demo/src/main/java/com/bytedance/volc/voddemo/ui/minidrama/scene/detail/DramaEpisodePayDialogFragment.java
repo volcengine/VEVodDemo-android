@@ -38,8 +38,8 @@ import com.bytedance.volc.vod.scenekit.utils.UIUtils;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockGetEpisodes;
-import com.bytedance.volc.voddemo.ui.minidrama.data.mock.MockThirdPartPayService;
+import com.bytedance.volc.voddemo.mock.minidrama.MockGetEpisodes;
+import com.bytedance.volc.voddemo.mock.minidrama.MockThirdPartPayService;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodesApi;
 
 import java.util.Arrays;

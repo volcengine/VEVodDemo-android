@@ -24,7 +24,7 @@ import android.content.Context;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.ad.api.AdLoader;
-import com.bytedance.volc.voddemo.ui.ad.mock.MockAdLoader;
+import com.bytedance.volc.voddemo.mock.ad.MockAdLoader;
 import com.bytedance.volc.voddemo.ui.main.MainActivity;
 
 public class VodDemoApi {

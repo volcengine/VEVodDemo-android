@@ -31,7 +31,7 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.ui.ad.api.AdMapper;
-import com.bytedance.volc.voddemo.ui.ad.mock.MockShortVideoAdVideoView;
+import com.bytedance.volc.voddemo.mock.ad.MockShortVideoAdVideoView;
 
 import java.util.List;
 
