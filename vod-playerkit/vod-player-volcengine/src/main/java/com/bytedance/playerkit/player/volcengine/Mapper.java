@@ -546,11 +546,20 @@ public class Mapper {
 
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track == null) return null;
+
+        final List<String> urls = new ArrayList<>();
+        if (!TextUtils.isEmpty(track.getUrl())) {
+            urls.add(track.getUrl());
+        }
+        if (track.getBackupUrls() != null) {
+            urls.addAll(track.getBackupUrls());
+        }
+
         VolcConfig volcConfig = VolcConfig.get(mediaSource);
         DirectUrlSource.Builder builder = new DirectUrlSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .addItem(new DirectUrlSource.UrlItem.Builder()
-                        .setUrl(track.getUrl())
+                        .setUrls(urls.toArray(new String[0]))
                         .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
                         .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
                         .setPlayAuth(track.getEncryptedKey())
