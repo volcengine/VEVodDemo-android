@@ -25,13 +25,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.Player;
-import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.PlaybackEvent;
 import com.bytedance.playerkit.player.playback.VideoLayer;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
+import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 
 public class PlayerConfigLayer extends VideoLayer {
@@ -75,10 +75,25 @@ public class PlayerConfigLayer extends VideoLayer {
     private void syncConfigByScene(int scene) {
         final Player player = player();
         if (player == null) return;
+
         if (scene == PlayScene.SCENE_FULLSCREEN) {
             player.setLooping(false);
-        } else if (scene == PlayScene.SCENE_SHORT) {
+        }
+
+        // 短视频、短剧场景
+        if (scene == PlayScene.SCENE_SHORT) {
+            // 演示起播前设置循环播放
             player.setLooping(VideoSettings.intValue(VideoSettings.SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION) == 0 /* 0 循环播放 */);
+
+            // 演示起播前设置倍速
+            final VideoItem videoItem = VideoItem.get(dataSource());
+            if (videoItem != null) {
+                /** videoItem 不为 null，则不是广告 see {@link com.bytedance.volc.vod.scenekit.data.model.DrawADItem} */
+                final float speed = VideoSettings.floatValue(VideoSettings.SHORT_VIDEO_START_PLAYBACK_WITH_SPEED);
+                if (speed > 0) {
+                    player.setSpeed(speed);
+                }
+            }
         }
     }
 }

@@ -177,6 +177,15 @@ class VolcPlayer implements PlayerAdapter {
                 mPreRenderPlayer = true;
                 mStartWhenPrepared = false;
                 L.d(this, "constructor", "preRender", player, MediaSource.dump(mediaSource));
+
+                // sync state in preCreated VolcPlayer to this instance
+                final VolcPlayer volcPlayer = EngineParams.get(player).mPreCreatedPlayerInstance;
+                if (volcPlayer != null) {
+                    final PlaybackParams params = volcPlayer.mPlaybackParams;
+                    mPlaybackParams.setSpeed(params.getSpeed())
+                            .setPitch(params.getSpeed())
+                            .setAudioFallbackMode(params.getAudioFallbackMode());
+                }
             }
         }
         bind(player);
@@ -516,11 +525,6 @@ class VolcPlayer implements PlayerAdapter {
         final VolcPlayer player = this;
 
         if (prePlayer == null) return;
-
-        final PlaybackParams playbackParams = prePlayer.mPlaybackParams;
-        mPlaybackParams.setSpeed(playbackParams.getSpeed())
-                .setPitch(playbackParams.getPitch())
-                .setAudioFallbackMode(playbackParams.getAudioFallbackMode());
 
         mStrategySource = prePlayer.mStrategySource;
 

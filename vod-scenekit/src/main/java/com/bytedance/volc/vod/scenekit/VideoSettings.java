@@ -67,6 +67,7 @@ public class VideoSettings {
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
     public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
     public static final String SHORT_VIDEO_ENABLE_AD = "short_video_enable_ad";
+    public static final String SHORT_VIDEO_START_PLAYBACK_WITH_SPEED = "short_video_start_playback_with_speed";
 
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
     public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
@@ -340,6 +341,34 @@ public class VideoSettings {
                         Boolean.class,
                         Boolean.FALSE,
                         null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_SHORT_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_SHORT_VIDEO,
+                        SHORT_VIDEO_START_PLAYBACK_WITH_SPEED,
+                        "短视频起播开启倍速",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Float.class,
+                        -1f,
+                        Arrays.asList(-1f, 0.5f, 1f, 1.5f, 2f)), new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        final float action = (float) value;
+                        if (action == -1f) {
+                            return "关闭";
+                        } else if (action == 0.5f) {
+                            return "0.5 X";
+                        } else if (action == 1f) {
+                            return "1 X";
+                        } else if (action == 1.5f) {
+                            return "1.5 X";
+                        } else if (action == 2f) {
+                            return "2 X";
+                        }
+                        return null;
+                    }
+                }));
     }
 
     private static void createFeedVideoSettings(List<SettingItem> settings) {
