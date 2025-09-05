@@ -42,6 +42,7 @@ import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.playerkit.utils.event.Dispatcher;
 import com.bytedance.playerkit.utils.event.Event;
+import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.data.model.ItemType;
 import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.page.Book;
@@ -56,10 +57,11 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.mock.ad.MockShortVideoAdVideoView;
-import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.mock.minidrama.MockGetEpisodeRecommendMultiItems;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.shortvideo.ShortVideoAdInsertStrategy;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendMultiItemsApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
@@ -173,6 +175,13 @@ public class DramaRecommendVideoFragment extends BaseFragment {
         mSceneView.pageView().setViewHolderFactory(new RecommendDramaVideoViewHolderFactory());
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
+
+        // 广告插入逻辑
+        if (VideoSettings.booleanValue(VideoSettings.DRAMA_RECOMMEND_ENABLE_AD)) {
+            ShortVideoAdInsertStrategy insertStrategy = new ShortVideoAdInsertStrategy(mSceneView);
+            insertStrategy.startFetchAds();
+        }
+
         refresh();
     }
 

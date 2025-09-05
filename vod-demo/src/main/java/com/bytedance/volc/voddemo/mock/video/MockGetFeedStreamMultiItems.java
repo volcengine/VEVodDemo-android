@@ -16,21 +16,19 @@
  * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.mock.ad;
+package com.bytedance.volc.voddemo.mock.video;
 
 import com.bytedance.playerkit.utils.Asserts;
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
-import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.video.data.remote.GetFeedStream;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 
 import java.util.List;
+
 @Deprecated
 public class MockGetFeedStreamMultiItems implements GetFeedStreamApi {
     private final GetFeedStream mGetFeedStream;
-    private final AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();
 
     public MockGetFeedStreamMultiItems(String account) {
         mGetFeedStream = new GetFeedStream(account);
@@ -42,9 +40,6 @@ public class MockGetFeedStreamMultiItems implements GetFeedStreamApi {
             @Override
             public void onSuccess(List<Item> items) {
                 Asserts.checkMainThread();
-                if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_AD)) {
-                    mAdInjectStrategy.injectAd(pageIndex == 0, items);
-                }
                 callback.onSuccess(items);
             }
 

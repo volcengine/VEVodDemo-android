@@ -36,6 +36,8 @@ import java.util.List;
  */
 @Deprecated
 public class MockAdLoader implements AdLoader {
+
+    @Deprecated
     public static class Factory implements AdLoader.Factory {
         private final String mCodeId;
 
@@ -55,7 +57,7 @@ public class MockAdLoader implements AdLoader {
     private final String mCodeId;
     private boolean mCanceled;
 
-    public MockAdLoader(String codeId) {
+    private MockAdLoader(String codeId) {
         this.mMockADApi = new GetFeedStream(VideoSettings.stringValue(VideoSettings.AD_VIDEO_ACCOUNT_ID));
         this.mCodeId = codeId;
     }

@@ -60,10 +60,11 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.vod.scenekit.utils.OrientationHelper;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.mock.ad.MockShortVideoAdVideoView;
+import com.bytedance.volc.voddemo.mock.video.MockGetFeedStreamMultiItems;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.shortvideo.ShortVideoAdInsertStrategy;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
-import com.bytedance.volc.voddemo.mock.ad.MockGetFeedStreamMultiItems;
 import com.bytedance.volc.voddemo.ui.video.data.remote.api.GetFeedStreamApi;
 import com.bytedance.volc.voddemo.ui.video.scene.VideoActivity;
 import com.bytedance.volc.voddemo.ui.video.scene.fullscreen.FullScreenVideoFragment;
@@ -151,7 +152,11 @@ public class ShortVideoFragment extends BaseFragment {
         mSceneView.pageView().setViewHolderFactory(new ShortVideoAdViewHolderFactory());
         mSceneView.setOnRefreshListener(this::refresh);
         mSceneView.setOnLoadMoreListener(this::loadMore);
-
+        // 广告插入逻辑
+        if (VideoSettings.booleanValue(VideoSettings.SHORT_VIDEO_ENABLE_AD)) {
+            ShortVideoAdInsertStrategy adInsertStrategy = new ShortVideoAdInsertStrategy(mSceneView);
+            adInsertStrategy.startFetchAds();
+        }
         refresh();
         registerBroadcast();
     }

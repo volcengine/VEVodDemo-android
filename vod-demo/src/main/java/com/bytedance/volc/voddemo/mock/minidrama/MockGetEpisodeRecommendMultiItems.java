@@ -18,11 +18,9 @@
 
 package com.bytedance.volc.voddemo.mock.minidrama;
 
-import com.bytedance.volc.vod.scenekit.VideoSettings;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
-import com.bytedance.volc.voddemo.ui.ad.api.AdInjectStrategy;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetEpisodeRecommend;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendApi;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetEpisodeRecommendMultiItemsApi;
@@ -32,7 +30,6 @@ import java.util.List;
 @Deprecated
 public class MockGetEpisodeRecommendMultiItems implements GetEpisodeRecommendMultiItemsApi {
     private final GetEpisodeRecommendApi mGetEpisodeRecommend = new GetEpisodeRecommend();
-    private final AdInjectStrategy mAdInjectStrategy = new AdInjectStrategy();
 
     @Override
     public void getRecommendEpisodeVideoItems(int pageIndex, int pageSize, RemoteApi.Callback<List<Item>> callback) {
@@ -40,9 +37,6 @@ public class MockGetEpisodeRecommendMultiItems implements GetEpisodeRecommendMul
             @Override
             public void onSuccess(List<EpisodeVideo> result) {
                 List<Item> items = EpisodeVideo.toItems(result);
-                if (AdInjectStrategy.isEnabled() && VideoSettings.booleanValue(VideoSettings.DRAMA_RECOMMEND_ENABLE_AD)) {
-                    mAdInjectStrategy.injectAd(pageIndex == 0, items);
-                }
                 callback.onSuccess(items);
             }
 

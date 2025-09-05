@@ -133,6 +133,8 @@ public class L {
     public static String obj2String(Object o) {
         if (o == null) {
             return "null";
+        } else if (o instanceof Enum<?>) {
+            return String.valueOf(o);
         } else if (o instanceof String) {
             return (String) o;
         } else if (o instanceof Boolean) {

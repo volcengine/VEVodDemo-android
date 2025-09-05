@@ -502,7 +502,7 @@ public class VideoSettings {
                         "广告预获取条数",
                         Option.STRATEGY_RESTART_APP,
                         Integer.class,
-                        10,
+                        2,
                         null)));
     }
 

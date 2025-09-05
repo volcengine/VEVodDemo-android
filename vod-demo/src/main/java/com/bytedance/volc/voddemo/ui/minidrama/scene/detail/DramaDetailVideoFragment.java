@@ -72,10 +72,11 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.ViewHolder;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
 import com.bytedance.volc.voddemo.impl.R;
-import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 import com.bytedance.volc.voddemo.mock.ad.MockShortVideoAdVideoView;
-import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.mock.minidrama.MockGetDramaDetailMultiItems;
+import com.bytedance.volc.voddemo.ui.ad.api.Ad;
+import com.bytedance.volc.voddemo.ui.ad.shortvideo.ShortVideoAdInsertStrategy;
+import com.bytedance.volc.voddemo.ui.minidrama.data.business.model.DramaItem;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailMultiItemsApi;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoInput;
 import com.bytedance.volc.voddemo.ui.minidrama.scene.detail.DramaDetailVideoActivityResultContract.DramaDetailVideoOutput;
@@ -306,6 +307,13 @@ public class DramaDetailVideoFragment extends BaseFragment {
             DramaItem dramaItem = mDramaItems.get(mCurrentDramaIndex);
             showEpisodeSelectDialog(dramaItem);
         });
+
+        // 广告插入逻辑
+        if (VideoSettings.booleanValue(VideoSettings.DRAMA_DETAIL_ENABLE_AD)) {
+            ShortVideoAdInsertStrategy insertStrategy = new ShortVideoAdInsertStrategy(mSceneView);
+            insertStrategy.startFetchAds();
+        }
+
         initData();
     }
 
