@@ -81,7 +81,7 @@ public final class ShortVideoAdInsertStrategy {
                 } else {
                     direction = Direction.UP;
                 }
-                L.d(ShortVideoAdInsertStrategy.class, "onPageSelected", "IDLE", mCurrentPosition, position, direction);
+                L.d(ShortVideoAdInsertStrategy.class, "onPageSelected", mCurrentPosition, position, direction);
                 insertAds(direction);
                 mCurrentPosition = position;
             }
@@ -122,16 +122,14 @@ public final class ShortVideoAdInsertStrategy {
         L.d(this, "injectAds", L.string(insertionIndexes));
 
         // 2. 执行插入操作
-        int insertedCount = 0; // 插入计数，用于计算偏移量
         for (int originalIndex : insertionIndexes) {
             final DrawADItem adItem = popAdFromCache();
             if (adItem == null) {
                 // 广告缓存用完
                 break;
             }
-            int insertIndex = originalIndex + insertedCount;
+            int insertIndex = originalIndex;
             mSceneView.pageView().insertItem(insertIndex, adItem);
-            insertedCount++;
             L.d(this, "injectAds", direction, insertIndex, ItemHelper.dump(adItem));
         }
     }
