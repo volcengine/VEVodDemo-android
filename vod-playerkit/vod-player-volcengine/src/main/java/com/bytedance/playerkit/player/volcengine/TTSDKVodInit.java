@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import com.bytedance.applog.IAppLogInstance;
 import com.bytedance.playerkit.utils.L;
 import com.pandora.common.applog.AppLogWrapper;
+import com.pandora.common.applog.VodAppLog;
 import com.pandora.common.env.Env;
 import com.pandora.common.env.config.Config;
 import com.pandora.common.env.config.VodConfig;
@@ -151,7 +152,11 @@ class TTSDKVodInit {
                 @Override
                 public void run() {
                     Env.openAppLog(true);
-                    Env.initAppLog(Env.getConfig());
+                    // 1.48.1 TTSDK Env.initAppLog(config) method was removed
+                    Config config = Env.getConfig();
+                    if (config != null) {
+                        VodAppLog.getInstance().init(Env.getConfig(), config().appInfo.enableAppLogSecurityApi || config.isSecurityDeviceId());
+                    }
                 }
             }));
         }
