@@ -105,22 +105,26 @@ public final class AdLoadStrategy {
             mAdLoader.load(AdLoader.TYPE_PRELOAD, count, new AdLoader.Callback() {
                 @Override
                 public void onSuccess(List<Ad> ads) {
-                    mErrorCount = 0;
-                    mLoading = false;
-                    mAds.addAll(ads);
-                    L.d(this, "schedule", "add", ads.size());
-                    postSchedule();
+                    synchronized (AdLoadStrategy.this) {
+                        mErrorCount = 0;
+                        mLoading = false;
+                        mAds.addAll(ads);
+                        L.d(this, "schedule", "add", ads.size());
+                        postSchedule();
+                    }
                 }
 
                 @Override
                 public void onError(Exception e) {
-                    mLoading = false;
-                    mErrorCount++;
-                    if (mErrorCount < ERROR_RETRY_MAX_COUNT) {
-                        L.d(this, "schedule", "error", e, "retry", mErrorCount + "/" + ERROR_RETRY_MAX_COUNT);
-                        postSchedule();
-                    } else {
-                        L.d(this, "schedule", "error", e, "retry", "end");
+                    synchronized (AdLoadStrategy.this) {
+                        mLoading = false;
+                        mErrorCount++;
+                        if (mErrorCount < ERROR_RETRY_MAX_COUNT) {
+                            L.d(this, "schedule", "error", e, "retry", mErrorCount + "/" + ERROR_RETRY_MAX_COUNT);
+                            postSchedule();
+                        } else {
+                            L.d(this, "schedule", "error", e, "retry", "end");
+                        }
                     }
                 }
             });
