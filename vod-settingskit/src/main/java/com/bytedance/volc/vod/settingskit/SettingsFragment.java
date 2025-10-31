@@ -324,7 +324,7 @@ public class SettingsFragment extends Fragment {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (item.option.strategy == Option.STRATEGY_RESTART_APP) {
-                            showRestartAppTakeEffectDialog(buttonView.getContext(), item.option.title, value + " -> " + isChecked + ". 重新启动 App 生效");
+                            showRestartAppTakeEffectDialog(buttonView.getContext(), item.option.title, value + " -> " + isChecked + "\n重新启动 App 生效");
                         }
                         item.option.userValues().saveValue(item.option, isChecked);
                         if (item.listener != null) {
@@ -364,12 +364,12 @@ public class SettingsFragment extends Fragment {
                 });
             }
 
-            public static void showSelectableItemsDialog(Context context, SettingItem settingItem, RecyclerView.ViewHolder holder) {
-                Option option = settingItem.option;
+            public static void showSelectableItemsDialog(Context context, SettingItem item, RecyclerView.ViewHolder holder) {
+                Option option = item.option;
                 int index = option.candidates.indexOf(option.value());
                 String[] items = new String[option.candidates.size()];
                 for (int i = 0; i < items.length; i++) {
-                    items[i] = settingItem.mapper.toString(option.candidates.get(i));
+                    items[i] = item.mapper.toString(option.candidates.get(i));
                 }
                 new AlertDialog.Builder(context)
                         .setTitle(option.title)
@@ -378,6 +378,15 @@ public class SettingsFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Object o = option.candidates.get(which);
+                                if (item.option.strategy == Option.STRATEGY_RESTART_APP) {
+                                    Object from = option.value();
+                                    Object to = o;
+                                    if (item.mapper != null) {
+                                        from = item.mapper.toString(from);
+                                        to = item.mapper.toString(to);
+                                    }
+                                    showRestartAppTakeEffectDialog(context, item.option.title, from + " -> " + to + "\n重新启动 App 生效");
+                                }
                                 option.userValues().saveValue(option, o);
                                 RecyclerView.Adapter<?> adapter = holder.getBindingAdapter();
                                 if (adapter != null) {
@@ -435,6 +444,9 @@ public class SettingsFragment extends Fragment {
                             public void onClick(DialogInterface dialog, int which) {
                                 Editable value = editText.getText();
                                 if (!TextUtils.isEmpty(value)) {
+                                    if (item.option.strategy == Option.STRATEGY_RESTART_APP) {
+                                        showRestartAppTakeEffectDialog(context, item.option.title, item.option.value() + " -> " + value + "\n重新启动 App 生效");
+                                    }
                                     item.option.userValues().saveValue(item.option, value);
                                     RecyclerView.Adapter<?> adapter = holder.getBindingAdapter();
                                     if (adapter != null) {
