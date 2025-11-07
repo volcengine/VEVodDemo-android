@@ -114,9 +114,6 @@ public class Option {
     }
 
     public <T> T value(Class<T> clazz) {
-        if (this.clazz != clazz) {
-            throw new IllegalArgumentException(this.clazz + " is not compare with " + clazz);
-        }
         if (value == null || strategy == STRATEGY_IMMEDIATELY) {
             T userValue = userValue(clazz);
             if (userValue != null) {
@@ -138,18 +135,13 @@ public class Option {
     }
 
     public <T> T userValue(Class<T> clazz) {
-        if (this.clazz != clazz) {
-            throw new IllegalArgumentException(this.clazz + " is not compare with " + clazz);
-        }
         return clazz.cast(userValue());
     }
 
     public <T> T remoteValue(Class<T> clazz) {
-        if (this.clazz != clazz) {
-            throw new IllegalArgumentException(this.clazz + " is not compare with " + clazz);
-        }
         return clazz.cast(remoteValue());
     }
+
 
     public final int valueFrom() {
         return valueFrom;
