@@ -16,6 +16,8 @@ build-publish
 .idea/migrations.xml
 .idea/MarsCodeWorkspaceAppSettings.xml
 .idea/other.xml
-
+.idea/AndroidProjectSystem.xml
+.idea/CodeverseWorkspaceAppSettings.xml
+.idea/runConfigurations.xml
 
 .dev
