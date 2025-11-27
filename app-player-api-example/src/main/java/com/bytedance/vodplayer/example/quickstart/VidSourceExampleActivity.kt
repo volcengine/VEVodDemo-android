@@ -186,16 +186,16 @@ open class VidSourceExampleActivity : BaseActivity() {
             ).apply {
                 setOnClickListener {
                     setResolution(resolution)
-                    mResolutionActionLayout!!.children.forEachIndexed { index2, view ->
+                    mResolutionActionLayout?.children?.forEachIndexed { index2, view ->
                         view.isSelected = index2 == index1
                     }
                 }
-                mResolutionActionLayout!!.addView(this)
+                mResolutionActionLayout?.addView(this)
             }
         }
     }
 
     open fun resolveResolutionText(resolution: Resolution?): String {
-        return resolution!!.toString(VideoRef.TYPE_VIDEO)
+        return resolution?.toString(VideoRef.TYPE_VIDEO) ?: "Unknown Resolution"
     }
 }

@@ -842,6 +842,8 @@ public class Mapper {
                         return VolcConfig.get(source).enableMP4SeamlessSwitch;
                     }
                     break;
+                default:
+                    break;
             }
         }
         return false;

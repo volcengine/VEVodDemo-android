@@ -19,9 +19,6 @@
 package com.bytedance.playerkit.player.volcengine;
 
 import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.*;
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.createTTVideoABRConfig;
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableABR;
-import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.isEnableStartupABR;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
