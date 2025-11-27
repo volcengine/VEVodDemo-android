@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bytedance.playerkit.player.adapter.PlayerAdapter;
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.event.ActionPause;
 import com.bytedance.playerkit.player.event.ActionPrepare;
 import com.bytedance.playerkit.player.event.ActionRelease;
@@ -620,15 +621,6 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Nullable
     @Override
-    public Track getPendingTrack(@TrackType int trackType) {
-        if (checkIsRelease("getPendingTrack")) return null;
-
-        Asserts.checkOneOf(trackType, TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO);
-        return mPlayer.getPendingTrack(trackType);
-    }
-
-    @Nullable
-    @Override
     public Track getSelectedTrack(@TrackType int trackType) {
         if (checkIsRelease("getSelectedTrack")) return null;
 
@@ -647,8 +639,10 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Override
     public void selectTrack(@Nullable Track track) {
-        if (track == null) return; // TODO AUTO
-        selectTrack(track.getTrackType(), track);
+        final MediaSource mediaSource = getDataSource();
+        if (mediaSource == null) return;
+
+        selectTrack(MediaSource.mediaType2TrackType(mediaSource), track);
     }
 
     @Override
@@ -658,11 +652,10 @@ public class AVPlayer extends ExtraObject implements Player {
 
         Asserts.checkOneOf(trackType, TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO);
         final Track selected = getSelectedTrack(trackType);
-        final Track target = track;
-        L.d(this, "selectTrack", mapTrackType(trackType), "selected: " +
-                Track.dump(selected), "target: " + Track.dump(target));
-        if (target == null || Objects.equals(target, selected)) return;
-        mPlayer.selectTrack(trackType, target);
+        L.d(this, "selectTrack", mapTrackType(trackType),
+                "selected: " + Track.dump(selected),
+                "target: " + Track.dump(track));
+        mPlayer.selectTrack(trackType, track);
     }
 
     @Nullable
@@ -688,14 +681,30 @@ public class AVPlayer extends ExtraObject implements Player {
 
     @Nullable
     @Override
-    public Subtitle getPendingSubtitle() {
-        return mPlayer.getPendingSubtitle();
+    public Subtitle getCurrentSubtitle() {
+        return mPlayer.getCurrentSubtitle();
+    }
+
+    @Override
+    public void setABRQualityConfig(@NonNull ABRQualityConfig abrQualityConfig) {
+        L.d(this,"setABRQualityConfig", ABRQualityConfig.dump(abrQualityConfig));
+        mPlayer.setABRQualityConfig(abrQualityConfig);
     }
 
     @Nullable
     @Override
-    public Subtitle getCurrentSubtitle() {
-        return mPlayer.getCurrentSubtitle();
+    public ABRQualityConfig getABRQualityConfig() {
+        return mPlayer.getABRQualityConfig();
+    }
+
+    @Override
+    public void selectTrackAuto() {
+        selectTrack(null);
+    }
+
+    @Override
+    public boolean isABRAutoMode() {
+        return mPlayer.isABRAutoMode();
     }
 
     @Override
@@ -997,7 +1006,7 @@ public class AVPlayer extends ExtraObject implements Player {
     @Override
     public void setSubtitleEnabled(boolean enabled) {
         if (checkIsRelease("setSubtitleEnabled")) return;
-
+        L.d(this, "setSubtitleEnabled", enabled);
         mPlayer.setSubtitleEnabled(enabled);
     }
 

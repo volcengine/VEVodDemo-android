@@ -30,4 +30,6 @@
     <string name="vevod_api_example_subtitle_language_en">English</string>
     <string name="vevod_api_example_debugtool">Debug Example</string>
     <string name="vevod_api_example_basic_playback_set_resolution">Set Resoltuion</string>
+    <string name="vevod_api_example_abr">ABR Playback Example</string>
+    <string name="vevod_api_example_vid_abr_playback_abr_config">Set ABRConfig by Video Scene</string>
 </resources>

@@ -44,6 +44,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LoadingLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayCompleteLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.VideoViewFactory;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.pipvideo.PipVideoScene;
@@ -306,6 +307,7 @@ public class PipVideoController {
         public VideoView createVideoView(ViewGroup parent, @Nullable Object o) {
             VideoView videoView = new VideoView(parent.getContext());
             VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
+            layerHost.addLayer(new PlayerConfigLayer());
             layerHost.addLayer(new PipVideoGestureLayer());
             layerHost.addLayer(new PipVideoActonLayer());
             layerHost.addLayer(new LoadingLayer());

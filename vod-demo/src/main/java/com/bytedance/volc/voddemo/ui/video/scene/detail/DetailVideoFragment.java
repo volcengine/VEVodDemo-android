@@ -57,6 +57,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayCompleteLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayPauseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SyncStartTimeLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.TimeProgressBarLayer;
@@ -284,6 +285,7 @@ public class DetailVideoFragment extends BaseFragment {
     private VideoView createVideoView(Context context) {
         VideoView videoView = new VideoView(context);
         VideoLayerHost layerHost = new VideoLayerHost(context);
+        layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new GestureLayer());
         layerHost.addLayer(new FullScreenLayer());
         layerHost.addLayer(new SubtitleLayer());

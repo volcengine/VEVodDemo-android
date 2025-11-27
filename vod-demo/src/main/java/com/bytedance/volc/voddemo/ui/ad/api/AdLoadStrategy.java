@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AdLoadStrategy {
+    private static final int ERROR_RETRY_MAX_COUNT = 3;
+
     private final int mPrefetchAdMaxCount;
     private final List<Ad> mAds = new ArrayList<>();
     private final Handler mHandler = new Handler();
@@ -41,10 +43,16 @@ public final class AdLoadStrategy {
     private boolean mStarted;
     private boolean mLoading;
 
+    private int mErrorCount;
+
     public AdLoadStrategy(int maxCount,
                           AdLoader.Factory factory) {
         this.mPrefetchAdMaxCount = maxCount;
         this.mAdLoader = factory.create();
+    }
+
+    public boolean isEmpty() {
+        return mAds.isEmpty();
     }
 
     @Nullable
@@ -77,6 +85,8 @@ public final class AdLoadStrategy {
     }
 
     private synchronized void postSchedule() {
+        if (!mStarted) return;
+
         mHandler.removeCallbacks(mRunnable);
         mHandler.post(mRunnable);
     }
@@ -95,17 +105,27 @@ public final class AdLoadStrategy {
             mAdLoader.load(AdLoader.TYPE_PRELOAD, count, new AdLoader.Callback() {
                 @Override
                 public void onSuccess(List<Ad> ads) {
-                    mLoading = false;
-                    mAds.addAll(ads);
-                    L.d(this, "schedule", "add", ads.size());
-                    postSchedule();
+                    synchronized (AdLoadStrategy.this) {
+                        mErrorCount = 0;
+                        mLoading = false;
+                        mAds.addAll(ads);
+                        L.d(this, "schedule", "add", ads.size());
+                        postSchedule();
+                    }
                 }
 
                 @Override
                 public void onError(Exception e) {
-                    mLoading = false;
-                    L.d(this, "schedule", "error", e);
-                    postSchedule();
+                    synchronized (AdLoadStrategy.this) {
+                        mLoading = false;
+                        mErrorCount++;
+                        if (mErrorCount < ERROR_RETRY_MAX_COUNT) {
+                            L.d(this, "schedule", "error", e, "retry", mErrorCount + "/" + ERROR_RETRY_MAX_COUNT);
+                            postSchedule();
+                        } else {
+                            L.d(this, "schedule", "error", e, "retry", "end");
+                        }
+                    }
                 }
             });
         } else {

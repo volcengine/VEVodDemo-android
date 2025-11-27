@@ -218,19 +218,19 @@ public class Quality implements Serializable {
         return sb.toString();
     }
 
-    public static String dump(Quality quality) {
+    public static String dump(Quality quality, boolean hash) {
         if (!L.ENABLE_LOG) return null;
 
         if (quality == null) return null;
-        return quality.dump(true);
+        return quality.dump(hash);
     }
 
-    public static String dump(List<Quality> qualities) {
+    public static String dump(List<Quality> qualities, boolean hash) {
         if (!L.ENABLE_LOG) return null;
 
         StringBuilder sb = new StringBuilder();
         for (Quality quality : qualities) {
-            sb.append(quality.dump(true)).append(", ");
+            sb.append(quality.dump(hash)).append(", ");
         }
         return sb.toString();
     }

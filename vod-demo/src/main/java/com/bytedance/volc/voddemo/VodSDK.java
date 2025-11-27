@@ -39,6 +39,7 @@ import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
+import com.bytedance.playerkit.player.volcengine.VolcQualityConfig;
 import com.bytedance.playerkit.player.volcengine.VolcSubtitleSelector;
 import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.L;
@@ -157,14 +158,16 @@ public class VodSDK {
             @Override
             public void updateVolcConfig(MediaSource mediaSource) {
                 VolcConfig config = VolcConfig.get(mediaSource);
-                if (config.qualityConfig == null) return;
-                if (!config.qualityConfig.enableStartupABR) return;
-
-                final int qualityRes = VideoQuality.getUserSelectedQualityRes(mediaSource);
-                if (qualityRes <= 0) {
-                    config.qualityConfig.userSelectedQuality = null;
-                } else {
-                    config.qualityConfig.userSelectedQuality = VolcQuality.quality(qualityRes);
+                if (config.qualityConfig != null) {
+                    if (config.qualityConfig.qualityMode == VolcQualityConfig.QUALITY_MODE_ABR ||
+                            config.qualityConfig.qualityMode == VolcQualityConfig.QUALITY_MODE_STARTUP_ABR) {
+                        final int qualityRes = VideoQuality.getUserSelectedQualityRes(mediaSource);
+                        if (qualityRes <= 0) {
+                            config.qualityConfig.userSelectedQuality = null;
+                        } else {
+                            config.qualityConfig.userSelectedQuality = VolcQuality.quality(qualityRes);
+                        }
+                    }
                 }
             }
         };

@@ -27,5 +27,6 @@ data class VideoItem(
     val subtitleAuthToken: String,
     var videoUrl: String,
     val subtitleModel: String,
+    val videoModel: String? = null,
     val coverUrl: String
 )

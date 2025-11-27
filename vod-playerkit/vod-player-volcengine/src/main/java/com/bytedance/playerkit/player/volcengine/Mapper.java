@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class Mapper {
@@ -546,11 +547,20 @@ public class Mapper {
 
     public static DirectUrlSource mediaSource2DirectUrlSource(MediaSource mediaSource, Track track, CacheKeyFactory cacheKeyFactory) {
         if (track == null) return null;
+
+        final List<String> urls = new ArrayList<>();
+        if (!TextUtils.isEmpty(track.getUrl())) {
+            urls.add(track.getUrl());
+        }
+        if (track.getBackupUrls() != null) {
+            urls.addAll(track.getBackupUrls());
+        }
+
         VolcConfig volcConfig = VolcConfig.get(mediaSource);
         DirectUrlSource.Builder builder = new DirectUrlSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .addItem(new DirectUrlSource.UrlItem.Builder()
-                        .setUrl(track.getUrl())
+                        .setUrls(urls.toArray(new String[0]))
                         .setCacheKey(cacheKeyFactory.generateCacheKey(mediaSource, track))
                         .setEncodeType(Mapper.trackEncodeType2VideoModelEncodeType(track.getEncoderType()))
                         .setPlayAuth(track.getEncryptedKey())
@@ -572,13 +582,15 @@ public class Mapper {
         VidPlayAuthTokenSource.Builder builder = new VidPlayAuthTokenSource.Builder()
                 .setVid(mediaSource.getMediaId())
                 .setPlayAuthToken(mediaSource.getPlayAuthToken());
-
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         if (volcConfig.codecStrategyType != VolcConfig.CODEC_STRATEGY_DISABLE) {
             builder.setCodecStrategy(volcConfig.codecStrategyType);
         } else {
             final String encodeType = trackEncodeType2VideoModelEncodeType(volcConfig.sourceEncodeType);
             builder.setEncodeType(encodeType);
+        }
+        if (volcConfig.enableSubtitle && volcConfig.enableSubtitlePreloadStrategy) {
+            builder.setSubtitleAuthToken(mediaSource.getSubtitleAuthToken());
         }
         VidPlayAuthTokenSource strategySource = builder.setTag(mediaSource).build();
         return strategySource;
@@ -661,18 +673,23 @@ public class Mapper {
         Arrays.sort(resolutions);
         for (Resolution r : resolutions) {
             VideoInfo info = videoModel.getVideoInfo(r);
-            resolutionInfo.append(r).append("[")
-                    .append(info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE))
-                    .append("bps")
-                    .append(" ")
-                    .append(TTVideoEngine.getCacheFileSize(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH)))
-                    .append("/")
-                    .append(info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE))
-                    .append("B")
-                    .append("]")
+            resolutionInfo.append(dumpResolutionLog(info))
                     .append(",");
         }
         return resolutionInfo.toString();
+    }
+
+    @NonNull
+    private static String dumpResolutionLog(VideoInfo info) {
+        return info.getResolution() + "[" +
+                info.getValueInt(VideoInfo.VALUE_VIDEO_INFO_BITRATE) +
+                "bps" +
+                " " +
+                TTVideoEngine.getCacheFileSize(info.getValueStr(VideoInfo.VALUE_VIDEO_INFO_FILE_HASH)) +
+                "/" +
+                info.getValueLong(VideoInfo.VALUE_VIDEO_INFO_SIZE) +
+                "B" +
+                "]";
     }
 
     public static List<Subtitle> subtitleModelString2Subtitles(String subtitleModelString) {
@@ -804,5 +821,46 @@ public class Mapper {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static boolean isSupportSmoothTrackSwitching(MediaSource source, IVideoModel videoModel) {
+        final int contentType = source.getMediaProtocol();
+        if (videoModel != null) {
+            switch (contentType) {
+                case MediaSource.MEDIA_PROTOCOL_DASH:
+                    if (videoModel.isSupportBash()) {
+                        return VolcConfig.get(source).enableDash;
+                    }
+                    break;
+                case MediaSource.MEDIA_PROTOCOL_HLS:
+                    if (videoModel.isSupportHLSSeamlessSwitch()) {
+                        return VolcConfig.get(source).enableHlsSeamlessSwitch;
+                    }
+                    break;
+                case MediaSource.MEDIA_PROTOCOL_DEFAULT:
+                    if (videoModel.isSupportBash()) {
+                        return VolcConfig.get(source).enableMP4SeamlessSwitch;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    public static Track findTrackWithQuality(@NonNull final MediaSource mediaSource, @Nullable Quality quality) {
+        if (quality == null) return null;
+        List<Track> tracks  = mediaSource.getTracks();
+        if (tracks == null) {
+            return null;
+        }
+        for (Track track : tracks) {
+            if (Objects.equals(track.getQuality(), quality)) {
+                return track;
+            }
+        }
+        return null;
     }
 }

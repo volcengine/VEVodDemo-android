@@ -67,6 +67,7 @@ public class VideoSettings {
     public static final String SHORT_VIDEO_ENABLE_IMAGE_COVER = "short_video_enable_image_cover";
     public static final String SHORT_VIDEO_PLAYBACK_COMPLETE_ACTION = "short_video_playback_complete_action";
     public static final String SHORT_VIDEO_ENABLE_AD = "short_video_enable_ad";
+    public static final String SHORT_VIDEO_START_PLAYBACK_WITH_SPEED = "short_video_start_playback_with_speed";
 
     public static final String FEED_VIDEO_SCENE_ACCOUNT_ID = "feed_video_scene_account_id";
     public static final String FEED_VIDEO_ENABLE_PRELOAD = "feed_video_enable_preload";
@@ -92,7 +93,8 @@ public class VideoSettings {
     public static final String INIT_ENABLE_ASSERTS = "init_enable_asserts";
     public static final String INIT_ENABLE_VOD_SDK_ASYNC_INIT = "init_vod_sdk_async_init";
 
-    public static final String QUALITY_ENABLE_STARTUP_ABR = "quality_enable_startup_abr";
+    public static final String QUALITY_ENABLE_ABR = "quality_enable_abr";
+
     public static final String QUALITY_VIDEO_QUALITY_USER_SELECTED = "quality_video_quality_user_selected";
 
     public static final String SUBTITLE_ENABLE = "subtitle_enable";
@@ -147,6 +149,13 @@ public class VideoSettings {
         public static final int SOURCE_TYPE_URL = MediaSource.SOURCE_TYPE_URL;
         public static final int SOURCE_TYPE_VID = MediaSource.SOURCE_TYPE_ID;
         public static final int SOURCE_TYPE_MODEL = MediaSource.SOURCE_TYPE_MODEL;
+    }
+
+    public static class ABRType {
+        public static final int ABR_TYPE_DISABLED = 0;
+        public static final int ABR_TYPE_STARTUP_ABR = 1;
+        public static final int ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE = 2;
+        public static final int ABR_TYPE_ABR = 3;
     }
 
     public static void init(Context context, @Nullable SettingItem.OnEventListener eventListener) {
@@ -315,7 +324,7 @@ public class VideoSettings {
                         "短视频播放完成行为",
                         Option.STRATEGY_IMMEDIATELY,
                         Integer.class,
-                        0,
+                        1,
                         Arrays.asList(0, 1)), new SettingItem.ValueMapper() {
                     @Override
                     public String toString(Object value) {
@@ -340,6 +349,34 @@ public class VideoSettings {
                         Boolean.class,
                         Boolean.FALSE,
                         null)));
+
+        settings.add(SettingItem.createOptionItem(CATEGORY_SHORT_VIDEO,
+                new Option(
+                        Option.TYPE_SELECTABLE_ITEMS,
+                        CATEGORY_SHORT_VIDEO,
+                        SHORT_VIDEO_START_PLAYBACK_WITH_SPEED,
+                        "短视频起播开启倍速",
+                        Option.STRATEGY_IMMEDIATELY,
+                        Float.class,
+                        -1f,
+                        Arrays.asList(-1f, 0.5f, 1f, 1.5f, 2f)), new SettingItem.ValueMapper() {
+                    @Override
+                    public String toString(Object value) {
+                        final float action = (float) value;
+                        if (action == -1f) {
+                            return "关闭";
+                        } else if (action == 0.5f) {
+                            return "0.5 X";
+                        } else if (action == 1f) {
+                            return "1 X";
+                        } else if (action == 1.5f) {
+                            return "1.5 X";
+                        } else if (action == 2f) {
+                            return "2 X";
+                        }
+                        return null;
+                    }
+                }));
     }
 
     private static void createFeedVideoSettings(List<SettingItem> settings) {
@@ -473,7 +510,7 @@ public class VideoSettings {
                         "广告预获取条数",
                         Option.STRATEGY_RESTART_APP,
                         Integer.class,
-                        10,
+                        2,
                         null)));
     }
 
@@ -483,21 +520,26 @@ public class VideoSettings {
                 new Option(
                         Option.TYPE_SELECTABLE_ITEMS,
                         CATEGORY_QUALITY,
-                        QUALITY_ENABLE_STARTUP_ABR,
-                        "开启 ABR 起播选档",
+                        QUALITY_ENABLE_ABR,
+                        "开启 ABR",
                         Option.STRATEGY_IMMEDIATELY,
                         Integer.class,
                         0,
-                        Arrays.asList(0, 1, 2)), new SettingItem.ValueMapper() {
+                        Arrays.asList(ABRType.ABR_TYPE_DISABLED,
+                                ABRType.ABR_TYPE_STARTUP_ABR,
+                                ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE,
+                                ABRType.ABR_TYPE_ABR)), new SettingItem.ValueMapper() {
                     @Override
                     public String toString(Object value) {
                         final int type = (int) value;
                         switch (type) {
-                            case 1:
+                            case ABRType.ABR_TYPE_STARTUP_ABR:
                                 return "ABR 起播选档";
-                            case 2:
+                            case ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE:
                                 return "ABR 起播选档 + 超分降档";
-                            case 0:
+                            case ABRType.ABR_TYPE_ABR:
+                                return "ABR";
+                            case ABRType.ABR_TYPE_DISABLED:
                             default:
                                 return "关闭";
                         }

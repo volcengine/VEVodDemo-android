@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/10/18
+ * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.ad.mock;
+package com.bytedance.volc.voddemo.mock.ad;
 
 import com.bytedance.playerkit.utils.L;
 import com.bytedance.volc.vod.scenekit.VideoSettings;
@@ -36,6 +36,8 @@ import java.util.List;
  */
 @Deprecated
 public class MockAdLoader implements AdLoader {
+
+    @Deprecated
     public static class Factory implements AdLoader.Factory {
         private final String mCodeId;
 
@@ -55,7 +57,7 @@ public class MockAdLoader implements AdLoader {
     private final String mCodeId;
     private boolean mCanceled;
 
-    public MockAdLoader(String codeId) {
+    private MockAdLoader(String codeId) {
         this.mMockADApi = new GetFeedStream(VideoSettings.stringValue(VideoSettings.AD_VIDEO_ACCOUNT_ID));
         this.mCodeId = codeId;
     }

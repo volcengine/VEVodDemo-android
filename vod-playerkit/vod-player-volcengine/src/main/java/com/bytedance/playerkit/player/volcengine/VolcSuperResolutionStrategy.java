@@ -56,7 +56,7 @@ public class VolcSuperResolutionStrategy {
                 volcConfig.superResolutionConfig.enableSuperResolutionOnStartup;
     }
 
-    static void initSuperResolution(Context context, TTVideoEngine player, MediaSource mediaSource, Track track) {
+    static void initSuperResolution(Context context, TTVideoEngine player, MediaSource mediaSource) {
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
 
         if (!isInitSuperResolution(volcConfig)) return;

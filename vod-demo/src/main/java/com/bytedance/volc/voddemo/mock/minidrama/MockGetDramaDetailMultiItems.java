@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/7/4
+ * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.minidrama.data.mock;
+package com.bytedance.volc.voddemo.mock.minidrama;
 
+import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
 import com.bytedance.volc.voddemo.data.remote.RemoteApi;
 import com.bytedance.volc.voddemo.data.remote.model.drama.EpisodeVideo;
-import com.bytedance.volc.voddemo.ui.minidrama.data.remote.GetDramaDetail;
 import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailApi;
+import com.bytedance.volc.voddemo.ui.minidrama.data.remote.api.GetDramaDetailMultiItemsApi;
 
 import java.util.List;
 
 @Deprecated
-public class MockGetDramaDetail implements GetDramaDetailApi {
-    private final GetDramaDetail mGetDramaDetail = new GetDramaDetail();
+public class MockGetDramaDetailMultiItems implements GetDramaDetailMultiItemsApi {
+    private final GetDramaDetailApi mGetDramaDetail = new MockGetDramaDetail();
 
     @Override
-    public void getDramaDetail(int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<EpisodeVideo>> callback) {
+    public void getDramaDetail(int startIndex, int pageSize, String dramaId, Integer orderType, RemoteApi.Callback<List<Item>> callback) {
         mGetDramaDetail.getDramaDetail(startIndex, pageSize, dramaId, null, new RemoteApi.Callback<List<EpisodeVideo>>() {
             @Override
             public void onSuccess(List<EpisodeVideo> result) {
                 MockAppServer.mockDramaDetailLockState(result);
-                callback.onSuccess(result);
+                List<Item> items = EpisodeVideo.toItems(result);
+                callback.onSuccess(items);
             }
 
             @Override

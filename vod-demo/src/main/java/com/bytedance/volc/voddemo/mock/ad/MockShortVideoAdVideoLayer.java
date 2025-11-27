@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/10/21
+ * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.ad.mock;
+package com.bytedance.volc.voddemo.mock.ad;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -24,7 +24,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

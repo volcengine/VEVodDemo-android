@@ -55,7 +55,7 @@ dependencies {
 
     val bytedanceSDK = project.extra["bytedance"] as Map<String, String>
     implementation("com.bytedanceapi:ttsdk-player_premium:${bytedanceSDK["ttsdkVersion"]}")
+    implementation("com.bytedanceapi:ttsdk-ttabr:${bytedanceSDK["ttsdkVersion"]}")
     implementation("com.bytedanceapi:ttvideoengine-debugtool:${bytedanceSDK["debugToolVersion"]}")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
 }

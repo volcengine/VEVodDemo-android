@@ -23,6 +23,7 @@ import android.content.Context;
 
 import com.bytedance.news.common.service.manager.annotation.ServiceImpl;
 import com.bytedance.volc.voddemo.api.VodDemoApiService;
+import com.bytedance.volc.voddemo.mock.MockInit;
 
 @ServiceImpl
 public class VodDemoApiServiceImpl implements VodDemoApiService {
@@ -30,7 +31,7 @@ public class VodDemoApiServiceImpl implements VodDemoApiService {
     @Override
     public void initVodSDK(Context context, String appId, String appName, String appChannel, String appVersion, String licenseUri) {
         VodDemoApi.initVodSDK(context, appId, appName, appChannel, appVersion, licenseUri);
-        VodDemoApi.initMockADSDK(context);
+        MockInit.initMockADSDK(context);
     }
 
     @Override

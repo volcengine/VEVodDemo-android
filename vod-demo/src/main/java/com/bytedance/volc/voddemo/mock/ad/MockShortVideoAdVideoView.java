@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 bytedance
+ * Copyright (C) 2025 bytedance
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Create Date : 2024/10/15
+ * Create Date : 2025/9/5
  */
 
-package com.bytedance.volc.voddemo.ui.ad.mock;
+package com.bytedance.volc.voddemo.mock.ad;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -52,7 +52,6 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoBottomShadowLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.layer.ShortVideoCoverLayer;
-import com.bytedance.volc.voddemo.data.remote.model.base.BaseVideo;
 import com.bytedance.volc.voddemo.ui.ad.api.Ad;
 
 /**

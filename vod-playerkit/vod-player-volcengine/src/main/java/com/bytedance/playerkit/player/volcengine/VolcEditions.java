@@ -85,4 +85,8 @@ public class VolcEditions {
     public static boolean isSupportStartUpABR() {
         return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
     }
+
+    public static boolean isSupportABR() {
+        return engineCoreType() == TTVideoEngine.PLAYER_TYPE_OWN;
+    }
 }

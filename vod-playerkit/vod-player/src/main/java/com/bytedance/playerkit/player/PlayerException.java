@@ -25,6 +25,7 @@ public class PlayerException extends Exception {
     public static final int CODE_SOURCE_LOAD_ERROR = 4;
     public static final int CODE_SUBTITLE_PARSE_ERROR = 5;
     public static final int CODE_BUFFERING_TIME_OUT = 6;
+    public static final int CODE_ON_PREPARED_ERROR = 7;
 
     private final int code;
 

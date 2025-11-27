@@ -52,12 +52,12 @@ open class VidSourceExampleActivity : BaseActivity() {
 
         val START_PLAY_RESOLUTION = Resolution.SuperHigh // 720P
 
-        fun createVidSource(videoItem: VideoItem): VidPlayAuthTokenSource {
+        fun createVidSource(videoItem: VideoItem, resolution: Resolution): VidPlayAuthTokenSource {
             return VidPlayAuthTokenSource.Builder()
                 .setVid(videoItem.vid)
                 .setPlayAuthToken(videoItem.playAuthToken)
                 // 设置起播清晰度
-                .setResolution(START_PLAY_RESOLUTION)
+                .setResolution(resolution)
                 .setTag(videoItem)
                 .build();
         }
@@ -73,9 +73,10 @@ open class VidSourceExampleActivity : BaseActivity() {
     lateinit var mVideoItem: VideoItem
     lateinit var mVideoEngine: TTVideoEngine
 
-    private lateinit var textureView: TextureView
-    private var mResolutions: MutableList<Resolution> = mutableListOf()
-    private var mResolution: Resolution? = null
+    lateinit var textureView: TextureView
+    var mResolutions: MutableList<Resolution> = mutableListOf()
+    var mResolution: Resolution? = null
+    var mResolutionActionLayout : LinearLayout? = null
 
     override fun getLayoutId(): Int {
         return R.layout.vevod_api_example_vid_source
@@ -106,29 +107,14 @@ open class VidSourceExampleActivity : BaseActivity() {
     }
 
     open fun initVideoEngine() {
-        val vidSource = createVidSource(DataRepository.videoItems[0])
+        val vidSource = createVidSource(DataRepository.videoItems[0], START_PLAY_RESOLUTION)
 
         mVideoEngine = createVideoEngine(vidSource)
         mVideoEngine.setDisplayMode(textureView, TTVideoEngine.IMAGE_LAYOUT_ASPECT_FIT)
         mVideoEngine.setVideoInfoListener(object : VideoInfoListener {
 
-            override fun onFetchedVideoInfo(videoModel: VideoModel?): Boolean {
-                // 获取清晰度列表，可用来展示供用户切换清晰度
-                mVideoEngine.supportedResolutionTypes()?.let {
-                    mResolutions.clear()
-                    mResolutions.addAll(it)
-                }
-                // 默认清晰度 720P
-                val defaultResolution = START_PLAY_RESOLUTION
-                // 播放源中可能不包含 defaultResolution，调用 findDefaultResolution 找出与 defaultResolution 最接近的清晰度。
-                mResolution = TTVideoEngine.findDefaultResolution(videoModel, defaultResolution)
-                // 设置最终的起播清晰度
-                mVideoEngine.configResolution(mResolution)
-                Log.d(
-                    TAG,
-                    "vid=${vidSource.vid()} " + "startResolution=${vidSource.resolution()} " + "resolutions=${mResolutions}"
-                )
-                initResolutionActions()
+            override fun onFetchedVideoInfo(videoModel: VideoModel): Boolean {
+                onFetchedVideoInfo(vidSource, videoModel)
                 return false
             }
         })
@@ -139,6 +125,22 @@ open class VidSourceExampleActivity : BaseActivity() {
                 Log.d(TAG, "vid=${vidSource.vid()} " + error)
             }
         })
+    }
+
+    open fun onFetchedVideoInfo(vidSource: VidPlayAuthTokenSource, videoModel: VideoModel) {
+        // 获取清晰度列表，可用来展示供用户切换清晰度
+        mVideoEngine.supportedResolutionTypes()?.let {
+            mResolutions.clear()
+            mResolutions.addAll(it)
+        }
+        // 默认清晰度 720P
+        val defaultResolution = START_PLAY_RESOLUTION
+        // 播放源中可能不包含 defaultResolution，调用 findDefaultResolution 找出与 defaultResolution 最接近的清晰度。
+        mResolution = TTVideoEngine.findDefaultResolution(videoModel, defaultResolution)
+        // 设置最终的起播清晰度
+        mVideoEngine.configResolution(mResolution)
+        Log.d(TAG, "vid=${vidSource.vid()} " + "startResolution=${vidSource.resolution()} " + "resolutions=${mResolutions}")
+        initResolutionActions()
     }
 
     override fun onResume() {
@@ -156,7 +158,7 @@ open class VidSourceExampleActivity : BaseActivity() {
         mVideoEngine.release()
     }
 
-    private fun setResolution(resolution: Resolution) {
+    open fun setResolution(resolution: Resolution) {
         if (mResolution == resolution) return
 
         mResolution = resolution
@@ -172,24 +174,28 @@ open class VidSourceExampleActivity : BaseActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             actionContainer.addView(this)
         }
-        val speedActionLayout = LinearLayout(this).apply {
+        mResolutionActionLayout = LinearLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             actionContainer.addView(this)
         }
         mResolutions.forEachIndexed { index1, resolution ->
             button(
                 this,
-                resolution.toString(VideoRef.TYPE_VIDEO),
+                resolveResolutionText(resolution),
                 mResolution == resolution
             ).apply {
                 setOnClickListener {
                     setResolution(resolution)
-                    speedActionLayout.children.forEachIndexed { index2, view ->
+                    mResolutionActionLayout?.children?.forEachIndexed { index2, view ->
                         view.isSelected = index2 == index1
                     }
                 }
-                speedActionLayout.addView(this)
+                mResolutionActionLayout?.addView(this)
             }
         }
+    }
+
+    open fun resolveResolutionText(resolution: Resolution?): String {
+        return resolution?.toString(VideoRef.TYPE_VIDEO) ?: "Unknown Resolution"
     }
 }

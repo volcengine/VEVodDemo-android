@@ -36,6 +36,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayCompleteLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayPauseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SyncStartTimeLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.TimeProgressBarLayer;
@@ -65,6 +66,7 @@ public class FeedVideoViewFactory implements VideoViewFactory {
             parent.addView(videoView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
         VideoLayerHost layerHost = new VideoLayerHost(parent.getContext());
+        layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new GestureLayer());
         layerHost.addLayer(new FullScreenLayer());
         layerHost.addLayer(new SubtitleLayer());

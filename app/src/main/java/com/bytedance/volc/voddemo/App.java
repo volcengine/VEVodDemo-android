@@ -25,6 +25,8 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.bytedance.volc.voddemo.mock.MockInit;
+
 
 public class App extends Application {
 
@@ -52,7 +54,7 @@ public class App extends Application {
         /**
          * Mock 短剧/短视频广告逻辑，在正式项目中不要调用该方法
          */
-        VodDemoApi.initMockADSDK(this);
+        MockInit.initMockADSDK(this);
     }
 
     private static String getAppVersionName(Context context) {

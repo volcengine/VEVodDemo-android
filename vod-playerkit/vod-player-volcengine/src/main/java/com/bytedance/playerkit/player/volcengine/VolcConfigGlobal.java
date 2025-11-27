@@ -27,6 +27,7 @@ public class VolcConfigGlobal {
     public static final boolean ENABLE_SPEED_TEST_STRATEGY_INIT = true;
     public static final boolean ENABLE_ECDN = false; // Not ready for now.
     public static final boolean ENABLE_STARTUP_ABR_INIT = true;
+    public static final boolean ENABLE_ABR_INIT = true;
     public static final boolean ENABLE_USE_BACKUP_URL = true;
 
     public static class CacheDir {

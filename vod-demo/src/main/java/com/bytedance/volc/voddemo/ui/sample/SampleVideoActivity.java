@@ -44,6 +44,7 @@ import com.bytedance.volc.vod.scenekit.ui.video.layer.LogLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayCompleteLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayErrorLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayPauseLayer;
+import com.bytedance.volc.vod.scenekit.ui.video.layer.PlayerConfigLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SubtitleLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.SyncStartTimeLayer;
 import com.bytedance.volc.vod.scenekit.ui.video.layer.TimeProgressBarLayer;
@@ -96,6 +97,7 @@ public class SampleVideoActivity extends AppCompatActivity {
 
         // 2. create VideoLayerHost instance. Add Layers to VideoLayerHost.
         VideoLayerHost layerHost = new VideoLayerHost(this);
+        layerHost.addLayer(new PlayerConfigLayer());
         layerHost.addLayer(new GestureLayer());
         layerHost.addLayer(new FullScreenLayer());
         layerHost.addLayer(new SubtitleLayer());

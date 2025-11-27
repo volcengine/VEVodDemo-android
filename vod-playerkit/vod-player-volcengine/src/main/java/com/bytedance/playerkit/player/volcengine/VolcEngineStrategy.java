@@ -18,30 +18,42 @@
 
 package com.bytedance.playerkit.player.volcengine;
 
+import static com.bytedance.playerkit.player.volcengine.VolcQualityStrategy.*;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SHORT_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_SCENE_SMALL_VIDEO;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRELOAD;
 import static com.ss.ttvideoengine.strategy.StrategyManager.STRATEGY_TYPE_PRE_RENDER;
 
 import android.os.Looper;
+import android.text.TextUtils;
 import android.view.Surface;
 
 import androidx.annotation.Nullable;
 
+import com.bytedance.playerkit.player.cache.CacheKeyFactory;
+import com.bytedance.playerkit.player.config.ABRQualityConfig;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.source.Subtitle;
 import com.bytedance.playerkit.player.source.Track;
 import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.utils.ProgressRecorder;
+import com.bytedance.playerkit.utils.Asserts;
 import com.bytedance.playerkit.utils.CollectionUtils;
 import com.bytedance.playerkit.utils.Getter;
 import com.bytedance.playerkit.utils.L;
 import com.ss.ttvideoengine.PreloaderURLItem;
 import com.ss.ttvideoengine.PreloaderVidItem;
+import com.ss.ttvideoengine.PreloaderVidSubtitleItem;
+import com.ss.ttvideoengine.PreloaderVidSubtitleItemFetchListener;
 import com.ss.ttvideoengine.PreloaderVideoModelItem;
 import com.ss.ttvideoengine.Resolution;
+import com.ss.ttvideoengine.SubDesInfoModel;
 import com.ss.ttvideoengine.TTVideoEngine;
-import com.ss.ttvideoengine.selector.strategy.GearStrategy;
+import com.ss.ttvideoengine.abr.TTVideoABRConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStartupConfig;
+import com.ss.ttvideoengine.abr.TTVideoABRStrategy;
+import com.ss.ttvideoengine.model.IVideoModel;
+import com.ss.ttvideoengine.model.VideoModel;
 import com.ss.ttvideoengine.source.DirectUrlSource;
 import com.ss.ttvideoengine.source.VidPlayAuthTokenSource;
 import com.ss.ttvideoengine.source.VideoModelSource;
@@ -50,7 +62,9 @@ import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.strategy.StrategySettings;
 import com.ss.ttvideoengine.strategy.preload.PreloadTaskFactory;
 import com.ss.ttvideoengine.strategy.source.StrategySource;
+import com.ss.ttvideoengine.utils.Error;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -87,19 +101,9 @@ public class VolcEngineStrategy {
                 if (mediaSource == null) return item; // error
                 VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
                 item.setFetchEndListener((videoModel, error) -> {
+                    if (videoModel == null) return;
                     Mapper.updateMediaSource(mediaSource, videoModel);
-                    final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-                    Track playTrack = null;
-                    if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
-                        VolcQualityStrategy.StartupTrackResult result = VolcQualityStrategy.select(
-                                GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
-                                mediaSource,
-                                videoModel);
-                        playTrack = result.track;
-                    }
-                    if (playTrack == null) {
-                        playTrack = selectPlayTrack(TrackSelector.TYPE_PRELOAD, mediaSource);
-                    }
+                    final Track playTrack = selectTrack(mediaSource, videoModel);
                     final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
                     if (resolution != null) {
                         item.mResolution = resolution;
@@ -114,18 +118,8 @@ public class VolcEngineStrategy {
                 final MediaSource mediaSource = (MediaSource) source.tag();
                 if (mediaSource == null) return item; // error
                 VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
-                final VolcConfig volcConfig = VolcConfig.get(mediaSource);
-                Track playTrack = null;
-                if (VolcQualityStrategy.isEnableStartupABR(volcConfig)) {
-                    VolcQualityStrategy.StartupTrackResult result = VolcQualityStrategy.select(
-                            GearStrategy.GEAR_STRATEGY_SELECT_TYPE_PRELOAD,
-                            mediaSource,
-                            source.videoModel());
-                    playTrack = result.track;
-                }
-                if (playTrack == null) {
-                    playTrack = selectPlayTrack(TrackSelector.TYPE_PRELOAD, mediaSource);
-                }
+                final IVideoModel videoModel = source.videoModel();
+                final Track playTrack = selectTrack(mediaSource, videoModel);
                 final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
                 if (resolution != null) {
                     item.mResolution = resolution;
@@ -155,24 +149,109 @@ public class VolcEngineStrategy {
                 }
                 return PreloadTaskFactory.super.createSubtitleUrlItem(source, preloadSize);
             }
+
+            @Override
+            public PreloaderVidSubtitleItem createSubtitleVidItem(VidPlayAuthTokenSource source, long preloadSize) {
+                final PreloaderVidSubtitleItem item = PreloadTaskFactory.super.createSubtitleVidItem(source, preloadSize);
+                // vid subtitle cacheKey generate
+                item.setMDLCacheKeyGeneratorForSubModel(CacheKeyFactory.DEFAULT::generateCacheKey);
+                final MediaSource mediaSource = (MediaSource) source.tag();
+                if (mediaSource == null) return item; // error
+                VolcPlayerInit.config().configUpdater.updateVolcConfig(mediaSource);
+                item.setFetchEndListener(new PreloaderVidSubtitleItemFetchListener() {
+
+                    @Override
+                    public void onGetPlayInfoResult(VideoModel videoModel, Error error) {
+                        if (videoModel == null) return;
+
+                        Mapper.updateMediaSource(mediaSource, videoModel);
+                        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+                        final Track playTrack = selectTrack(mediaSource, videoModel);
+                        final Resolution resolution = playTrack != null ? Mapper.track2Resolution(playTrack) : null;
+                        if (resolution != null) {
+                            item.setResolution(resolution);
+                        }
+                        if (volcConfig.enableSubtitle &&
+                                volcConfig.subtitleLanguageIds != null) {
+                            final String subtitleIds = Mapper.subtitleList2SubtitleIds(
+                                    Mapper.findSubInfoListWithLanguageIds(
+                                            Mapper.findSubInfoList(videoModel),
+                                            volcConfig.subtitleLanguageIds));
+                            if (!TextUtils.isEmpty(subtitleIds)) {
+                                item.setSubtitleIds(subtitleIds);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onGetSubtitleInfoResult(SubDesInfoModel subDesInfoModel, Error error) {
+                        if (subDesInfoModel == null) return;
+
+                        String subtitleJson = subDesInfoModel.toString();
+                        if (TextUtils.isEmpty(subtitleJson)) return;
+                        List<Subtitle> subtitles = null;
+                        try {
+                            subtitles = Mapper.subtitleModel2Subtitles(new JSONObject(subtitleJson));
+                        } catch (JSONException e) {
+                            L.e(this, "onGetSubtitleInfoResult", e);
+                        }
+                        if (CollectionUtils.isEmpty(subtitles)) return;
+                        final Subtitle subtitle = selectPlaySubtitle(mediaSource, mediaSource.getSubtitles());
+                        if (subtitle != null) {
+                            item.setSubtitleId(subtitle.getSubtitleId());
+                        }
+                    }
+                });
+                return item;
+            }
         });
+    }
+
+    @Nullable
+    private static Track selectTrack(MediaSource mediaSource, IVideoModel videoModel) {
+        final VolcConfig volcConfig = VolcConfig.get(mediaSource);
+        Track playTrack = null;
+        if (isEnableABR(volcConfig) && Mapper.isSupportSmoothTrackSwitching(mediaSource, videoModel)) {
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            Track userSelectedTrack = Mapper.findTrackWithQuality(mediaSource, volcConfig.qualityConfig.userSelectedQuality);
+            if (userSelectedTrack != null) {
+                playTrack = userSelectedTrack;
+                L.d(VolcEngineStrategy.class, "selectTrack", "abr[user]", Track.dump(playTrack));
+            } else {
+                TTVideoABRConfig abrConfig = createTTVideoABRConfig(volcConfig.qualityConfig.abrQualityConfig);
+                Resolution resolution = TTVideoABRStrategy.preloadSelect(videoModel, abrConfig);
+                if (resolution != null) {
+                    List<Track> tracks = mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource));
+                    playTrack = Mapper.findTrackWithResolution(tracks, resolution);
+                }
+                L.d(VolcEngineStrategy.class, "selectTrack", "abr[auto]", Track.dump(playTrack), ABRQualityConfig.dump(volcConfig.qualityConfig.abrQualityConfig));
+            }
+        } else if (isEnableStartupABR(volcConfig)) {
+            Asserts.checkNotNull(volcConfig.qualityConfig);
+            Asserts.checkNotNull(volcConfig.qualityConfig.abrQualityConfig);
+            final TTVideoABRStartupConfig startupConfig = createTTVideoABRStartupConfig(volcConfig);
+            Resolution resolution = TTVideoABRStrategy.preloadSelect(videoModel, startupConfig);
+            if (resolution != null) {
+                List<Track> tracks = mediaSource.getTracks(MediaSource.mediaType2TrackType(mediaSource));
+                playTrack = Mapper.findTrackWithResolution(tracks, resolution);
+            }
+            L.d(VolcEngineStrategy.class, "selectTrack", "abr[startup]", Track.dump(playTrack));
+        }
+        if (playTrack == null) {
+            @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
+            List<Track> tracks = mediaSource.getTracks(trackType);
+            if (tracks != null) {
+                playTrack = VolcPlayerInit.config().trackSelector.selectTrack(TrackSelector.TYPE_PRELOAD, trackType, tracks, mediaSource);
+            }
+            L.d(VolcEngineStrategy.class, "selectTrack", "default", Track.dump(playTrack));
+        }
+        return playTrack;
     }
 
     private static Subtitle selectPlaySubtitle(MediaSource mediaSource, List<Subtitle> subtitles) {
         if (!CollectionUtils.isEmpty(subtitles)) {
             return VolcPlayerInit.config().subtitleSelector.selectSubtitle(mediaSource, subtitles);
-        }
-        return null;
-    }
-
-    /**
-     * For vid only
-     */
-    private static Track selectPlayTrack(@TrackSelector.Type int type, MediaSource mediaSource) {
-        @Track.TrackType final int trackType = MediaSource.mediaType2TrackType(mediaSource);
-        List<Track> tracks = mediaSource.getTracks(trackType);
-        if (tracks != null) {
-            return VolcPlayerInit.config().trackSelector.selectTrack(type, trackType, tracks, mediaSource);
         }
         return null;
     }
