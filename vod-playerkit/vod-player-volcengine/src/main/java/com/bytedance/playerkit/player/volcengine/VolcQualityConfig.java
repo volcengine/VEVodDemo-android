@@ -46,7 +46,7 @@ public class VolcQualityConfig implements Serializable {
 
     @QualityMode
     public int qualityMode;
-    public boolean enableSupperResolutionDowngrade;
+    public boolean enableSuperResolutionDowngrade;
     public Quality userSelectedQuality;
     public ABRQualityConfig abrQualityConfig;
 }

@@ -56,7 +56,7 @@ public class VolcQualityStrategy {
     static boolean isEnableStartupABRSuperResolutionDowngrade(VolcConfig volcConfig) {
         return isEnableStartupABR(volcConfig) &&
                 volcConfig.qualityConfig != null &&
-                volcConfig.qualityConfig.enableSupperResolutionDowngrade &&
+                volcConfig.qualityConfig.enableSuperResolutionDowngrade &&
                 VolcSuperResolutionStrategy.isInitSuperResolution(volcConfig);
     }
 

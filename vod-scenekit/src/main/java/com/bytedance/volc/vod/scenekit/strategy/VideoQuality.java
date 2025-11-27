@@ -101,7 +101,7 @@ public class VideoQuality {
             config.qualityMode = VolcQualityConfig.QUALITY_MODE_STARTUP_ABR;
         } else if (abrType == VideoSettings.ABRType.ABR_TYPE_STARTUP_ABR_AND_SR_DOWNGRADE) {
             config.qualityMode = VolcQualityConfig.QUALITY_MODE_STARTUP_ABR;
-            config.enableSupperResolutionDowngrade = true;
+            config.enableSuperResolutionDowngrade = true;
         }
         config.abrQualityConfig = sceneABRQualityConfig(volcScene);
         return config;
