@@ -26,6 +26,7 @@ import com.bytedance.volc.vod.scenekit.ui.widgets.load.LoadMoreAble;
 public class ViewPager2LoadMoreHelper implements LoadMoreAble {
 
     private final ViewPager2 mViewPager;
+    private final ViewPager2.OnPageChangeCallback mPageChangeCallback;
     private OnLoadMoreListener mOnLoadMoreListener;
 
     private boolean mLoadingMore;
@@ -34,7 +35,7 @@ public class ViewPager2LoadMoreHelper implements LoadMoreAble {
 
     public ViewPager2LoadMoreHelper(ViewPager2 viewPager) {
         this.mViewPager = viewPager;
-        this.mViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        this.mPageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 if (!isLoadMoreEnabled()) return;
@@ -49,7 +50,8 @@ public class ViewPager2LoadMoreHelper implements LoadMoreAble {
                     }
                 }
             }
-        });
+        };
+        this.mViewPager.registerOnPageChangeCallback(mPageChangeCallback);
     }
 
     @Override
@@ -85,5 +87,12 @@ public class ViewPager2LoadMoreHelper implements LoadMoreAble {
     @Override
     public void finishLoadingMore() {
         mLoadingMore = false;
+    }
+
+    public void release() {
+        mOnLoadMoreListener = null;
+        mLoadingMore = false;
+        mLoadMoreEnabled = false;
+        mViewPager.unregisterOnPageChangeCallback(mPageChangeCallback);
     }
 }

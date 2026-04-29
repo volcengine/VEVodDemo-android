@@ -65,10 +65,10 @@ public class VolcPreRenderSurfaceHolder {
     }
 
     private static Handler sHandler;
-    private SurfaceListener mSurfaceListener;
-    private Surface mSurface;
-    private MediaSource mSource;
-    private PreRenderListener mPreRenderListener;
+    private volatile SurfaceListener mSurfaceListener;
+    private volatile Surface mSurface;
+    private volatile MediaSource mSource;
+    private volatile PreRenderListener mPreRenderListener;
     private final PreRenderSurfaceHolder mHolder = new PreRenderSurfaceHolder() {
         @Override
         @WorkerThread
@@ -91,14 +91,15 @@ public class VolcPreRenderSurfaceHolder {
                 @Override
                 public void onPrepared(TTVideoEngine engine) {
                     handler().post(() -> {
-                        if (!TextUtils.equals(engine.getVideoID(), mSource.getMediaId())) {
+                        final MediaSource source = mSource;
+                        final PreRenderListener listener = mPreRenderListener;
+                        if (source == null || listener == null
+                                || !TextUtils.equals(engine.getVideoID(), source.getMediaId())) {
                             return;
                         }
-                        if (mPreRenderListener != null) {
-                            mPreRenderListener.onPreRenderVideoSizeChanged(mSource,
-                                    engine.getVideoWidth(),
-                                    engine.getVideoHeight());
-                        }
+                        listener.onPreRenderVideoSizeChanged(source,
+                                engine.getVideoWidth(),
+                                engine.getVideoHeight());
                     });
                 }
 
@@ -106,14 +107,15 @@ public class VolcPreRenderSurfaceHolder {
                 public void onReadyForDisplay(TTVideoEngine engine) {
                     engine.removeVideoEngineCallback(this);
                     handler().post(() -> {
-                        if (!TextUtils.equals(engine.getVideoID(), mSource.getMediaId())) {
+                        final MediaSource source = mSource;
+                        final PreRenderListener listener = mPreRenderListener;
+                        if (source == null || listener == null
+                                || !TextUtils.equals(engine.getVideoID(), source.getMediaId())) {
                             return;
                         }
-                        if (mPreRenderListener != null) {
-                            mPreRenderListener.onPreRenderFirstFrame(mSource,
-                                    engine.getVideoWidth(),
-                                    engine.getVideoHeight());
-                        }
+                        listener.onPreRenderFirstFrame(source,
+                                engine.getVideoWidth(),
+                                engine.getVideoHeight());
                     });
                 }
 
@@ -126,12 +128,13 @@ public class VolcPreRenderSurfaceHolder {
                 public void onError(Error error) {
                     videoEngine.removeVideoEngineCallback(this);
                     handler().post(() -> {
-                        if (!TextUtils.equals(videoEngine.getVideoID(), mSource.getMediaId())) {
+                        final MediaSource source = mSource;
+                        final PreRenderListener listener = mPreRenderListener;
+                        if (source == null || listener == null
+                                || !TextUtils.equals(videoEngine.getVideoID(), source.getMediaId())) {
                             return;
                         }
-                        if (mPreRenderListener != null) {
-                            mPreRenderListener.onPreRenderEndError(mSource, error.code);
-                        }
+                        listener.onPreRenderEndError(source, error.code);
                     });
                 }
 
@@ -140,12 +143,13 @@ public class VolcPreRenderSurfaceHolder {
                     if (videoEngine.isReleased()) {
                         videoEngine.removeVideoEngineCallback(this);
                         handler().post(() -> {
-                            if (!TextUtils.equals(videoEngine.getVideoID(), mSource.getMediaId())) {
+                            final MediaSource source = mSource;
+                            final PreRenderListener listener = mPreRenderListener;
+                            if (source == null || listener == null
+                                    || !TextUtils.equals(videoEngine.getVideoID(), source.getMediaId())) {
                                 return;
                             }
-                            if (mPreRenderListener != null) {
-                                mPreRenderListener.onPreRenderEndRelease(mSource);
-                            }
+                            listener.onPreRenderEndRelease(source);
                         });
                     }
                 }
@@ -185,6 +189,27 @@ public class VolcPreRenderSurfaceHolder {
         this.mSource = source;
         if (source != null) {
             StrategyManager.instance().setPreRenderSurfaceHolder(source.getMediaId(), mHolder);
+        }
+    }
+
+    @MainThread
+    public void release() {
+        final MediaSource source = mSource;
+        if (source == null
+                && mPreRenderListener == null
+                && mSurfaceListener == null
+                && mSurface == null) {
+            // 已经释放过，直接返回，保证幂等
+            return;
+        }
+        mPreRenderListener = null;
+        mSurfaceListener = null;
+        synchronized (mHolder) {
+            mSurface = null;
+        }
+        mSource = null;
+        if (source != null) {
+            StrategyManager.instance().setPreRenderSurfaceHolder(source.getMediaId(), null);
         }
     }
 

@@ -52,6 +52,9 @@ public abstract class ViewHolder extends RecyclerView.ViewHolder {
         L.v(this, "onViewRecycled", getBindingAdapterPosition());
     }
 
+    public void release() {
+    }
+
     public boolean onBackPressed() {
         return false;
     }

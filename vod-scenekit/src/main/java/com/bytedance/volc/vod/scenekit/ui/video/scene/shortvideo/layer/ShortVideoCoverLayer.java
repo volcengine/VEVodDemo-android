@@ -32,6 +32,7 @@ import com.bytedance.playerkit.player.PlayerEvent;
 import com.bytedance.playerkit.player.event.ActionSetSurface;
 import com.bytedance.playerkit.player.playback.DisplayView;
 import com.bytedance.playerkit.player.playback.PlaybackController;
+import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.player.source.MediaSource;
 import com.bytedance.playerkit.player.volcengine.VolcPreRenderSurfaceHolder;
@@ -83,13 +84,22 @@ public class ShortVideoCoverLayer extends CoverLayer {
     @Override
     protected void onBindVideoView(@NonNull VideoView videoView) {
         super.onBindVideoView(videoView);
+        // 复用场景下，确保本轮绑定使用最新的 listener
         mPreRenderSurfaceHolder.setPreRenderListener(mPreRenderListener);
     }
 
     @Override
     protected void onUnBindVideoView(@NonNull VideoView videoView) {
         super.onUnBindVideoView(videoView);
-        mPreRenderSurfaceHolder.setPreRenderListener(null);
+        // 解绑 VideoView 时释放预渲染链路，阻断静态 StrategyManager 对本 Layer 的回指
+        mPreRenderSurfaceHolder.release();
+    }
+
+    @Override
+    protected void onUnbindLayerHost(@NonNull VideoLayerHost layerHost) {
+        super.onUnbindLayerHost(layerHost);
+        // Layer 从宿主摘除时再兜底一次，release() 自身幂等，不会重复调用 StrategyManager
+        mPreRenderSurfaceHolder.release();
     }
 
     @Override

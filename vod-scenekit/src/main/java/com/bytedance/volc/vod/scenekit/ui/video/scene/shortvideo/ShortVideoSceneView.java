@@ -156,6 +156,17 @@ public class ShortVideoSceneView extends FrameLayout implements RefreshAble, Loa
         return mPageView;
     }
 
+    public void release() {
+        mRefreshListener = null;
+        mLoadMoreListener = null;
+        mRefreshLayout.setEnabled(false);
+        mRefreshLayout.setRefreshing(false);
+        mRefreshLayout.setOnRefreshListener(null);
+        mLoadMoreHelper.release();
+        mPageView.release();
+        mLoadMoreProgressBar.setVisibility(GONE);
+    }
+
     public boolean onBackPressed() {
         return mPageView.onBackPressed();
     }

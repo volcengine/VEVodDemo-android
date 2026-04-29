@@ -72,6 +72,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:${project.ext.androidxTestEspressoCore}"
 
     implementation "androidx.appcompat:appcompat:${project.ext.androidxAppcompat}"
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:${project.ext.leakCanary}"
 
     implementation project(":vod-demo-api")
     implementation project(":vod-demo")

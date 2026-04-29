@@ -52,6 +52,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     implementation("io.coil-kt:coil:2.5.0")
+    debugImplementation("com.squareup.leakcanary:leakcanary-android:${project.extra["leakCanary"]}")
 
     val bytedanceSDK = project.extra["bytedance"] as Map<String, String>
     implementation("com.bytedanceapi:ttsdk-player_premium:${bytedanceSDK["ttsdkVersion"]}")

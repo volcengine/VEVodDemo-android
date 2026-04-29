@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.playerkit.player.Player;
+import com.bytedance.playerkit.player.playback.PlaybackController;
 import com.bytedance.playerkit.player.playback.VideoLayerHost;
 import com.bytedance.playerkit.player.playback.VideoView;
 import com.bytedance.playerkit.utils.L;
@@ -54,6 +55,25 @@ public abstract class VideoViewHolder extends ViewHolder {
         super.onViewRecycled();
 
         actionStop();
+    }
+
+    @Override
+    public void release() {
+        final VideoView videoView = videoView();
+        if (videoView == null) return;
+
+        actionStop();
+
+        final PlaybackController controller = videoView.controller();
+        if (controller != null) {
+            controller.unbind();
+        }
+
+        final VideoLayerHost host = videoView.layerHost();
+        if (host != null) {
+            host.removeAllLayers();
+            host.detachFromVideoView();
+        }
     }
 
     @Override

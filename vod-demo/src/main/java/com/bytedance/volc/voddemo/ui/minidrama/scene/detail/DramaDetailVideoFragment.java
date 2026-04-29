@@ -65,6 +65,7 @@ import com.bytedance.volc.vod.scenekit.data.model.VideoItem;
 import com.bytedance.volc.vod.scenekit.data.utils.ItemHelper;
 import com.bytedance.volc.vod.scenekit.ui.base.BaseFragment;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.PlayScene;
+import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoPageView;
 import com.bytedance.volc.vod.scenekit.ui.video.scene.shortvideo.ShortVideoSceneView;
 import com.bytedance.volc.vod.scenekit.ui.video.viewholder.ViewHolderAction;
 import com.bytedance.volc.vod.scenekit.ui.widgets.adatper.Item;
@@ -87,6 +88,7 @@ import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.DramaEpi
 import com.bytedance.volc.voddemo.ui.minidrama.scene.widgets.viewholder.ShortVideoDrawADItemViewHolder;
 import com.bytedance.volc.voddemo.ui.video.scene.pipvideo.PipVideoController;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -105,6 +107,7 @@ public class DramaDetailVideoFragment extends BaseFragment {
     private MenuItem mPipActionMenuItem;
     private DramaEpisodeSelectDialogFragment mSelectDialogFragment;
     private DramaEpisodePayDialogFragment mPayDialogFragment;
+    private ViewPager2.OnPageChangeCallback mPageChangeCallback;
 
     public DramaDetailVideoFragment() {
         // Required empty public constructor
@@ -243,6 +246,24 @@ public class DramaDetailVideoFragment extends BaseFragment {
     }
 
     @Override
+    public void onDestroyView() {
+        // 所有依赖 View 的对象统一在这里释放，避免跨 View 生命周期悬挂
+        if (mSceneView != null) {
+            // 这里只注销 Fragment 自己注册的 callback，PageView 内部 callback 由 mSceneView.release() 统一释放。
+            if (mPageChangeCallback != null) {
+                mSceneView.pageView().viewPager().unregisterOnPageChangeCallback(mPageChangeCallback);
+                mPageChangeCallback = null;
+            }
+            mSceneView.release();
+            mSceneView = null;
+        }
+        mEpisodeSelector = null;
+        mSpeedIndicator = null;
+        mPipActionMenuItem = null;
+        super.onDestroyView();
+    }
+
+    @Override
     protected int getLayoutResId() {
         return R.layout.vevod_mini_drama_detail_video_fragment;
     }
@@ -254,52 +275,16 @@ public class DramaDetailVideoFragment extends BaseFragment {
         mSpeedIndicator.showSpeedIndicator(false);
 
         mSceneView = view.findViewById(R.id.shortVideoSceneView);
-        mSceneView.pageView().setLifeCycle(getLifecycle());
-        mSceneView.pageView().setViewHolderFactory(new DetailDramaVideoViewHolderFactory());
+        mSceneView.pageView().setLifeCycle(getViewLifecycleOwner().getLifecycle());
+        mSceneView.pageView().setViewHolderFactory(new DetailDramaVideoViewHolderFactory(
+                this,
+                mSceneView.pageView(),
+                mSpeedIndicator));
         mSceneView.setRefreshEnabled(false);
         mSceneView.setLoadMoreEnabled(true);
         mSceneView.setOnLoadMoreListener(this::load);
-        mSceneView.pageView().viewPager().registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                L.d(this, "onPageSelected", position);
-                if (mDramaItems == null) return;
-
-                final Item item = mSceneView.pageView().getItem(position);
-                if (item instanceof DrawADItem) {
-                    setActionBarTitle("");
-                } else if (item instanceof VideoItem) {
-                    final EpisodeVideo episode = EpisodeVideo.get(item);
-                    final String dramaId = EpisodeVideo.getDramaId(episode);
-                    DramaItem currentDrama = mDramaItems.get(mCurrentDramaIndex);
-                    if (currentDrama == null) {
-                        return;
-                    }
-                    if (TextUtils.equals(currentDrama.dramaInfo.dramaId, dramaId)) {
-                        if (currentDrama.currentItem == null || !ItemHelper.comparator().compare(currentDrama.currentItem, item)) {
-                            currentDrama.currentItem = item;
-                            onDramaEpisodeChanged(currentDrama);
-                            return;
-                        }
-                    }
-
-                    for (int i = 0; i < mDramaItems.size(); i++) {
-                        final DramaItem dramaItem = mDramaItems.get(i);
-                        if (dramaItem.dramaInfo == null) continue; // TODO
-
-                        if (TextUtils.equals(dramaItem.dramaInfo.dramaId, dramaId)) {
-                            if (mCurrentDramaIndex != i) {
-                                mCurrentDramaIndex = i;
-                                currentDrama = dramaItem;
-                                currentDrama.currentItem = item;
-                                onDramaEpisodeChanged(currentDrama);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        mPageChangeCallback = new DramaPageChangeCallback(this);
+        mSceneView.pageView().viewPager().registerOnPageChangeCallback(mPageChangeCallback);
 
         mEpisodeSelector = new EpisodeSelectorViewHolder(view);
         mEpisodeSelector.mSelectEpisodeView.setOnClickListener(v -> {
@@ -317,7 +302,77 @@ public class DramaDetailVideoFragment extends BaseFragment {
         initData();
     }
 
-    private class DetailDramaVideoViewHolderFactory implements ViewHolder.Factory {
+    private void handlePageSelected(int position) {
+        L.d(this, "onPageSelected", position);
+        if (mSceneView == null || mDramaItems == null) return;
+        if (position < 0 || position >= mSceneView.pageView().getItemCount()) return;
+
+        final Item item = mSceneView.pageView().getItem(position);
+        if (item instanceof DrawADItem) {
+            setActionBarTitle("");
+            return;
+        }
+        if (!(item instanceof VideoItem)) {
+            return;
+        }
+
+        final EpisodeVideo episode = EpisodeVideo.get(item);
+        final String dramaId = EpisodeVideo.getDramaId(episode);
+        DramaItem currentDrama = mDramaItems.get(mCurrentDramaIndex);
+        if (currentDrama == null) {
+            return;
+        }
+        if (TextUtils.equals(currentDrama.dramaInfo.dramaId, dramaId)) {
+            if (currentDrama.currentItem == null || !ItemHelper.comparator().compare(currentDrama.currentItem, item)) {
+                currentDrama.currentItem = item;
+                onDramaEpisodeChanged(currentDrama);
+                return;
+            }
+        }
+
+        for (int i = 0; i < mDramaItems.size(); i++) {
+            final DramaItem dramaItem = mDramaItems.get(i);
+            if (dramaItem.dramaInfo == null) continue; // TODO
+
+            if (TextUtils.equals(dramaItem.dramaInfo.dramaId, dramaId) && mCurrentDramaIndex != i) {
+                mCurrentDramaIndex = i;
+                currentDrama = dramaItem;
+                currentDrama.currentItem = item;
+                onDramaEpisodeChanged(currentDrama);
+                return;
+            }
+        }
+    }
+
+    private static final class DramaPageChangeCallback extends ViewPager2.OnPageChangeCallback {
+        private final WeakReference<DramaDetailVideoFragment> mFragmentRef;
+
+        private DramaPageChangeCallback(DramaDetailVideoFragment fragment) {
+            mFragmentRef = new WeakReference<>(fragment);
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            final DramaDetailVideoFragment fragment = mFragmentRef.get();
+            if (fragment == null) return;
+            fragment.handlePageSelected(position);
+        }
+    }
+
+    private static final class DetailDramaVideoViewHolderFactory implements ViewHolder.Factory {
+        private final WeakReference<DramaDetailVideoFragment> mFragmentRef;
+        private final ShortVideoPageView mPageView;
+        private final SpeedIndicatorViewHolder mSpeedIndicator;
+
+        private DetailDramaVideoViewHolderFactory(
+                DramaDetailVideoFragment fragment,
+                ShortVideoPageView pageView,
+                SpeedIndicatorViewHolder speedIndicator) {
+            mFragmentRef = new WeakReference<>(fragment);
+            mPageView = pageView;
+            mSpeedIndicator = speedIndicator;
+        }
+
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -326,24 +381,12 @@ public class DramaDetailVideoFragment extends BaseFragment {
                     final DramaEpisodeVideoViewHolder viewHolder = new DramaEpisodeVideoViewHolder(
                             new FrameLayout(parent.getContext()),
                             DramaVideoLayer.Type.DETAIL,
-                            mSceneView.pageView(),
+                            mPageView,
                             mSpeedIndicator);
                     final VideoView videoView = viewHolder.videoView;
                     final PlaybackController controller = videoView == null ? null : videoView.controller();
                     if (controller != null) {
-                        controller.addPlaybackListener(new Dispatcher.EventListener() {
-                            @Override
-                            public void onEvent(Event event) {
-                                if (event.code() == PlayerEvent.State.COMPLETED) {
-                                    onPlayerStateCompleted(event);
-                                } else if (event.code() == PlayerEvent.Action.SET_SPEED) {
-                                    ActionSetSpeed e = event.cast(ActionSetSpeed.class);
-                                    if (mPipActionMenuItem != null) {
-                                        mPipActionMenuItem.setVisible(e.speed == 1);
-                                    }
-                                }
-                            }
-                        });
+                        controller.addPlaybackListener(new DramaPlaybackListener(mFragmentRef));
                     }
                     return viewHolder;
                 }
@@ -351,17 +394,50 @@ public class DramaDetailVideoFragment extends BaseFragment {
                     ShortVideoDrawADItemViewHolder viewHolder = new ShortVideoDrawADItemViewHolder(
                             new FrameLayout(parent.getContext()));
                     if (viewHolder.mockAdVideoView != null) {
-                        viewHolder.mockAdVideoView.setAdVideoListener(new MockShortVideoAdVideoView.MockAdVideoListener() {
-                            @Override
-                            public void onAdVideoCompleted(Ad ad) {
-                                onAdVideoPlayCompleted(ad);
-                            }
-                        });
+                        viewHolder.mockAdVideoView.setAdVideoListener(new DramaAdVideoListener(mFragmentRef));
                     }
                     return viewHolder;
                 }
             }
             throw new IllegalArgumentException("unsupported type!");
+        }
+    }
+
+    private static final class DramaPlaybackListener implements Dispatcher.EventListener {
+        private final WeakReference<DramaDetailVideoFragment> mFragmentRef;
+
+        private DramaPlaybackListener(WeakReference<DramaDetailVideoFragment> fragmentRef) {
+            mFragmentRef = fragmentRef;
+        }
+
+        @Override
+        public void onEvent(Event event) {
+            final DramaDetailVideoFragment fragment = mFragmentRef.get();
+            if (fragment == null) return;
+
+            if (event.code() == PlayerEvent.State.COMPLETED) {
+                fragment.onPlayerStateCompleted(event);
+            } else if (event.code() == PlayerEvent.Action.SET_SPEED) {
+                ActionSetSpeed e = event.cast(ActionSetSpeed.class);
+                if (fragment.mPipActionMenuItem != null) {
+                    fragment.mPipActionMenuItem.setVisible(e.speed == 1);
+                }
+            }
+        }
+    }
+
+    private static final class DramaAdVideoListener implements MockShortVideoAdVideoView.MockAdVideoListener {
+        private final WeakReference<DramaDetailVideoFragment> mFragmentRef;
+
+        private DramaAdVideoListener(WeakReference<DramaDetailVideoFragment> fragmentRef) {
+            mFragmentRef = fragmentRef;
+        }
+
+        @Override
+        public void onAdVideoCompleted(Ad ad) {
+            final DramaDetailVideoFragment fragment = mFragmentRef.get();
+            if (fragment == null) return;
+            fragment.onAdVideoPlayCompleted(ad);
         }
     }
 

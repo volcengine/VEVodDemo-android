@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bytedance.playerkit.utils.CollectionUtils;
@@ -57,6 +58,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
 
     private final ViewPager2 mViewPager;
     private final MultiTypeAdapter mShortVideoAdapter;
+    private final OnPageChangeCallbackCompat mPageChangeCallback;
     private Lifecycle mLifeCycle;
     private ViewHolder.Factory mViewHolderFactory;
     private boolean mInterceptStartPlaybackOnResume;
@@ -89,7 +91,7 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
             }
         });
         mViewPager.setAdapter(mShortVideoAdapter);
-        mViewPager.registerOnPageChangeCallback(new OnPageChangeCallbackCompat(mViewPager) {
+        mPageChangeCallback = new OnPageChangeCallbackCompat(mViewPager) {
             @Override
             public void onPageSelected(ViewPager2 pager, int position) {
                 super.onPageSelected(pager, position);
@@ -103,7 +105,8 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
                 if (holder == null) return;
                 holder.executeAction(ViewHolderAction.ACTION_VIEW_PAGER_ON_PAGE_INVISIBLE);
             }
-        });
+        };
+        mViewPager.registerOnPageChangeCallback(mPageChangeCallback);
         addView(mViewPager, new LayoutParams(LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
     }
@@ -421,6 +424,36 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
         stop();
     }
 
+    public void release() {
+        L.d(this, "release");
+        removeCallbacks(mPlayRetryRunnable);
+        mPlayRetryRunnable = null;
+
+        // 主动停止当前播放，统一 release 与 Lifecycle.ON_DESTROY 的释放语义。
+        stop();
+
+        if (mLifeCycle != null) {
+            mLifeCycle.removeObserver(this);
+            mLifeCycle = null;
+        }
+
+        final ViewHolder currentHolder = mCurrentHolder;
+        if (currentHolder != null) {
+            currentHolder.release();
+        }
+        releaseAttachedViewHolders();
+        mCurrentHolder = null;
+        mInterceptStartPlaybackOnResume = false;
+        mViewHolderFactory = null;
+
+        ShortVideoStrategy.setEnabled(false);
+        mShortVideoAdapter.setItems(Collections.emptyList(), ItemHelper.comparator());
+        ShortVideoStrategy.setItems(Collections.emptyList());
+
+        mViewPager.unregisterOnPageChangeCallback(mPageChangeCallback);
+        mViewPager.setAdapter(null);
+    }
+
     public boolean onBackPressed() {
         final ViewHolder holder = getCurrentViewHolder();
         if (holder != null && holder.onBackPressed()) {
@@ -435,5 +468,29 @@ public class ShortVideoPageView extends FrameLayout implements LifecycleEventObs
             return (ViewHolder) itemView.getTag();
         }
         return null;
+    }
+
+    @Nullable
+    private RecyclerView findRecyclerView() {
+        final View child = mViewPager.getChildAt(0);
+        if (child instanceof RecyclerView) {
+            return (RecyclerView) child;
+        }
+        return null;
+    }
+
+    private void releaseAttachedViewHolders() {
+        final RecyclerView recyclerView = findRecyclerView();
+        if (recyclerView == null) return;
+
+        for (int i = 0; i < recyclerView.getChildCount(); i++) {
+            final View itemView = recyclerView.getChildAt(i);
+            final Object tag = itemView.getTag();
+            if (tag instanceof ViewHolder) {
+                ((ViewHolder) tag).release();
+            }
+        }
+        recyclerView.getRecycledViewPool().clear();
+        recyclerView.setRecycledViewPool(new RecyclerView.RecycledViewPool());
     }
 }
