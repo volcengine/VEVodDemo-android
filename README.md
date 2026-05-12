@@ -108,6 +108,10 @@ public class App extends Application {
 - [快速开始](https://www.volcengine.com/docs/4/112130)
 - [ChangeLog](https://www.volcengine.com/docs/4/66437)
 
+# Security and privacy
+This project takes security seriously.
+For vulnerability reporting and supported versions, see [SECURITY.md](SECURITY.md)
+
 # License
 
 ```text
