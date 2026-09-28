@@ -38,9 +38,49 @@ import java.io.File
 
 object InitSDKExample {
 
-    fun init() {
+    /**
+     * 默认同步接入。初始化返回后，业务可以直接创建播放器。
+     */
+    @JvmStatic
+    fun initSync() {
         openLogCat()
-        initVodSDK()
+        runInitTask()
+        onInitSuccess()
+    }
+
+    /**
+     * 把 TTSDK 及其前后置全局组件作为一个完整任务提交到同一后台串行线程。
+     * callback 只用于接收最终结果，不应在调用方同步等待。
+     */
+    @JvmStatic
+    fun initAsync(callback: VodSdkInitializer.Callback? = null) {
+        openLogCat()
+        VodSdkInitializer.start(
+            {
+                runInitTask()
+            }
+        ) { success, error ->
+            if (success) {
+                onInitSuccess()
+            }
+            callback?.onResult(success, error)
+        }
+    }
+
+    /**
+     * 同步和异步入口复用同一段初始化任务，避免调用顺序出现差异。
+     */
+    @JvmStatic
+    fun runInitTask() {
+        // StrategyManager 的版本必须在 Env.start() 首次访问策略单例前设置。
+        initVodSDKBestStrategy()
+        Env.start(createVodSDKConfig())
+        // ABR 依赖 Env.start() 建立的全局环境，因此放在其后执行。
+        TTVideoABRStrategy.init()
+    }
+
+    private fun onInitSuccess() {
+        // 以下操作依赖初始化后的 AppLog/Engine 全局状态，只在成功后执行。
         initUserUniqueId()
         initDeviceId()
     }
@@ -50,9 +90,7 @@ object InitSDKExample {
         VodSDK.openAllVodLog();
     }
 
-    private fun initVodSDK() {
-        initVodSDKBestStrategy()
-
+    private fun createVodSDKConfig(): Config {
         val context = App.sContext;
         val videoCacheDir = File(context.cacheDir, "video_cache")
         if (!videoCacheDir.exists()) videoCacheDir.mkdirs()
@@ -60,8 +98,7 @@ object InitSDKExample {
             .setCacheDirPath(videoCacheDir.absolutePath)
             .setMaxCacheSize(300 * 1024 * 1024)
 
-        Env.init(
-            Config.Builder()
+        return Config.Builder()
                 .setApplicationContext(context)
                 .setAppID(App.APP_ID)
                 .setAppName(App.APP_NAME) // 合法版本号应大于、等于 2 个分隔符，如："1.3.2"
@@ -70,10 +107,8 @@ object InitSDKExample {
                 // 下面 LicenseUri 对应工程中 assets 路径为：assets/l-1503814402-ch-vod-a-770022.lic
                 .setLicenseUri(App.LICENSE_URI) // 可不设置，默认值见下表
                 .setVodConfig(vodBuilder.build())
+                .setBizType(Config.BIZ_TYPE_VOD)
                 .build()
-        )
-
-        TTVideoABRStrategy.init()
     }
 
     private fun initUserUniqueId() {

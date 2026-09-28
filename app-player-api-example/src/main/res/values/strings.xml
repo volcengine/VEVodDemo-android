@@ -2,7 +2,6 @@
     <string name="app_name">Player API Example</string>
 
     <string name="vevod_api_example_app_title">VolcEngine Vod Player API Example</string>
-
     <string name="vevod_api_example_quick_start">Quick Start</string>
     <string name="vevod_api_example_vid_source">Vid Source Example</string>
     <string name="vevod_api_example_directurl_source">Direct URL Source Example</string>

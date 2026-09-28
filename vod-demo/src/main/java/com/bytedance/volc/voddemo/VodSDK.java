@@ -36,6 +36,7 @@ import com.bytedance.playerkit.player.source.TrackSelector;
 import com.bytedance.playerkit.player.volcengine.VolcConfig;
 import com.bytedance.playerkit.player.volcengine.VolcConfigGlobal;
 import com.bytedance.playerkit.player.volcengine.VolcConfigUpdater;
+import com.bytedance.playerkit.player.volcengine.VolcPlayerAsyncInitializer;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInit;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig;
 import com.bytedance.playerkit.player.volcengine.VolcQuality;
@@ -60,9 +61,14 @@ public class VodSDK {
     @SuppressLint("StaticFieldLeak")
     private static Context sContext;
     private static final AtomicBoolean sInited = new AtomicBoolean();
+    private static volatile boolean sAsyncInitEnabled;
 
     public static Context context() {
         return sContext;
+    }
+
+    public static boolean isAsyncInitEnabled() {
+        return sAsyncInitEnabled;
     }
 
     public static void init(Context context,
@@ -202,18 +208,25 @@ public class VodSDK {
                 .build()
         );
 
-        // PlayerKit 初始化 Step2：初始化点播 SDK
-        if (VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_VOD_SDK_ASYNC_INIT)) {
-            // 异步初始化
-            // TODO：对初始化耗时不敏感的话，推荐使用同步初始化，不容易出错。
-            //  若使用异步初始化，上线前请充分测试，先灰度上线看一下效果，再全量上线。
-            VolcPlayerInit.initAsync((result) -> {
-                L.d("VodSDK", String.format("init result: %s", result > 0 ? "success" : "fail"));
+        // PlayerKit 初始化 Step2：默认同步；Settings 开启后，下一次冷启动切到异步。
+        sAsyncInitEnabled =
+                VideoSettings.booleanValue(VideoSettings.INIT_ENABLE_VOD_SDK_ASYNC_INIT);
+        if (sAsyncInitEnabled) {
+            // 异步初始化完成前禁止创建播放器；壳工程通过回调门禁首个播放页面。
+            // 上线前需覆盖冷启动、初始化中立即起播和初始化失败场景，并先灰度验证。
+            VolcPlayerAsyncInitializer.start((result, error) -> {
+                L.d("VodSDK", String.format(
+                        "init result: %s",
+                        result == VolcPlayerAsyncInitializer.InitCallback.RESULT_SUCCESS
+                                ? "success"
+                                : "fail"));
             });
         } else {
-            // 同步初始化（推荐）
+            // 默认保持同步接入，业务页面无需感知异步状态或增加初始化门禁。
             VolcPlayerInit.initSync();
-            L.d("VodSDK", String.format("init result: %s", "success"));
+            L.d("VodSDK", String.format(
+                    "init result: %s",
+                    VolcPlayerInit.isInitialized() ? "success" : "fail"));
         }
     }
 }

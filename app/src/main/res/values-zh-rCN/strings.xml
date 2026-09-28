@@ -18,4 +18,10 @@
 
 <resources>
     <string name="vevod_app_name">视频点播</string>
+    <string name="vevod_init_slow_title">正在初始化点播能力</string>
+    <string name="vevod_init_slow_message">初始化耗时较长，可继续等待，或关闭应用后重新尝试。</string>
+    <string name="vevod_continue_waiting">继续等待</string>
+    <string name="vevod_close_app">关闭应用</string>
+    <string name="vevod_init_failed_title">点播 SDK 初始化失败</string>
+    <string name="vevod_init_failed_message">当前无法使用播放能力。请关闭并重新打开应用后重试；若持续失败，请保留启动日志并联系技术支持。</string>
 </resources>

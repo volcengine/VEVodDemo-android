@@ -41,8 +41,9 @@ class TTVideoEngineFactoryDefault implements TTVideoEngineFactory {
 
     @Override
     public TTVideoEngine create(Context context, MediaSource mediaSource) {
-        // wait initResult for asyncInit mode
-        VolcPlayerInit.waitInitAsyncResult();
+        // 创建播放器是同步调用，这里只校验 SDK 初始化终态，绝不等待后台任务。
+        // License 由 SDK 内部在具体功能调用时校验，不作为播放器创建门禁。
+        VolcPlayerInit.requireInitialized();
 
         final VolcConfig volcConfig = VolcConfig.get(mediaSource);
         final TTVideoEngine player;

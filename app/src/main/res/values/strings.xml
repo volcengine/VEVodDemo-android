@@ -18,4 +18,10 @@
 
 <resources>
     <string name="vevod_app_name">VOLC Vod</string>
+    <string name="vevod_init_slow_title">Initializing video playback</string>
+    <string name="vevod_init_slow_message">Initialization is taking longer than expected. You can continue waiting or close the app and try again.</string>
+    <string name="vevod_continue_waiting">Continue waiting</string>
+    <string name="vevod_close_app">Close app</string>
+    <string name="vevod_init_failed_title">Video SDK initialization failed</string>
+    <string name="vevod_init_failed_message">Playback is unavailable. Close and reopen the app to retry. If the problem persists, collect the startup logs and contact technical support.</string>
 </resources>

@@ -261,7 +261,7 @@ public class VolcEngineStrategy {
 
         VolcPlayerInit.config().workerHandler.post(() -> {
             L.d(VolcEngineStrategy.class, "setEnabled", VolcScene.mapScene(volcScene), enabled);
-            VolcPlayerInit.waitInitAsyncResult();
+            VolcPlayerInit.requireInitialized();
 
             if (sCurrentScene != volcScene) {
                 if (sSceneStrategyEnabled) {
@@ -294,7 +294,7 @@ public class VolcEngineStrategy {
         if (VolcPlayerInit.config() == null) return;
 
         VolcPlayerInit.config().workerHandler.post(() -> {
-            VolcPlayerInit.waitInitAsyncResult();
+            VolcPlayerInit.requireInitialized();
 
             final List<MediaSource> mediaSources = asyncGetter.get();
             if (mediaSources == null) return;
@@ -313,7 +313,7 @@ public class VolcEngineStrategy {
         if (VolcPlayerInit.config() == null) return;
 
         VolcPlayerInit.config().workerHandler.post(() -> {
-            VolcPlayerInit.waitInitAsyncResult();
+            VolcPlayerInit.requireInitialized();
 
             final List<MediaSource> mediaSources = asyncGetter.get();
             if (mediaSources == null) return;
@@ -346,7 +346,7 @@ public class VolcEngineStrategy {
         if (mediaSource == null) return;
         if (surface == null || !surface.isValid()) return;
 
-        VolcPlayerInit.waitInitAsyncResult();
+        VolcPlayerInit.requireInitialized();
 
         final TTVideoEngine player = getPreRenderEngine(mediaSource);
         if (player != null && player != StrategyManager.instance().getPlayEngine()) {

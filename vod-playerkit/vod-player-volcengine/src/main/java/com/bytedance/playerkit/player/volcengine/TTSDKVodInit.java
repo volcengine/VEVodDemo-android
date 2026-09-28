@@ -40,9 +40,9 @@ import com.ss.ttvideoengine.TTVideoEngine;
 import com.ss.ttvideoengine.strategy.StrategyManager;
 import com.ss.ttvideoengine.utils.TTVideoEngineUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 class TTSDKVodInit {
 
@@ -51,6 +51,7 @@ class TTSDKVodInit {
             VodSDK.openAllVodLog();
         }
         try {
+            // StrategyManager 首次取单例后不允许再修改版本，因此必须早于 Env.start()。
             StrategyManager.setVersion(VERSION_2);
         } catch (Exception e) {
             L.e(TTSDKVodInit.class, "doInit", "StrategyManager#setVersion", e.getMessage());
@@ -82,20 +83,9 @@ class TTSDKVodInit {
             TTVideoEngineUtils.setSensitiveScene(SENSITIVE_SCENE_USER_DISAGREE);
         }
         Env.openAppLog(initConfig.appInfo.enableInitAppLog);
-        Env.init(new Config.Builder()
-                .setApplicationContext(initConfig.context)
-                .setAppID(initConfig.appInfo.appId)
-                .setAppName(initConfig.appInfo.appName)
-                // 合法版本号应大于、等于 2 个分隔符，如："1.3.2"
-                .setAppVersion(initConfig.appInfo.appVersion)
-                .setAppChannel(initConfig.appInfo.appChannel)
-                .securityDeviceId(initConfig.appInfo.enableAppLogSecurityApi)
-                // 将 license 文件拷贝到 app 的 assets 文件夹中，并设置 LicenseUri
-                // 下面 LicenseUri 对应工程中 assets 路径为：assets/license/vod.lic
-                .setLicenseUri(initConfig.appInfo.licenseUri)
-                // 可不设置，默认值见下表
-                .setVodConfig(vodBuilder.build())
-                .build());
+        // Env.start() 是完整 SDK 初始化的同步边界，调用线程由上层选择的同步或异步入口决定。
+        Env.start(buildVodSdkConfig(initConfig, vodBuilder.build()));
+        // 以下策略依赖 Env.start() 建立的全局环境，顺序不能提前。
         VolcEngineStrategy.init();
         VolcNetSpeedStrategy.init();
         VolcSuperResolutionStrategy.init();
@@ -103,47 +93,87 @@ class TTSDKVodInit {
         VolcSourceRefreshStrategy.init();
     }
 
-    private static final List<InitTask> INIT_TASK_PENDING_LIST = new CopyOnWriteArrayList<>();
+    static Config buildVodSdkConfig(
+            @NonNull VolcPlayerInitConfig initConfig,
+            @NonNull VodConfig vodConfig) {
+        return new Config.Builder()
+                .setApplicationContext(initConfig.context)
+                .setAppID(initConfig.appInfo.appId)
+                .setAppName(initConfig.appInfo.appName)
+                // 合法版本号应大于、等于 2 个分隔符，如："1.3.2"
+                .setAppVersion(initConfig.appInfo.appVersion)
+                .setAppChannel(initConfig.appInfo.appChannel)
+                .securityDeviceId(initConfig.appInfo.enableAppLogSecurityApi)
+                .setAutoStartAppLog(initConfig.appInfo.autoStartAppLog)
+                // 将 license 文件拷贝到 app 的 assets 文件夹中，并设置 LicenseUri
+                // 下面 LicenseUri 对应工程中 assets 路径为：assets/license/vod.lic
+                .setLicenseUri(initConfig.appInfo.licenseUri)
+                // 可不设置，默认值见下表
+                .setVodConfig(vodConfig)
+                // VEVOD 仅使用点播能力，避免按默认 BIZ_TYPE_ALL 进入直播、上传初始化分支。
+                .setBizType(Config.BIZ_TYPE_VOD)
+                .build();
+    }
 
-    private static volatile boolean sIniting;
+    // 初始化期间收到的后置任务先排队，成功后按提交顺序执行。
+    private static final List<InitTask> INIT_TASK_PENDING_LIST = new ArrayList<>();
+
+    private static boolean sIniting;
     private static volatile boolean sInited;
 
     static void initVod(VolcPlayerInitConfig initConfig) {
-        if (sInited || sIniting) {
-            return;
-        }
-        sIniting = true;
-        try {
-            L.d(TTSDKVodInit.class, "initVod", "start");
-            synchronized (TTSDKVodInit.class) {
-                doInit(initConfig);
+        synchronized (TTSDKVodInit.class) {
+            if (sInited) {
+                return;
             }
-        } finally {
-            sIniting = false;
-            sInited = true;
-            L.d(TTSDKVodInit.class, "initVod", "end");
+            // 外层 VolcPlayerInit 正常情况下只会启动一次；这里再次防止误用导致并发初始化。
+            if (sIniting) {
+                throw new IllegalStateException("Vod SDK is already initializing.");
+            }
+            sIniting = true;
         }
-        for (InitTask initTask : INIT_TASK_PENDING_LIST) {
-            L.d(TTSDKVodInit.class, "initVod", "execute pending task", initTask.taskName);
+
+        List<InitTask> pendingTasks = null;
+        L.d(TTSDKVodInit.class, "initVod", "start");
+        try {
+            doInit(initConfig);
             synchronized (TTSDKVodInit.class) {
+                // 只有 doInit() 完整成功后才发布已初始化状态。
+                sInited = true;
+                pendingTasks = new ArrayList<>(INIT_TASK_PENDING_LIST);
+                INIT_TASK_PENDING_LIST.clear();
+            }
+
+            // 后置任务可能回调业务代码，必须在 TTSDKVodInit.class 锁外执行。
+            for (InitTask initTask : pendingTasks) {
+                L.d(TTSDKVodInit.class, "initVod", "execute pending task", initTask.taskName);
                 initTask.runnable.run();
             }
+            logAuthResult();
+        } finally {
+            synchronized (TTSDKVodInit.class) {
+                sIniting = false;
+                if (!sInited) {
+                    // 初始化失败后不执行依赖半初始化状态的历史待办。
+                    INIT_TASK_PENDING_LIST.clear();
+                }
+            }
+            L.d(TTSDKVodInit.class, "initVod", "end");
         }
-        INIT_TASK_PENDING_LIST.clear();
-
-        logAuthResult();
     }
 
     private static void postInitTask(InitTask initTask) {
-        if (sInited) {
-            L.d(TTSDKVodInit.class, "postInitTask", "execute", initTask.taskName);
-            synchronized (TTSDKVodInit.class) {
-                initTask.runnable.run();
+        synchronized (TTSDKVodInit.class) {
+            if (!sInited) {
+                // 与初始化完成状态在同一把锁内判断，避免任务落在“已复制列表但尚未执行”的窗口。
+                L.d(TTSDKVodInit.class, "postInitTask", "enqueue", initTask.taskName, "add to pending list");
+                INIT_TASK_PENDING_LIST.add(initTask);
+                return;
             }
-        } else {
-            L.d(TTSDKVodInit.class, "postInitTask", "enqueue", initTask.taskName, "add to pending list");
-            INIT_TASK_PENDING_LIST.add(initTask);
         }
+        // 已完成初始化时直接执行，避免无意义地再次入队。
+        L.d(TTSDKVodInit.class, "postInitTask", "execute", initTask.taskName);
+        initTask.runnable.run();
     }
 
     static void initAppLog() {

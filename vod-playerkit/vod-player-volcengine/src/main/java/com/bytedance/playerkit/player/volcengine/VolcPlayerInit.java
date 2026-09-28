@@ -26,10 +26,12 @@ import com.bytedance.playerkit.player.PlayerKit;
 import com.bytedance.playerkit.player.volcengine.VolcPlayerInitConfig.AppInfo;
 import com.bytedance.playerkit.utils.L;
 
-import java.util.concurrent.FutureTask;
-
 public class VolcPlayerInit {
 
+    /**
+     * @deprecated 异步初始化请使用 {@link VolcPlayerAsyncInitializer.InitCallback}。
+     */
+    @Deprecated
     public interface InitCallback {
         int RESULT_SUCCESS = 1;
         int RESULT_ERROR = -1;
@@ -58,96 +60,108 @@ public class VolcPlayerInit {
     }
 
     private static int sInitState;
-    private static volatile FutureTask<Void> sInitFuture;
+    @Nullable
+    private static Throwable sInitError;
 
     public static void initSync() {
-        waitInitAsyncResult();
-        final VolcPlayerInitConfig config = config();
-        if (isInitState(INIT_STATE_INITING, INIT_STATE_SUCCESS, INIT_STATE_ERROR)) {
-            L.d(VolcPlayerInit.class, "initSync", "return", mapState(getInitState()));
-            return;
+        VolcPlayerInitConfig config = beginInitialization("initSync");
+        if (config != null) {
+            runInitialization("initSync", config, true);
+        }
+    }
+
+    /**
+     * @deprecated 异步初始化请使用 {@link VolcPlayerAsyncInitializer#start()}。
+     */
+    @Deprecated
+    public static void initAsync(@Nullable InitCallback initCallback) {
+        VolcPlayerAsyncInitializer.start(
+                initCallback == null
+                        ? null
+                        : (result, error) -> initCallback.onInitResult(result));
+    }
+
+    @Nullable
+    static VolcPlayerInitConfig beginInitialization(String method) {
+        final VolcPlayerInitConfig config;
+        synchronized (VolcPlayerInit.class) {
+            if (sInitState != INIT_STATE_IDLE) {
+                L.d(VolcPlayerInit.class, method, "return", mapState(sInitState));
+                return null;
+            }
+            config = sConfig;
+            setInitState(INIT_STATE_INITING);
         }
         if (config == null) {
-            L.e(VolcPlayerInit.class, "initSync", "return", "config is null! Invoke config first.");
-            return;
+            IllegalStateException error = new IllegalStateException("Invoke config first.");
+            L.e(VolcPlayerInit.class, method, "return", error.getMessage());
+            completeInit(INIT_STATE_ERROR, error);
+            return null;
         }
-        setInitState(INIT_STATE_INITING);
-        L.d(VolcPlayerInit.class, "initSync", "start");
+        return config;
+    }
+
+    static void runInitialization(
+            String method,
+            VolcPlayerInitConfig config,
+            boolean rethrowError) {
+        L.d(VolcPlayerInit.class, method, "start");
         final long startTime = System.currentTimeMillis();
         try {
             TTSDKVodInit.initVod(config);
-            setInitState(INIT_STATE_SUCCESS);
-            L.d(VolcPlayerInit.class, "initSync", "success", "time:" + (System.currentTimeMillis() - startTime));
-        } catch (RuntimeException e) {
-            setInitState(INIT_STATE_ERROR);
-            L.e(VolcPlayerInit.class, "initSync", e, "error", "time:" + (System.currentTimeMillis() - startTime));
-        }
-    }
-
-    public static synchronized void initAsync(InitCallback initCallback) {
-        if (isInitState(INIT_STATE_INITING, INIT_STATE_SUCCESS, INIT_STATE_ERROR)) {
-            L.d(VolcPlayerInit.class, "initAsync", "return", mapState(getInitState()));
-            return;
-        }
-        final VolcPlayerInitConfig config = config();
-        if (config == null) {
-            L.e(VolcPlayerInit.class, "initAsync", "return", "config is null! Invoke config first.");
-            return;
-        }
-        setInitState(INIT_STATE_INITING);
-        final Boolean isMessageQueueIdle = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M ?
-                config.workerHandler.getLooper().getQueue().isIdle() : null;
-        final long startTime = System.currentTimeMillis();
-        L.d(VolcPlayerInit.class, "initAsync", "start",
-                config.workerHandler.getLooper().getThread(),
-                "isMessageQueueIdle:" + isMessageQueueIdle, startTime);
-        sInitFuture = new FutureTask<>(() -> {
-            try {
-                L.d(VolcPlayerInit.class, "initAsync", "running",
-                        "time:" + (System.currentTimeMillis() - startTime));
-                TTSDKVodInit.initVod(config);
-                setInitState(INIT_STATE_SUCCESS);
-                L.d(VolcPlayerInit.class, "initAsync", "success",
-                        "time:" + (System.currentTimeMillis() - startTime));
-                if (initCallback != null) {
-                    config.workerHandler.post(() -> initCallback.onInitResult(InitCallback.RESULT_SUCCESS));
-                }
-            } catch (Exception e) {
-                setInitState(INIT_STATE_ERROR);
-                L.e(VolcPlayerInit.class, "initAsync", e, "error",
-                        "time:" + (System.currentTimeMillis() - startTime));
-                if (initCallback != null) {
-                    config.workerHandler.post(() -> initCallback.onInitResult(InitCallback.RESULT_ERROR));
-                }
-                throw e;
+            L.d(VolcPlayerInit.class, method, "success",
+                    "time:" + (System.currentTimeMillis() - startTime));
+            completeInit(INIT_STATE_SUCCESS, null);
+        } catch (Throwable throwable) {
+            L.e(VolcPlayerInit.class, method, throwable, "error",
+                    "time:" + (System.currentTimeMillis() - startTime));
+            completeInit(INIT_STATE_ERROR, throwable);
+            if (rethrowError && throwable instanceof Error) {
+                throw (Error) throwable;
             }
-            return null;
-        });
-        config.workerHandler.post(sInitFuture);
+        }
     }
 
+    static void failInitialization(String method, Throwable throwable) {
+        L.e(VolcPlayerInit.class, method, throwable, "error");
+        completeInit(INIT_STATE_ERROR, throwable);
+    }
+
+    private static void completeInit(int state, @Nullable Throwable throwable) {
+        synchronized (VolcPlayerInit.class) {
+            if (sInitState == INIT_STATE_SUCCESS || sInitState == INIT_STATE_ERROR) {
+                return;
+            }
+            setInitState(state);
+            sInitError = throwable;
+        }
+        VolcPlayerAsyncInitializer.onInitCompleted(state, throwable);
+    }
+
+    public static synchronized boolean isInitialized() {
+        return sInitState == INIT_STATE_SUCCESS;
+    }
+
+    @Nullable
+    public static synchronized Throwable getInitError() {
+        return sInitError;
+    }
+
+    static void requireInitialized() {
+        if (!isInitialized()) {
+            throw new IllegalStateException(
+                    "Vod SDK is not initialized. Wait for async initialization success before using player APIs.");
+        }
+    }
+
+    /**
+     * @deprecated 初始化门禁必须通过
+     * {@link VolcPlayerAsyncInitializer#runWhenReady(Runnable, VolcPlayerAsyncInitializer.FailureCallback)}
+     * 异步处理。
+     */
+    @Deprecated
     public static void waitInitAsyncResult() {
-        if (sInitFuture != null && !sInitFuture.isDone()) {
-            final long startTime = System.currentTimeMillis();
-            L.d(VolcPlayerInit.class, "waitInitAsyncResult", "wait", Thread.currentThread(), mapState(getInitState()), startTime);
-            try {
-                sInitFuture.get();
-                L.d(VolcPlayerInit.class, "waitInitAsyncResult", "return", mapState(getInitState()),
-                        "time:" + (System.currentTimeMillis() - startTime));
-            } catch (Exception e) {
-                L.e(VolcPlayerInit.class, "waitInitAsyncResult", e, "return", mapState(getInitState()),
-                        "time:" + (System.currentTimeMillis() - startTime));
-            }
-        }
-    }
-
-    private static synchronized boolean isInitState(int... states) {
-        for (int state : states) {
-            if (sInitState == state) {
-                return true;
-            }
-        }
-        return false;
+        requireInitialized();
     }
 
     private static synchronized void setInitState(int newState) {

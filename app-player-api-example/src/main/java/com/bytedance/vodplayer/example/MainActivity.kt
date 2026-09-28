@@ -37,9 +37,13 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        showExamples()
+    }
+
+    private fun showExamples() {
         Log.d("VideoPlay", "DataSource:${DataRepository.videoItems}")
-        val items = createExampleItems()
-        initExampleViews(items)
+        findViewById<LinearLayout>(R.id.contentView).removeAllViews()
+        initExampleViews(createExampleItems())
     }
 
     private fun createExampleItems(): MutableList<Item> {

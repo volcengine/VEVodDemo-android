@@ -52,7 +52,8 @@ class App : Application() {
                 throw IllegalArgumentException("点击免费申请播放器 SDK License：https://www.volcengine.com/docs/4/65772#%E7%94%B3%E8%AF%B7%E5%85%8D%E8%B4%B9%E6%B5%8B%E8%AF%95-license");
             }, 5000)
         } else {
-            InitSDKExample.init()
+            // 默认展示同步接入。回调和协程异步示例见 quickstart 与 README。
+            InitSDKExample.initSync()
         }
     }
 }

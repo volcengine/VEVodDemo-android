@@ -20,7 +20,6 @@
     <string name="app_name">播放器 API 示例</string>
 
     <string name="vevod_api_example_app_title">点播播放器 API 示例</string>
-
     <string name="vevod_api_example_quick_start">快速开始</string>
     <string name="vevod_api_example_vid_source">Vid 源示例</string>
     <string name="vevod_api_example_directurl_source">Direct URL 源示例</string>
